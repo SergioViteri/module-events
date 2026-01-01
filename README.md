@@ -31,7 +31,7 @@ bin/magento cache:flush
 
 2. Instala el módulo:
 ```bash
-composer require zacatrus/module-events:*
+composer require zaca/events:*
 bin/magento module:enable Zacatrus_Events
 bin/magento setup:upgrade
 bin/magento setup:di:compile
