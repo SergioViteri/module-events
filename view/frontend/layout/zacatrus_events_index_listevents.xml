@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events List Events Layout
+ *
+ * @category    Zacatrus
+ * @package     Zacatrus_Events
+ * @author      Zacatrus
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Events</title>
+        <css src="Zacatrus_Events::css/events.css"/>
+        <script src="Zacatrus_Events::js/event-registration.js"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Zacatrus\Events\Block\EventList" name="zacatrus.events.list" template="Zacatrus_Events::events/list.phtml">
+                <block class="Zacatrus\Events\Block\EventCard" name="zacatrus.events.card" template="Zacatrus_Events::events/card.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
+

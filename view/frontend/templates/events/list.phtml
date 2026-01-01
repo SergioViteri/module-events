@@ -1,0 +1,80 @@
+<?php
+/**
+ * @var \Zacatrus\Events\Block\EventList $block
+ */
+?>
+<div class="zacatrus-events-list">
+    <div class="page-title-wrapper">
+        <h1 class="page-title"><?= $block->escapeHtml(__('Events')) ?></h1>
+    </div>
+
+    <div class="events-filters">
+        <form method="get" action="<?= $block->escapeUrl($block->getUrl('events/index/listevents')) ?>" id="events-filter-form">
+            <div class="filter-group">
+                <label for="store-filter"><?= $block->escapeHtml(__('Store')) ?></label>
+                <select name="store_id" id="store-filter" class="filter-select">
+                    <option value=""><?= $block->escapeHtml(__('All Stores')) ?></option>
+                    <?php foreach ($block->getStores() as $store): ?>
+                        <option value="<?= $block->escapeHtml($store->getStoreId()) ?>" 
+                                <?= $block->getRequest()->getParam('store_id') == $store->getStoreId() ? 'selected' : '' ?>>
+                            <?= $block->escapeHtml($store->getName() . ' - ' . $store->getCity()) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="type-filter"><?= $block->escapeHtml(__('Event Type')) ?></label>
+                <select name="event_type" id="type-filter" class="filter-select">
+                    <option value=""><?= $block->escapeHtml(__('All Types')) ?></option>
+                    <?php foreach ($block->getEventTypes() as $value => $label): ?>
+                        <option value="<?= $block->escapeHtml($value) ?>" 
+                                <?= $block->getRequest()->getParam('event_type') == $value ? 'selected' : '' ?>>
+                            <?= $block->escapeHtml($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="action primary"><?= $block->escapeHtml(__('Filter')) ?></button>
+            </div>
+        </form>
+    </div>
+
+    <div class="events-grid">
+        <?php $events = $block->getEvents(); ?>
+        <?php if (empty($events)): ?>
+            <div class="message info empty">
+                <span><?= $block->escapeHtml(__('No events found.')) ?></span>
+            </div>
+        <?php else: ?>
+            <?php foreach ($events as $event): ?>
+                <?php $cardBlock = $block->getChildBlock('zacatrus.events.card'); ?>
+                <?php if ($cardBlock): ?>
+                    <?php $cardBlock->setEvent($event); ?>
+                    <?= $cardBlock->toHtml() ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+require(['domReady!', 'zacatrusEventsRegistration'], function(domReady, registrationHandler) {
+    // Initialize registration handlers
+    registrationHandler.init();
+    
+    // Auto-submit form on filter change
+    var filterForm = document.getElementById('events-filter-form');
+    if (filterForm) {
+        var selects = filterForm.querySelectorAll('.filter-select');
+        selects.forEach(function(select) {
+            select.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        });
+    }
+});
+</script>
+

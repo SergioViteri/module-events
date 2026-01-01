@@ -1,0 +1,37 @@
+{
+    "name": "zacatrus/module-events",
+    "description": "Zacatrus Events Management Module for Magento 2",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Zacatrus",
+            "email": "info@zacatrus.com"
+        }
+    ],
+    "require": {
+        "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0",
+        "magento/framework": "*",
+        "magento/module-backend": "*",
+        "magento/module-customer": "*",
+        "magento/module-store": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Zacatrus\\Events\\": ""
+        }
+    },
+    "extra": {
+        "map": [
+            [
+                "*",
+                "app/code/Zacatrus/Events"
+            ]
+        ]
+    }
+}
+

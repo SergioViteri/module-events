@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Dependency Injection Configuration
+ *
+ * @category    Zacatrus
+ * @package     Zacatrus_Events
+ * @author      Zacatrus
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Zacatrus\Events\Api\StoreRepositoryInterface" type="Zacatrus\Events\Model\StoreRepository"/>
+    <preference for="Zacatrus\Events\Api\EventRepositoryInterface" type="Zacatrus\Events\Model\EventRepository"/>
+    <preference for="Zacatrus\Events\Api\RegistrationRepositoryInterface" type="Zacatrus\Events\Model\RegistrationRepository"/>
+    <preference for="Zacatrus\Events\Api\LeagueRepositoryInterface" type="Zacatrus\Events\Model\LeagueRepository"/>
+</config>
+

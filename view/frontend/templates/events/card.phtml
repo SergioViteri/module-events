@@ -1,0 +1,91 @@
+<?php
+/**
+ * @var \Zacatrus\Events\Block\EventCard $block
+ */
+$event = $block->getEvent();
+if (!$event) {
+    return;
+}
+
+$availableSlots = $block->getAvailableSlots();
+$isRegistered = $block->isCustomerRegistered();
+$registrationStatus = $block->getRegistrationStatus();
+?>
+<div class="event-card" data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>">
+    <div class="event-header">
+        <h3 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h3>
+        <span class="event-type"><?= $block->escapeHtml($block->getEventTypeLabel()) ?></span>
+    </div>
+
+    <div class="event-details">
+        <div class="event-detail">
+            <strong><?= $block->escapeHtml(__('Store:')) ?></strong>
+            <span><?= $block->escapeHtml($block->getStoreName()) ?></span>
+        </div>
+
+        <div class="event-detail">
+            <strong><?= $block->escapeHtml(__('Date:')) ?></strong>
+            <span><?= $block->escapeHtml($block->formatEventDate($event->getStartDate())) ?></span>
+        </div>
+
+        <div class="event-detail">
+            <strong><?= $block->escapeHtml(__('Duration:')) ?></strong>
+            <span><?= $block->escapeHtml($event->getDurationMinutes()) ?> <?= $block->escapeHtml(__('minutes')) ?></span>
+        </div>
+
+        <div class="event-detail">
+            <strong><?= $block->escapeHtml(__('Available Slots:')) ?></strong>
+            <span class="slots-count <?= $availableSlots > 0 ? 'available' : 'full' ?>">
+                <?= $block->escapeHtml($availableSlots) ?> / <?= $block->escapeHtml($event->getMaxSlots()) ?>
+            </span>
+        </div>
+
+        <?php if ($event->getDescription()): ?>
+            <div class="event-description">
+                <?= $block->escapeHtml($event->getDescription()) ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="event-actions">
+        <?php if ($block->isCustomerLoggedIn()): ?>
+            <?php if ($isRegistered): ?>
+                <div class="registration-status">
+                    <?php if ($registrationStatus === 'waitlist'): ?>
+                        <span class="status-waitlist"><?= $block->escapeHtml(__('You are on the waitlist')) ?></span>
+                    <?php else: ?>
+                        <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
+                    <?php endif; ?>
+                </div>
+                <button type="button" 
+                        class="action secondary unregister-btn" 
+                        data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
+                        data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getEventId())) ?>">
+                    <?= $block->escapeHtml(__('Unregister')) ?>
+                </button>
+            <?php else: ?>
+                <?php if ($availableSlots > 0): ?>
+                    <button type="button" 
+                            class="action primary register-btn" 
+                            data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getEventId())) ?>">
+                        <?= $block->escapeHtml(__('Register')) ?>
+                    </button>
+                <?php else: ?>
+                    <button type="button" 
+                            class="action primary register-btn waitlist-btn" 
+                            data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getEventId())) ?>">
+                        <?= $block->escapeHtml(__('Join Waitlist')) ?>
+                    </button>
+                <?php endif; ?>
+            <?php endif; ?>
+        <?php else: ?>
+            <a href="<?= $block->escapeUrl($block->getUrl('customer/account/login')) ?>" 
+               class="action primary">
+                <?= $block->escapeHtml(__('Login to Register')) ?>
+            </a>
+        <?php endif; ?>
+    </div>
+</div>
+

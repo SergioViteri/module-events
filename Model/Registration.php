@@ -1,0 +1,122 @@
+<?php
+/**
+ * Zacatrus Events Registration Model
+ *
+ * @category    Zacatrus
+ * @package     Zacatrus_Events
+ * @author      Zacatrus
+ */
+
+namespace Zacatrus\Events\Model;
+
+use Zacatrus\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
+use Zacatrus\Events\Api\Data\RegistrationInterface;
+use Magento\Framework\Model\AbstractModel;
+
+class Registration extends AbstractModel implements RegistrationInterface
+{
+    /**
+     * @inheritdoc
+     */
+    protected function _construct()
+    {
+        $this->_init(RegistrationResourceModel::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRegistrationId()
+    {
+        return $this->getData(self::REGISTRATION_ID);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRegistrationId($registrationId)
+    {
+        return $this->setData(self::REGISTRATION_ID, $registrationId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEventId()
+    {
+        return $this->getData(self::EVENT_ID);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEventId($eventId)
+    {
+        return $this->setData(self::EVENT_ID, $eventId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCustomerId()
+    {
+        return $this->getData(self::CUSTOMER_ID);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCustomerId($customerId)
+    {
+        return $this->setData(self::CUSTOMER_ID, $customerId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStatus()
+    {
+        return $this->getData(self::STATUS);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setStatus($status)
+    {
+        return $this->setData(self::STATUS, $status);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRegistrationDate()
+    {
+        return $this->getData(self::REGISTRATION_DATE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRegistrationDate($registrationDate)
+    {
+        return $this->setData(self::REGISTRATION_DATE, $registrationDate);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCreatedAt()
+    {
+        return $this->getData(self::CREATED_AT);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCreatedAt($createdAt)
+    {
+        return $this->setData(self::CREATED_AT, $createdAt);
+    }
+}
+
