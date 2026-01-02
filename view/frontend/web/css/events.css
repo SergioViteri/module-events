@@ -399,6 +399,17 @@
     letter-spacing: -0.02em;
 }
 
+.event-name-link {
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.event-name-link:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
 .event-theme {
     display: inline-block;
     font-weight: 500;
@@ -627,6 +638,10 @@
         font-size: 1.75rem;
     }
 
+    .event-name-link {
+        font-size: inherit;
+    }
+
     .event-theme {
         font-size: 1.4rem;
         padding: 0.5rem 1rem;
@@ -657,6 +672,10 @@
         font-size: 2rem;
     }
 
+    .event-name-link {
+        font-size: inherit;
+    }
+
     .event-theme {
         font-size: 1.15rem;
         padding: 0.6rem 1.2rem;
@@ -667,4 +686,60 @@
 }
 .zacatrus-events-list .filter-group {
     margin-bottom: 20px;
-  }
+}
+
+/* Event View Page */
+.event-view-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.event-back-link {
+    margin-bottom: 1.5rem;
+}
+
+.event-back-link .back-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.event-back-link .back-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.event-card-detailed {
+    max-width: 100%;
+}
+
+.event-card-detailed .event-name {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.event-card-detailed .event-description {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #eee;
+}
+
+.event-card-detailed .event-description strong {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.event-card-detailed .description-content {
+    margin-top: 0.5rem;
+    line-height: 1.8;
+}
+
+@media (min-width: 768px) {
+    .event-card-detailed .event-name {
+        font-size: 2.5rem;
+    }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Single Event View Layout
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Event Details</title>
+        <css src="Zaca_Events::css/events.css"/>
+        <script src="Zaca_Events::js/event-registration.js"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.view" template="Zaca_Events::events/view.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
+

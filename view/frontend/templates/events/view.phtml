@@ -1,0 +1,129 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\EventCard $block
+ */
+$meetId = (int) $block->getRequest()->getParam('id');
+if (!$meetId) {
+    return;
+}
+
+try {
+    $meetRepository = $block->getMeetRepository();
+    $meet = $meetRepository->getById($meetId);
+    
+    // Check if event is active
+    if (!$meet->getIsActive()) {
+        return;
+    }
+    
+    $block->setEvent($meet);
+} catch (\Exception $e) {
+    return;
+}
+
+$availableSlots = $block->getAvailableSlots();
+$isRegistered = $block->isCustomerRegistered();
+$registrationStatus = $block->getRegistrationStatus();
+?>
+<div class="event-view-page">
+    <div class="event-back-link">
+        <a href="<?= $block->escapeUrl($block->getUrl('events')) ?>" class="back-link">
+            ← <?= $block->escapeHtml(__('Back to Events')) ?>
+        </a>
+    </div>
+    
+    <?php $event = $block->getEvent(); ?>
+    <div class="event-card event-card-detailed" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
+        <div class="event-header">
+            <div class="event-name-wrapper">
+                <h1 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h1>
+                <?php if ($block->getThemeName()): ?>
+                    <span class="event-theme"><?= $block->escapeHtml($block->getThemeName()) ?></span>
+                <?php endif; ?>
+            </div>
+            <span class="event-type"><?= $block->escapeHtml($block->getEventTypeLabel()) ?></span>
+        </div>
+
+        <div class="event-details">
+            <div class="event-detail">
+                <strong><?= $block->escapeHtml(__('Location:')) ?></strong>
+                <span><?= $block->escapeHtml($block->getStoreName()) ?></span>
+            </div>
+
+            <div class="event-detail">
+                <strong><?= $block->escapeHtml(__('Date:')) ?></strong>
+                <span><?= $block->escapeHtml($block->getFormattedEventDate()) ?></span>
+            </div>
+
+            <div class="event-detail">
+                <strong><?= $block->escapeHtml(__('Duration:')) ?></strong>
+                <span><?= $block->escapeHtml($event->getDurationMinutes()) ?> <?= $block->escapeHtml(__('minutes')) ?></span>
+            </div>
+
+            <div class="event-detail">
+                <strong><?= $block->escapeHtml(__('Available Slots:')) ?></strong>
+                <span class="slots-count <?= $availableSlots > 0 ? 'available' : 'full' ?>">
+                    <?= $block->escapeHtml($availableSlots) ?> / <?= $block->escapeHtml($event->getMaxSlots()) ?>
+                </span>
+            </div>
+
+            <?php if ($event->getDescription()): ?>
+                <div class="event-description">
+                    <strong><?= $block->escapeHtml(__('Description:')) ?></strong>
+                    <div class="description-content">
+                        <?= /* @noEscape */ $block->getDescriptionHtml() ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="event-actions">
+            <?php if ($block->isCustomerLoggedIn()): ?>
+                <?php if ($isRegistered): ?>
+                    <div class="registration-status">
+                        <?php if ($registrationStatus === 'waitlist'): ?>
+                            <span class="status-waitlist"><?= $block->escapeHtml(__('You are on the waitlist')) ?></span>
+                        <?php else: ?>
+                            <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <button type="button" 
+                            class="action secondary unregister-btn" 
+                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
+                        <?= $block->escapeHtml(__('Unregister')) ?>
+                    </button>
+                <?php else: ?>
+                    <?php if (!$isRegistered && $availableSlots > 0): ?>
+                        <button type="button" 
+                                class="action primary register-btn" 
+                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                                data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                            <?= $block->escapeHtml(__('Register')) ?>
+                        </button>
+                    <?php elseif (!$isRegistered && $availableSlots <= 0): ?>
+                        <button type="button" 
+                                class="action primary register-btn waitlist-btn" 
+                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                                data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                            <?= $block->escapeHtml(__('Join Waitlist')) ?>
+                        </button>
+                    <?php endif; ?>
+                <?php endif; ?>
+            <?php else: ?>
+                <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" 
+                   class="action primary">
+                    <?= $block->escapeHtml(__('Login to Register')) ?>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>
+require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady, registrationHandler, $) {
+    // Initialize registration handlers
+    registrationHandler.init();
+});
+</script>
+

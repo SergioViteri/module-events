@@ -51,7 +51,7 @@ bin/magento cache:flush
 ## Uso
 
 ### Frontend
-- Lista de eventos: `/events/index/listevents`
+- Lista de eventos: `/events/`
 - Inscripción: Se realiza mediante AJAX desde la lista de eventos
 
 ### Backend

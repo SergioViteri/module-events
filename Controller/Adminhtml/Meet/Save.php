@@ -66,6 +66,11 @@ class Save extends Action
                 $model->load($id);
             }
 
+            // Convert empty theme_id to NULL for optional foreign key
+            if (isset($data['theme_id']) && $data['theme_id'] === '') {
+                $data['theme_id'] = null;
+            }
+
             $model->setData($data);
 
             try {

@@ -14,7 +14,11 @@ $registrationStatus = $block->getRegistrationStatus();
 <div class="event-card" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
     <div class="event-header">
         <div class="event-name-wrapper">
-            <h3 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h3>
+            <h3 class="event-name">
+                <a href="<?= $block->escapeUrl($block->getEventViewUrl($event->getMeetId())) ?>" class="event-name-link">
+                    <?= $block->escapeHtml($event->getName()) ?>
+                </a>
+            </h3>
             <?php if ($block->getThemeName()): ?>
                 <span class="event-theme"><?= $block->escapeHtml($block->getThemeName()) ?></span>
             <?php endif; ?>

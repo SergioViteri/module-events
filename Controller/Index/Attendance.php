@@ -108,7 +108,7 @@ class Attendance extends Action
         if (!$registrationId) {
             $this->messageManager->addError(__('Invalid registration ID.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events/index/listevents');
+            return $resultRedirect->setPath('events');
         }
 
         try {
@@ -154,14 +154,14 @@ class Attendance extends Action
             $this->logger->error('[Attendance] NoSuchEntityException: ' . $e->getMessage());
             $this->messageManager->addError(__('Registration or meet not found.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events/index/listevents');
+            return $resultRedirect->setPath('events');
         } catch (\Exception $e) {
             $this->logger->error('[Attendance] Exception: ' . $e->getMessage());
             $this->logger->error('[Attendance] File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             $this->logger->error('[Attendance] Stack trace: ' . $e->getTraceAsString());
             $this->messageManager->addError(__('An error occurred while processing attendance: %1', $e->getMessage()));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events/index/listevents');
+            return $resultRedirect->setPath('events');
         }
     }
 

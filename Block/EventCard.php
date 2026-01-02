@@ -10,6 +10,7 @@
 namespace Zaca\Events\Block;
 
 use Zaca\Events\Api\Data\MeetInterface;
+use Zaca\Events\Api\MeetRepositoryInterface;
 use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
@@ -57,6 +58,11 @@ class EventCard extends Template
     protected $themeRepository;
 
     /**
+     * @var MeetRepositoryInterface
+     */
+    protected $meetRepository;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -64,6 +70,7 @@ class EventCard extends Template
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
      * @param EventTypeRepositoryInterface $eventTypeRepository
      * @param ThemeRepositoryInterface $themeRepository
+     * @param MeetRepositoryInterface $meetRepository
      * @param array $data
      */
     public function __construct(
@@ -74,6 +81,7 @@ class EventCard extends Template
         SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
         EventTypeRepositoryInterface $eventTypeRepository,
         ThemeRepositoryInterface $themeRepository,
+        MeetRepositoryInterface $meetRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -83,6 +91,7 @@ class EventCard extends Template
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
         $this->eventTypeRepository = $eventTypeRepository;
         $this->themeRepository = $themeRepository;
+        $this->meetRepository = $meetRepository;
     }
 
     /**
@@ -409,6 +418,27 @@ class EventCard extends Template
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Get event detail URL
+     *
+     * @param int $meetId
+     * @return string
+     */
+    public function getEventViewUrl($meetId)
+    {
+        return $this->getUrl('events/index/view', ['id' => $meetId]);
+    }
+
+    /**
+     * Get meet repository (for view template)
+     *
+     * @return MeetRepositoryInterface
+     */
+    public function getMeetRepository()
+    {
+        return $this->meetRepository;
     }
 }
 
