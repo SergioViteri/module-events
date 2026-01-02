@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">zacatrus_events_registration_listing.zacatrus_events_registration_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add New Registration</label>
+            </button>
+        </buttons>
+        <spinner>zacatrus_events_registration_columns</spinner>
+        <deps>
+            <dep>zacatrus_events_registration_listing.zacatrus_events_registration_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="zacatrus_events_registration_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">registration_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Zacatrus_Events::registrations</aclResource>
+        <dataProvider class="Zacatrus\Events\Ui\Component\DataProvider" name="zacatrus_events_registration_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>registration_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <message translate="true">Are you sure you want to delete selected items?</message>
+                        <title translate="true">Delete items</title>
+                    </confirm>
+                    <url path="zacatrus_events/registration/massDelete"/>
+                    <type>delete</type>
+                    <label translate="true">Delete</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="zacatrus_events_registration_columns">
+        <settings>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">zacatrus_events_registration_listing.zacatrus_events_registration_listing.zacatrus_events_registration_columns_editor</item>
+                    <item name="target" xsi:type="string">startEdit</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">${ $.$data.rowIndex }</item>
+                        <item name="1" xsi:type="boolean">true</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>registration_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="registration_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="event_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Event ID</label>
+            </settings>
+        </column>
+        <column name="customer_id">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Customer ID</label>
+            </settings>
+        </column>
+        <column name="status" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <options>
+                    <option name="confirmed" xsi:type="array">
+                        <item name="value" xsi:type="string">confirmed</item>
+                        <item name="label" xsi:type="string" translate="true">Confirmed</item>
+                    </option>
+                    <option name="waitlist" xsi:type="array">
+                        <item name="value" xsi:type="string">waitlist</item>
+                        <item name="label" xsi:type="string" translate="true">Waitlist</item>
+                    </option>
+                </options>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="registration_date" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Registration Date</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Zacatrus\Events\Ui\Component\Listing\Column\RegistrationActions">
+            <settings>
+                <indexField>registration_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>
+

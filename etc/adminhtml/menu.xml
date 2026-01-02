@@ -10,7 +10,12 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Zacatrus_Events::events" title="Zacatrus Events" module="Zacatrus_Events" sortOrder="100" resource="Zacatrus_Events::events"/>
+        <add id="Zacatrus_Events::events" 
+             title="Zacatrus Events" 
+             module="Zacatrus_Events" 
+             sortOrder="100" 
+             parent="Magento_Backend::stores"
+             resource="Zacatrus_Events::events"/>
         <add id="Zacatrus_Events::stores" title="Stores" module="Zacatrus_Events" sortOrder="10" parent="Zacatrus_Events::events" action="zacatrus_events/store" resource="Zacatrus_Events::stores"/>
         <add id="Zacatrus_Events::events_manage" title="Events" module="Zacatrus_Events" sortOrder="20" parent="Zacatrus_Events::events" action="zacatrus_events/event" resource="Zacatrus_Events::events_manage"/>
         <add id="Zacatrus_Events::leagues" title="Leagues" module="Zacatrus_Events" sortOrder="30" parent="Zacatrus_Events::events" action="zacatrus_events/league" resource="Zacatrus_Events::leagues"/>

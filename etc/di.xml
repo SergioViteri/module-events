@@ -13,5 +13,41 @@
     <preference for="Zacatrus\Events\Api\EventRepositoryInterface" type="Zacatrus\Events\Model\EventRepository"/>
     <preference for="Zacatrus\Events\Api\RegistrationRepositoryInterface" type="Zacatrus\Events\Model\RegistrationRepository"/>
     <preference for="Zacatrus\Events\Api\LeagueRepositoryInterface" type="Zacatrus\Events\Model\LeagueRepository"/>
+    
+    <!-- Grid Collections -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="zacatrus_events_store_listing_data_source" xsi:type="string">Zacatrus\Events\Model\ResourceModel\Store\Grid\Collection</item>
+                <item name="zacatrus_events_event_listing_data_source" xsi:type="string">Zacatrus\Events\Model\ResourceModel\Event\Grid\Collection</item>
+                <item name="zacatrus_events_league_listing_data_source" xsi:type="string">Zacatrus\Events\Model\ResourceModel\League\Grid\Collection</item>
+                <item name="zacatrus_events_registration_listing_data_source" xsi:type="string">Zacatrus\Events\Model\ResourceModel\Registration\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    
+    <virtualType name="zacatrus_events_store_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Zacatrus\Events\Model\ResourceModel\Store\Grid\Collection</argument>
+        </arguments>
+    </virtualType>
+    
+    <virtualType name="zacatrus_events_event_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Zacatrus\Events\Model\ResourceModel\Event\Grid\Collection</argument>
+        </arguments>
+    </virtualType>
+    
+    <virtualType name="zacatrus_events_league_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Zacatrus\Events\Model\ResourceModel\League\Grid\Collection</argument>
+        </arguments>
+    </virtualType>
+    
+    <virtualType name="zacatrus_events_registration_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Zacatrus\Events\Model\ResourceModel\Registration\Grid\Collection</argument>
+        </arguments>
+    </virtualType>
 </config>
 
