@@ -11,7 +11,7 @@ $availableSlots = $block->getAvailableSlots();
 $isRegistered = $block->isCustomerRegistered();
 $registrationStatus = $block->getRegistrationStatus();
 ?>
-<div class="event-card" data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>">
+<div class="event-card" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
     <div class="event-header">
         <h3 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h3>
         <span class="event-type"><?= $block->escapeHtml($block->getEventTypeLabel()) ?></span>
@@ -19,7 +19,7 @@ $registrationStatus = $block->getRegistrationStatus();
 
     <div class="event-details">
         <div class="event-detail">
-            <strong><?= $block->escapeHtml(__('Store:')) ?></strong>
+            <strong><?= $block->escapeHtml(__('Location:')) ?></strong>
             <span><?= $block->escapeHtml($block->getStoreName()) ?></span>
         </div>
 
@@ -59,23 +59,23 @@ $registrationStatus = $block->getRegistrationStatus();
                 </div>
                 <button type="button" 
                         class="action secondary unregister-btn" 
-                        data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
-                        data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getEventId())) ?>">
+                        data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                        data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
                     <?= $block->escapeHtml(__('Unregister')) ?>
                 </button>
             <?php else: ?>
-                <?php if ($availableSlots > 0): ?>
+                <?php if (!$isRegistered && $availableSlots > 0): ?>
                     <button type="button" 
                             class="action primary register-btn" 
-                            data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
-                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getEventId())) ?>">
+                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Register')) ?>
                     </button>
-                <?php else: ?>
+                <?php elseif (!$isRegistered && $availableSlots <= 0): ?>
                     <button type="button" 
                             class="action primary register-btn waitlist-btn" 
-                            data-event-id="<?= $block->escapeHtml($event->getEventId()) ?>"
-                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getEventId())) ?>">
+                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Join Waitlist')) ?>
                     </button>
                 <?php endif; ?>

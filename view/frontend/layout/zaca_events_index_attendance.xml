@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Attendance Check Layout
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Attendance Check</title>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Messages" name="messages" as="messages" template="Magento_Theme::messages.phtml"/>
+            <block class="Zaca\Events\Block\Attendance\Check" name="attendance.check" template="Zaca_Events::attendance/check.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
+

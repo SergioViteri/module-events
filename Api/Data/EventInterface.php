@@ -30,6 +30,7 @@ interface EventInterface
 
     const RECURRENCE_TYPE_NONE = 'none';
     const RECURRENCE_TYPE_QUINCENAL = 'quincenal';
+    const RECURRENCE_TYPE_SEMANAL = 'semanal';
 
     /**
      * Get event ID

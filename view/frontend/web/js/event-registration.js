@@ -23,27 +23,28 @@ define([
             $(document).on('click', '.register-btn', function (e) {
                 e.preventDefault();
                 var $button = $(this);
-                var eventId = $button.data('event-id');
+                var meetId = $button.data('meet-id');
                 var url = $button.data('url');
                 
-                self.register(eventId, url, $button);
+                self.register(meetId, url, $button);
             });
 
             // Unregister button handler
             $(document).on('click', '.unregister-btn', function (e) {
                 e.preventDefault();
                 var $button = $(this);
-                var eventId = $button.data('event-id');
+                var meetId = $button.data('meet-id');
                 var url = $button.data('url');
                 
-                self.unregister(eventId, url, $button);
+                self.unregister(meetId, url, $button);
             });
         },
 
         /**
-         * Register for event
+         * Register for meet
          */
-        register: function (eventId, url, $button) {
+        register: function (meetId, url, $button) {
+            var self = this;
             var $card = $button.closest('.event-card');
             $card.addClass('loading');
             $button.prop('disabled', true);
@@ -53,15 +54,13 @@ define([
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    eventId: eventId
+                    meetId: meetId
                 },
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
-                        // Reload page to update the card
-                        setTimeout(function () {
-                            location.reload();
-                        }, 1500);
+                        // Update button to Unregister without reloading
+                        self.updateButtonToUnregister($button, $card, meetId, response.status);
                     } else {
                         self.showMessage(response.message || $t('An error occurred.'), 'error', $card);
                         $card.removeClass('loading');
@@ -77,14 +76,15 @@ define([
         },
 
         /**
-         * Unregister from event
+         * Unregister from meet
          */
-        unregister: function (eventId, url, $button) {
+        unregister: function (meetId, url, $button) {
+            var self = this;
             var $card = $button.closest('.event-card');
             $card.addClass('loading');
             $button.prop('disabled', true);
 
-            if (!confirm($t('Are you sure you want to unregister from this event?'))) {
+            if (!confirm($t('Are you sure you want to unregister from this meet?'))) {
                 $card.removeClass('loading');
                 $button.prop('disabled', false);
                 return;
@@ -95,15 +95,13 @@ define([
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    eventId: eventId
+                    meetId: meetId
                 },
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
-                        // Reload page to update the card
-                        setTimeout(function () {
-                            location.reload();
-                        }, 1500);
+                        // Update button to Register without reloading
+                        self.updateButtonToRegister($button, $card, meetId);
                     } else {
                         self.showMessage(response.message || $t('An error occurred.'), 'error', $card);
                         $card.removeClass('loading');
@@ -116,6 +114,63 @@ define([
                     $button.prop('disabled', false);
                 }
             });
+        },
+
+        /**
+         * Update button to Unregister after successful registration
+         */
+        updateButtonToUnregister: function ($button, $card, meetId, status) {
+            var $actions = $card.find('.event-actions');
+            var unregisterUrl = $button.data('url').replace('register', 'unregister');
+            
+            // Remove registration status if exists
+            $actions.find('.registration-status').remove();
+            
+            // Add registration status
+            var statusText = status === 'waitlist' 
+                ? $t('You are on the waitlist') 
+                : $t('You are registered');
+            var statusClass = status === 'waitlist' ? 'status-waitlist' : 'status-confirmed';
+            var $statusDiv = $('<div class="registration-status"><span class="' + statusClass + '">' + statusText + '</span></div>');
+            
+            // Update button
+            $button.removeClass('register-btn action primary')
+                .addClass('unregister-btn action secondary')
+                .text($t('Unregister'))
+                .data('url', unregisterUrl)
+                .prop('disabled', false);
+            
+            // Insert status before button
+            $button.before($statusDiv);
+            
+            $card.removeClass('loading');
+        },
+
+        /**
+         * Update button to Register after successful unregistration
+         */
+        updateButtonToRegister: function ($button, $card, meetId) {
+            var $actions = $card.find('.event-actions');
+            var registerUrl = $button.data('url').replace('unregister', 'register');
+            var availableSlots = parseInt($card.find('.slots-count').text().split('/')[0].trim());
+            
+            // Remove registration status
+            $actions.find('.registration-status').remove();
+            
+            // Update button
+            $button.removeClass('unregister-btn action secondary waitlist-btn')
+                .addClass('register-btn action primary')
+                .data('url', registerUrl)
+                .prop('disabled', false);
+            
+            // Update button text based on available slots
+            if (availableSlots > 0) {
+                $button.text($t('Register'));
+            } else {
+                $button.addClass('waitlist-btn').text($t('Join Waitlist'));
+            }
+            
+            $card.removeClass('loading');
         },
 
         /**

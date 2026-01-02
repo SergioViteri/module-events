@@ -3,41 +3,83 @@
  * @var \Zaca\Events\Block\EventList $block
  */
 ?>
-<div class="zacatrus-events-list">
-    <div class="page-title-wrapper">
-        <h1 class="page-title"><?= $block->escapeHtml(__('Events')) ?></h1>
+<?php if (!$block->isModuleEnabled()): ?>
+    <div class="events-disabled-message">
+        <div class="message message-notice notice">
+            <div><?= $block->escapeHtml(__('Events are currently not available.')) ?>        </div>
     </div>
-
+</div>
+<?php else: ?>
+<div class="zacatrus-events-list">
     <div class="events-filters">
         <form method="get" action="<?= $block->escapeUrl($block->getUrl('events/index/listevents')) ?>" id="events-filter-form">
-            <div class="filter-group">
-                <label for="store-filter"><?= $block->escapeHtml(__('Store')) ?></label>
-                <select name="store_id" id="store-filter" class="filter-select">
-                    <option value=""><?= $block->escapeHtml(__('All Stores')) ?></option>
-                    <?php foreach ($block->getStores() as $store): ?>
-                        <option value="<?= $block->escapeHtml($store->getStoreId()) ?>" 
-                                <?= $block->getRequest()->getParam('store_id') == $store->getStoreId() ? 'selected' : '' ?>>
-                            <?= $block->escapeHtml($store->getName() . ' - ' . $store->getCity()) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <div class="filter-group location-filter-group">
+                <label><?= $block->escapeHtml(__('Filter by Location')) ?></label>
+                <div class="location-filter-buttons">
+                    <button type="button" 
+                            class="location-filter-btn <?= !$block->getRequest()->getParam('location_id') ? 'active' : '' ?>" 
+                            data-location-id=""
+                            data-location-name="<?= $block->escapeHtml(__('All Locations')) ?>"
+                            data-location-address="">
+                        <?= $block->escapeHtml(__('All Locations')) ?>
+                    </button>
+                    <?php $locations = $block->getLocations(); ?>
+                    <?php if (is_array($locations) || $locations instanceof \Traversable): ?>
+                        <?php foreach ($locations as $location): ?>
+                        <?php 
+                        $address = $location->getAddress();
+                        $city = $location->getCity();
+                        $postalCode = $location->getPostalCode();
+                        $addressParts = [];
+                        if ($address) {
+                            $addressParts[] = $address;
+                        }
+                        if ($postalCode) {
+                            $addressParts[] = $postalCode;
+                        }
+                        if ($city) {
+                            $addressParts[] = $city;
+                        }
+                        $fullAddress = implode(', ', $addressParts);
+                        $isActive = $block->getRequest()->getParam('location_id') == $location->getLocationId();
+                        ?>
+                        <button type="button" 
+                                class="location-filter-btn <?= $isActive ? 'active' : '' ?>" 
+                                data-location-id="<?= $block->escapeHtml($location->getLocationId()) ?>"
+                                data-location-name="<?= $block->escapeHtml($location->getName()) ?>"
+                                data-location-address="<?= $block->escapeHtml($fullAddress) ?>"
+                                title="<?= $block->escapeHtml($fullAddress ?: $location->getName()) ?>">
+                            <span class="location-name"><?= $block->escapeHtml($location->getName()) ?></span>
+                            <?php if ($fullAddress): ?>
+                                <span class="location-address-tooltip"><?= $block->escapeHtml($fullAddress) ?></span>
+                            <?php endif; ?>
+                        </button>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <input type="hidden" name="location_id" id="location-filter-input" value="<?= $block->escapeHtml($block->getRequest()->getParam('location_id') ?: '') ?>">
             </div>
 
-            <div class="filter-group">
-                <label for="type-filter"><?= $block->escapeHtml(__('Event Type')) ?></label>
-                <select name="event_type" id="type-filter" class="filter-select">
-                    <option value=""><?= $block->escapeHtml(__('All Types')) ?></option>
+            <div class="filter-group meet-type-filter-group">
+                <label><?= $block->escapeHtml(__('Meet Type')) ?></label>
+                <div class="meet-type-filter-buttons">
+                    <button type="button" 
+                            class="meet-type-filter-btn <?= !$block->getRequest()->getParam('meet_type') ? 'active' : '' ?>" 
+                            data-meet-type=""
+                            data-meet-type-name="<?= $block->escapeHtml(__('All Types')) ?>">
+                        <?= $block->escapeHtml(__('All Types')) ?>
+                    </button>
                     <?php foreach ($block->getEventTypes() as $value => $label): ?>
-                        <option value="<?= $block->escapeHtml($value) ?>" 
-                                <?= $block->getRequest()->getParam('event_type') == $value ? 'selected' : '' ?>>
+                        <?php $isActive = $block->getRequest()->getParam('meet_type') == $value; ?>
+                        <button type="button" 
+                                class="meet-type-filter-btn <?= $isActive ? 'active' : '' ?>" 
+                                data-meet-type="<?= $block->escapeHtml($value) ?>"
+                                data-meet-type-name="<?= $block->escapeHtml($label) ?>">
                             <?= $block->escapeHtml($label) ?>
-                        </option>
+                        </button>
                     <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="filter-actions">
-                <button type="submit" class="action primary"><?= $block->escapeHtml(__('Filter')) ?></button>
+                </div>
+                <input type="hidden" name="meet_type" id="meet-type-filter-input" value="<?= $block->escapeHtml($block->getRequest()->getParam('meet_type') ?: '') ?>">
             </div>
         </form>
     </div>
@@ -46,7 +88,7 @@
         <?php $events = $block->getEvents(); ?>
         <?php if (empty($events)): ?>
             <div class="message info empty">
-                <span><?= $block->escapeHtml(__('No events found.')) ?></span>
+                <span><?= $block->escapeHtml(__('No meets found.')) ?></span>
             </div>
         <?php else: ?>
             <?php foreach ($events as $event): ?>
@@ -61,20 +103,154 @@
 </div>
 
 <script>
-require(['domReady!', 'zacatrusEventsRegistration'], function(domReady, registrationHandler) {
+require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady, registrationHandler, $) {
     // Initialize registration handlers
     registrationHandler.init();
     
-    // Auto-submit form on filter change
-    var filterForm = document.getElementById('events-filter-form');
-    if (filterForm) {
-        var selects = filterForm.querySelectorAll('.filter-select');
-        selects.forEach(function(select) {
-            select.addEventListener('change', function() {
-                filterForm.submit();
-            });
+    var tooltipTimeout;
+    var clickedButton = null;
+    
+    // Location filter buttons
+    $('.location-filter-btn').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var locationId = $btn.data('location-id');
+        var locationName = $btn.data('location-name');
+        var locationAddress = $btn.data('location-address');
+        
+        // Update active state
+        $('.location-filter-btn').removeClass('active');
+        $btn.addClass('active');
+        
+        // Update hidden input
+        $('#location-filter-input').val(locationId);
+        
+        // Show address in tooltip/popup on click (keep it visible)
+        if (locationAddress) {
+            clickedButton = $btn;
+            showLocationAddress($btn, locationName, locationAddress, true);
+        } else {
+            hideLocationAddress();
+        }
+        
+        // Submit form
+        $('#events-filter-form').submit();
+    });
+    
+    // Show address on hover (only if not clicked)
+    $('.location-filter-btn').on('mouseenter', function() {
+        var $btn = $(this);
+        var locationAddress = $btn.data('location-address');
+        var locationName = $btn.data('location-name');
+        
+        // Don't show on hover if this button was clicked
+        if (clickedButton && clickedButton.is($btn)) {
+            return;
+        }
+        
+        if (locationAddress) {
+            clearTimeout(tooltipTimeout);
+            showLocationAddress($btn, locationName, locationAddress, false);
+        }
+    });
+    
+    // Hide address tooltip on mouse leave (only if not clicked)
+    $('.location-filter-btn').on('mouseleave', function() {
+        var $btn = $(this);
+        
+        // Don't hide if this button was clicked
+        if (clickedButton && clickedButton.is($btn)) {
+            return;
+        }
+        
+        tooltipTimeout = setTimeout(function() {
+            hideLocationAddress();
+        }, 200);
+    });
+    
+    function showLocationAddress($btn, name, address, isClicked) {
+        // Remove existing tooltip
+        $('.location-address-popup').remove();
+        
+        // Create tooltip (without location name, just address)
+        var $tooltip = $('<div class="location-address-popup' + (isClicked ? ' clicked' : '') + '">' +
+            '<span class="address-text">' + address + '</span>' +
+            '</div>');
+        
+        $('body').append($tooltip);
+        
+        // Position tooltip
+        var btnOffset = $btn.offset();
+        var btnWidth = $btn.outerWidth();
+        var btnHeight = $btn.outerHeight();
+        var tooltipWidth = $tooltip.outerWidth();
+        var tooltipHeight = $tooltip.outerHeight();
+        var windowWidth = $(window).width();
+        var windowHeight = $(window).height();
+        var scrollTop = $(window).scrollTop();
+        
+        // Calculate position
+        var top = btnOffset.top + btnHeight + 10;
+        var left = btnOffset.left + (btnWidth / 2) - (tooltipWidth / 2);
+        
+        // Adjust if tooltip goes off screen
+        if (left < 10) {
+            left = 10;
+        } else if (left + tooltipWidth > windowWidth - 10) {
+            left = windowWidth - tooltipWidth - 10;
+        }
+        
+        // Adjust if tooltip goes below viewport
+        if (top + tooltipHeight > scrollTop + windowHeight - 20) {
+            top = btnOffset.top - tooltipHeight - 10;
+            $tooltip.addClass('above');
+        }
+        
+        $tooltip.css({
+            top: top + 'px',
+            left: left + 'px'
+        });
+        
+        $tooltip.fadeIn(200);
+    }
+    
+    function hideLocationAddress() {
+        // Don't hide if it's a clicked tooltip
+        if ($('.location-address-popup.clicked').length > 0) {
+            return;
+        }
+        
+        $('.location-address-popup').fadeOut(200, function() {
+            $(this).remove();
         });
     }
+    
+    // Hide clicked tooltip when clicking elsewhere
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.location-filter-btn, .location-address-popup').length) {
+            clickedButton = null;
+            hideLocationAddress();
+        }
+    });
+    
+    // Meet type filter buttons
+    $('.meet-type-filter-btn').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var meetType = $btn.data('meet-type');
+        
+        // Update active state
+        $('.meet-type-filter-btn').removeClass('active');
+        $btn.addClass('active');
+        
+        // Update hidden input
+        $('#meet-type-filter-input').val(meetType);
+        
+        // Submit form
+        $('#events-filter-form').submit();
+    });
 });
 </script>
 
+
+<?php endif; ?>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Admin Participant Grid Layout
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <container name="root">
+        <block class="Zaca\Events\Block\Adminhtml\Participant\Grid" name="participant.grid"/>
+    </container>
+</layout>
+

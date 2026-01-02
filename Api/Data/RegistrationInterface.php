@@ -12,7 +12,7 @@ namespace Zaca\Events\Api\Data;
 interface RegistrationInterface
 {
     const REGISTRATION_ID = 'registration_id';
-    const EVENT_ID = 'event_id';
+    const MEET_ID = 'meet_id';
     const CUSTOMER_ID = 'customer_id';
     const STATUS = 'status';
     const REGISTRATION_DATE = 'registration_date';
@@ -37,19 +37,19 @@ interface RegistrationInterface
     public function setRegistrationId($registrationId);
 
     /**
-     * Get event ID
+     * Get meet ID
      *
      * @return int
      */
-    public function getEventId();
+    public function getMeetId();
 
     /**
-     * Set event ID
+     * Set meet ID
      *
-     * @param int $eventId
+     * @param int $meetId
      * @return $this
      */
-    public function setEventId($eventId);
+    public function setMeetId($meetId);
 
     /**
      * Get customer ID

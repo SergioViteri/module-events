@@ -64,24 +64,24 @@ interface RegistrationRepositoryInterface
     public function deleteById(int $registrationId): bool;
 
     /**
-     * Register customer to event
+     * Register customer to meet
      *
      * @param int $customerId
-     * @param int $eventId
+     * @param int $meetId
      * @return RegistrationInterface
      * @throws CouldNotSaveException
      */
-    public function registerCustomer(int $customerId, int $eventId): RegistrationInterface;
+    public function registerCustomer(int $customerId, int $meetId): RegistrationInterface;
 
     /**
-     * Unregister customer from event
+     * Unregister customer from meet
      *
      * @param int $customerId
-     * @param int $eventId
+     * @param int $meetId
      * @return bool
      * @throws CouldNotDeleteException
      * @throws NoSuchEntityException
      */
-    public function unregisterCustomer(int $customerId, int $eventId): bool;
+    public function unregisterCustomer(int $customerId, int $meetId): bool;
 }
 

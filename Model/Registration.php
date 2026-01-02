@@ -42,17 +42,17 @@ class Registration extends AbstractModel implements RegistrationInterface
     /**
      * @inheritdoc
      */
-    public function getEventId()
+    public function getMeetId()
     {
-        return $this->getData(self::EVENT_ID);
+        return $this->getData(self::MEET_ID);
     }
 
     /**
      * @inheritdoc
      */
-    public function setEventId($eventId)
+    public function setMeetId($meetId)
     {
-        return $this->setData(self::EVENT_ID, $eventId);
+        return $this->setData(self::MEET_ID, $meetId);
     }
 
     /**
@@ -117,6 +117,27 @@ class Registration extends AbstractModel implements RegistrationInterface
     public function setCreatedAt($createdAt)
     {
         return $this->setData(self::CREATED_AT, $createdAt);
+    }
+
+    /**
+     * Get Attendance Count
+     *
+     * @return int
+     */
+    public function getAttendanceCount()
+    {
+        return (int) $this->getData('attendance_count');
+    }
+
+    /**
+     * Set Attendance Count
+     *
+     * @param int $attendanceCount
+     * @return $this
+     */
+    public function setAttendanceCount($attendanceCount)
+    {
+        return $this->setData('attendance_count', (int) $attendanceCount);
     }
 }
 

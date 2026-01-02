@@ -32,7 +32,7 @@ class Collection extends \Magento\Framework\View\Element\UiComponent\DataProvide
         Logger $logger,
         FetchStrategy $fetchStrategy,
         EventManager $eventManager,
-        $mainTable = 'zacatrus_events_registration',
+        $mainTable = 'zaca_events_registration',
         $resourceModel = 'Zaca\Events\Model\ResourceModel\Registration',
         $identifierName = 'registration_id',
         $connectionName = null

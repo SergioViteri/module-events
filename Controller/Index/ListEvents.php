@@ -12,7 +12,9 @@ namespace Zaca\Events\Controller\Index;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Zaca\Events\Api\EventRepositoryInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
+use Zaca\Events\Api\MeetRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\SortOrderBuilder;
@@ -25,9 +27,9 @@ class ListEvents extends Action
     protected $resultPageFactory;
 
     /**
-     * @var EventRepositoryInterface
+     * @var MeetRepositoryInterface
      */
-    protected $eventRepository;
+    protected $meetRepository;
 
     /**
      * @var SearchCriteriaBuilder
@@ -45,31 +47,35 @@ class ListEvents extends Action
     protected $sortOrderBuilder;
 
     /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
      * @param Context $context
      * @param PageFactory $resultPageFactory
-     * @param EventRepositoryInterface $eventRepository
+     * @param MeetRepositoryInterface $meetRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param FilterBuilder $filterBuilder
      * @param SortOrderBuilder $sortOrderBuilder
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
-        /*
-        EventRepositoryInterface $eventRepository,
+        MeetRepositoryInterface $meetRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         FilterBuilder $filterBuilder,
-        SortOrderBuilder $sortOrderBuilder
-        */
+        SortOrderBuilder $sortOrderBuilder,
+        ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
-        /*
-        $this->eventRepository = $eventRepository;
+        $this->meetRepository = $meetRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->filterBuilder = $filterBuilder;
         $this->sortOrderBuilder = $sortOrderBuilder;
-        */
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -79,8 +85,32 @@ class ListEvents extends Action
      */
     public function execute()
     {
+        // Check if module is enabled
+        $isEnabled = $this->scopeConfig->getValue(
+            'zaca_events/general/enabled',
+            ScopeInterface::SCOPE_STORE
+        );
+
+        if (!$isEnabled) {
+            // Module is disabled, show message
+            $resultPage = $this->resultPageFactory->create();
+            $resultPage->getConfig()->getTitle()->set(__('Events Not Available'));
+            
+            // Disable browser caching for this page
+            $resultPage->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            $resultPage->setHeader('Pragma', 'no-cache');
+            $resultPage->setHeader('Expires', '0');
+            
+            return $resultPage;
+        }
+
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__('Events'));
+        $resultPage->getConfig()->getTitle()->set(__('Meets'));
+
+        // Disable browser caching for this page
+        $resultPage->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $resultPage->setHeader('Pragma', 'no-cache');
+        $resultPage->setHeader('Expires', '0');
 
         return $resultPage;
     }

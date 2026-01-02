@@ -14,7 +14,9 @@ use Zaca\Events\Api\Data\RegistrationInterface;
 use Zaca\Events\Api\Data\RegistrationInterfaceFactory;
 use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
 use Zaca\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
-use Zaca\Events\Model\EventRepository;
+use Zaca\Events\Api\MeetRepositoryInterface;
+use Zaca\Events\Helper\Email as EmailHelper;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;
@@ -24,6 +26,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\DB\TransactionFactory;
+use Psr\Log\LoggerInterface;
 
 class RegistrationRepository implements RegistrationRepositoryInterface
 {
@@ -53,9 +56,9 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     protected $collectionProcessor;
 
     /**
-     * @var EventRepository
+     * @var MeetRepositoryInterface
      */
-    protected $eventRepository;
+    protected $meetRepository;
 
     /**
      * @var TransactionFactory
@@ -63,13 +66,31 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     protected $transactionFactory;
 
     /**
+     * @var EmailHelper
+     */
+    protected $emailHelper;
+
+    /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @param RegistrationResourceModel $resource
      * @param RegistrationInterfaceFactory $registrationFactory
      * @param RegistrationCollectionFactory $registrationCollectionFactory
      * @param SearchResultsInterfaceFactory $searchResultsFactory
      * @param CollectionProcessorInterface $collectionProcessor
-     * @param EventRepository $eventRepository
+     * @param MeetRepositoryInterface $meetRepository
      * @param TransactionFactory $transactionFactory
+     * @param EmailHelper $emailHelper
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param LoggerInterface $logger
      */
     public function __construct(
         RegistrationResourceModel $resource,
@@ -77,16 +98,22 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         RegistrationCollectionFactory $registrationCollectionFactory,
         SearchResultsInterfaceFactory $searchResultsFactory,
         CollectionProcessorInterface $collectionProcessor,
-        EventRepository $eventRepository,
-        TransactionFactory $transactionFactory
+        MeetRepositoryInterface $meetRepository,
+        TransactionFactory $transactionFactory,
+        EmailHelper $emailHelper,
+        CustomerRepositoryInterface $customerRepository,
+        LoggerInterface $logger
     ) {
         $this->resource = $resource;
         $this->registrationFactory = $registrationFactory;
         $this->registrationCollectionFactory = $registrationCollectionFactory;
         $this->searchResultsFactory = $searchResultsFactory;
         $this->collectionProcessor = $collectionProcessor;
-        $this->eventRepository = $eventRepository;
+        $this->meetRepository = $meetRepository;
         $this->transactionFactory = $transactionFactory;
+        $this->emailHelper = $emailHelper;
+        $this->customerRepository = $customerRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -137,11 +164,11 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     public function delete(RegistrationInterface $registration): bool
     {
         try {
-            $eventId = $registration->getEventId();
+            $meetId = $registration->getMeetId();
             $this->resource->delete($registration);
             
             // Check if we need to promote someone from waitlist
-            $this->promoteFromWaitlist($eventId);
+            $this->promoteFromWaitlist($meetId);
         } catch (\Exception $exception) {
             throw new CouldNotDeleteException(__('Could not delete the registration: %1', $exception->getMessage()));
         }
@@ -159,78 +186,114 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function registerCustomer(int $customerId, int $eventId): RegistrationInterface
+    public function registerCustomer(int $customerId, int $meetId): RegistrationInterface
     {
         // Check if already registered
         $collection = $this->registrationCollectionFactory->create();
-        $collection->addFieldToFilter('event_id', $eventId)
+        $collection->addFieldToFilter('meet_id', $meetId)
             ->addFieldToFilter('customer_id', $customerId);
         
         if ($collection->getSize() > 0) {
-            throw new CouldNotSaveException(__('You are already registered for this event.'));
+            throw new CouldNotSaveException(__('You are already registered for this meet.'));
         }
 
-        // Get event
-        $event = $this->eventRepository->getById($eventId);
+        // Get meet
+        $meet = $this->meetRepository->getById($meetId);
         
-        // Validate event is active and in the future
-        if (!$event->getIsActive()) {
-            throw new LocalizedException(__('This event is not active.'));
+        // Validate meet is active and in the future
+        if (!$meet->getIsActive()) {
+            throw new LocalizedException(__('This meet is not active.'));
         }
         
         $now = new \DateTime();
-        $startDate = new \DateTime($event->getStartDate());
+        $startDate = new \DateTime($meet->getStartDate());
         if ($startDate <= $now) {
-            throw new LocalizedException(__('This event has already started or finished.'));
+            throw new LocalizedException(__('This meet has already started or finished.'));
         }
 
         // Check available slots
         $confirmedRegistrations = $this->registrationCollectionFactory->create();
-        $confirmedRegistrations->addFieldToFilter('event_id', $eventId)
+        $confirmedRegistrations->addFieldToFilter('meet_id', $meetId)
             ->addFieldToFilter('status', RegistrationInterface::STATUS_CONFIRMED);
         
         $status = RegistrationInterface::STATUS_CONFIRMED;
-        if ($confirmedRegistrations->getSize() >= $event->getMaxSlots()) {
+        if ($confirmedRegistrations->getSize() >= $meet->getMaxSlots()) {
             $status = RegistrationInterface::STATUS_WAITLIST;
         }
 
         // Create registration
         $registration = $this->registrationFactory->create();
-        $registration->setEventId($eventId)
+        $registration->setMeetId($meetId)
             ->setCustomerId($customerId)
             ->setStatus($status)
             ->setRegistrationDate($now->format('Y-m-d H:i:s'));
 
-        return $this->save($registration);
+        $savedRegistration = $this->save($registration);
+
+        // Send registration email (frontend initiated)
+        try {
+            $this->emailHelper->sendRegistrationEmail($savedRegistration, false);
+        } catch (\Exception $e) {
+            // Log error but don't fail registration
+            $this->logger->error('[RegistrationRepository] Error sending registration email: ' . $e->getMessage());
+            $this->logger->error('[RegistrationRepository] Stack trace: ' . $e->getTraceAsString());
+        }
+
+        return $savedRegistration;
     }
 
     /**
      * @inheritdoc
      */
-    public function unregisterCustomer(int $customerId, int $eventId): bool
+    public function unregisterCustomer(int $customerId, int $meetId): bool
     {
         $collection = $this->registrationCollectionFactory->create();
-        $collection->addFieldToFilter('event_id', $eventId)
+        $collection->addFieldToFilter('meet_id', $meetId)
             ->addFieldToFilter('customer_id', $customerId);
         
         if ($collection->getSize() === 0) {
-            throw new NoSuchEntityException(__('You are not registered for this event.'));
+            throw new NoSuchEntityException(__('You are not registered for this meet.'));
         }
 
         $registration = $collection->getFirstItem();
-        return $this->delete($registration);
+        
+        // Get meet and customer data before deletion for email
+        $meet = $this->meetRepository->getById($meetId);
+        $customerEmail = '';
+        $customerName = '';
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+            $customerEmail = $customer->getEmail();
+            $customerName = $customer->getFirstname() . ' ' . $customer->getLastname();
+        } catch (\Exception $e) {
+            $this->logger->warning('[RegistrationRepository] Could not load customer for unregistration email: ' . $e->getMessage());
+        }
+
+        $result = $this->delete($registration);
+
+        // Send unregistration email (frontend initiated)
+        if ($result && $customerEmail && $customerName) {
+            try {
+                $this->emailHelper->sendUnregistrationEmail($registration, $meet, $customerEmail, $customerName, false);
+            } catch (\Exception $e) {
+                // Log error but don't fail unregistration
+                $this->logger->error('[RegistrationRepository] Error sending unregistration email: ' . $e->getMessage());
+            }
+        }
+
+        return $result;
     }
 
     /**
      * Promote first waitlist registration to confirmed when a slot becomes available
      *
-     * @param int $eventId
+     * @param int $meetId
      * @return void
      */
-    protected function promoteFromWaitlist(int $eventId): void
+    protected function promoteFromWaitlist(int $meetId): void
     {
         $waitlistCollection = $this->registrationCollectionFactory->create();
-        $waitlistCollection->addFieldToFilter('event_id', $eventId)
+        $waitlistCollection->addFieldToFilter('meet_id', $meetId)
             ->addFieldToFilter('status', RegistrationInterface::STATUS_WAITLIST)
             ->setOrder('created_at', 'ASC')
             ->setPageSize(1);
@@ -238,7 +301,15 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         if ($waitlistCollection->getSize() > 0) {
             $waitlistRegistration = $waitlistCollection->getFirstItem();
             $waitlistRegistration->setStatus(RegistrationInterface::STATUS_CONFIRMED);
-            $this->save($waitlistRegistration);
+            $promotedRegistration = $this->save($waitlistRegistration);
+            
+            // Send promotion email
+            try {
+                $this->emailHelper->sendWaitlistPromotionEmail($promotedRegistration);
+            } catch (\Exception $e) {
+                // Log error but don't fail promotion
+                $this->logger->error('[RegistrationRepository] Error sending waitlist promotion email: ' . $e->getMessage());
+            }
         }
     }
 }

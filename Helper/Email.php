@@ -1,0 +1,579 @@
+<?php
+/**
+ * Zacatrus Events Email Helper
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+
+namespace Zaca\Events\Helper;
+
+use Zaca\Events\Api\Data\RegistrationInterface;
+use Zaca\Events\Api\Data\MeetInterface;
+use Zaca\Events\Api\MeetRepositoryInterface;
+use Zaca\Events\Service\QrCodeGenerator;
+use Zaca\Events\Model\LocationFactory;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Framework\Escaper;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Framework\UrlInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Psr\Log\LoggerInterface;
+
+class Email extends AbstractHelper
+{
+    /**
+     * @var StateInterface
+     */
+    protected $inlineTranslation;
+
+    /**
+     * @var Escaper
+     */
+    protected $escaper;
+
+    /**
+     * @var TransportBuilder
+     */
+    protected $transportBuilder;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var MeetRepositoryInterface
+     */
+    protected $meetRepository;
+
+    /**
+     * @var QrCodeGenerator
+     */
+    protected $qrCodeGenerator;
+
+    /**
+     * @var LocationFactory
+     */
+    protected $locationFactory;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var UrlInterface
+     */
+    protected $urlBuilder;
+
+    /**
+     * @param Context $context
+     * @param StateInterface $inlineTranslation
+     * @param Escaper $escaper
+     * @param TransportBuilder $transportBuilder
+     * @param StoreManagerInterface $storeManager
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param MeetRepositoryInterface $meetRepository
+     * @param QrCodeGenerator $qrCodeGenerator
+     * @param LocationFactory $locationFactory
+     * @param UrlInterface $urlBuilder
+     */
+    public function __construct(
+        Context $context,
+        StateInterface $inlineTranslation,
+        Escaper $escaper,
+        TransportBuilder $transportBuilder,
+        StoreManagerInterface $storeManager,
+        CustomerRepositoryInterface $customerRepository,
+        MeetRepositoryInterface $meetRepository,
+        QrCodeGenerator $qrCodeGenerator,
+        LocationFactory $locationFactory,
+        UrlInterface $urlBuilder
+    ) {
+        parent::__construct($context);
+        $this->inlineTranslation = $inlineTranslation;
+        $this->escaper = $escaper;
+        $this->transportBuilder = $transportBuilder;
+        $this->storeManager = $storeManager;
+        $this->customerRepository = $customerRepository;
+        $this->meetRepository = $meetRepository;
+        $this->qrCodeGenerator = $qrCodeGenerator;
+        $this->locationFactory = $locationFactory;
+        $this->logger = $context->getLogger();
+        $this->urlBuilder = $urlBuilder;
+    }
+
+    /**
+     * Send registration email
+     *
+     * @param RegistrationInterface $registration
+     * @param bool $isAdminInitiated
+     * @return bool
+     */
+    public function sendRegistrationEmail(RegistrationInterface $registration, bool $isAdminInitiated = false): bool
+    {
+        try {
+            $this->inlineTranslation->suspend();
+
+            // Get customer data
+            $customer = $this->customerRepository->getById($registration->getCustomerId());
+            $customerEmail = $customer->getEmail();
+            $customerName = $customer->getFirstname() . ' ' . $customer->getLastname();
+
+            // Get meet data
+            $meet = $this->meetRepository->getById($registration->getMeetId());
+
+            // Format date and time
+            $startDate = new \DateTime($meet->getStartDate());
+            $meetDate = $startDate->format('d/m/Y');
+            $meetTime = $startDate->format('H:i');
+
+            // Get location data
+            $locationName = '';
+            $locationAddress = '';
+            try {
+                $location = $this->locationFactory->create()->load($meet->getLocationId());
+                if ($location && $location->getId()) {
+                    $locationName = $location->getName();
+                    $addressParts = [];
+                    if ($location->getAddress()) {
+                        $addressParts[] = $location->getAddress();
+                    }
+                    if ($location->getPostalCode()) {
+                        $addressParts[] = $location->getPostalCode();
+                    }
+                    if ($location->getCity()) {
+                        $addressParts[] = $location->getCity();
+                    }
+                    $locationAddress = implode(', ', $addressParts);
+                }
+            } catch (\Exception $e) {
+                $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+            }
+
+            // Generate QR code only for confirmed registrations
+            $qrCodeImage = '';
+            if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
+                $this->logger->info('[Events Email] Generating QR code for registration ID: ' . $registration->getRegistrationId());
+                try {
+                    // Generate attendance URL
+                    $attendanceUrl = $this->urlBuilder->getUrl(
+                        'events/index/attendance',
+                        ['registrationId' => $registration->getRegistrationId()],
+                        ['_secure' => true]
+                    );
+                    $qrCodeImage = $this->qrCodeGenerator->generateQrCodeImage(
+                        $attendanceUrl,
+                        300
+                    );
+                    if (empty($qrCodeImage)) {
+                        $this->logger->warning('[Events Email] QR code generation returned empty string');
+                        $qrCodeImage = ''; // Use empty string if QR code generation fails
+                    } else {
+                        $this->logger->info('[Events Email] QR code generated successfully, length: ' . strlen($qrCodeImage));
+                    }
+                } catch (\Exception $e) {
+                    $this->logger->error('[Events Email] Exception during QR code generation: ' . $e->getMessage());
+                    $this->logger->error('[Events Email] QR code exception class: ' . get_class($e));
+                    $this->logger->error('[Events Email] QR code exception file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+                    $this->logger->error('[Events Email] QR code stack trace: ' . $e->getTraceAsString());
+                    $qrCodeImage = ''; // Use empty string if QR code generation fails
+                }
+            } else {
+                $this->logger->info('[Events Email] Skipping QR code generation for waitlist registration');
+            }
+
+            // Determine template based on status
+            $templateId = $registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED
+                ? 'events_registration_confirmed'
+                : 'events_registration_waitlist';
+
+            // Prepare template variables
+            $templateVars = [
+                'registration_id' => $registration->getRegistrationId(),
+                'customer_name' => $customerName,
+                'meet_name' => $meet->getName(),
+                'meet_date' => $meetDate,
+                'meet_time' => $meetTime,
+                'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
+                'meet_description' => $meet->getDescription() ?: '',
+                'status' => $registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED
+                    ? __('Confirmed')
+                    : __('Waitlist'),
+                'is_admin_initiated' => $isAdminInitiated
+            ];
+            
+            // Only add QR code for confirmed registrations
+            if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
+                $templateVars['qr_code_image'] = $qrCodeImage;
+            }
+
+            // Get store and sender info
+            $store = $this->storeManager->getStore();
+            $sender = [
+                'name' => $this->escaper->escapeHtml($store->getStoreName()),
+                'email' => $store->getStoreEmail() ?: 'noreply@zacatrus.es',
+            ];
+
+            // Send email
+            $transport = $this->transportBuilder
+                ->setTemplateIdentifier($templateId)
+                ->setTemplateOptions(
+                    [
+                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                        'store' => $store->getId(),
+                    ]
+                )
+                ->setTemplateVars($templateVars)
+                ->setFrom($sender)
+                ->addTo($customerEmail, $customerName)
+                ->getTransport();
+
+            $transport->sendMessage();
+            $this->inlineTranslation->resume();
+
+            $this->logger->info(
+                '[Events Email] Registration email sent to ' . $customerEmail . 
+                ' for registration ID ' . $registration->getRegistrationId()
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->inlineTranslation->resume();
+            $this->logger->error('[Events Email] Error sending registration email: ' . $e->getMessage());
+            $this->logger->error('[Events Email] Error class: ' . get_class($e));
+            $this->logger->error('[Events Email] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    /**
+     * Send unregistration email
+     *
+     * @param RegistrationInterface $registration
+     * @param MeetInterface $meet
+     * @param string $customerEmail
+     * @param string $customerName
+     * @param bool $isAdminInitiated
+     * @return bool
+     */
+    public function sendUnregistrationEmail(
+        RegistrationInterface $registration,
+        MeetInterface $meet,
+        string $customerEmail,
+        string $customerName,
+        bool $isAdminInitiated = false
+    ): bool {
+        try {
+            $this->inlineTranslation->suspend();
+
+            // Format date and time
+            $startDate = new \DateTime($meet->getStartDate());
+            $meetDate = $startDate->format('d/m/Y');
+            $meetTime = $startDate->format('H:i');
+
+            // Get location data
+            $locationName = '';
+            $locationAddress = '';
+            try {
+                $location = $this->locationFactory->create()->load($meet->getLocationId());
+                if ($location && $location->getId()) {
+                    $locationName = $location->getName();
+                    $addressParts = [];
+                    if ($location->getAddress()) {
+                        $addressParts[] = $location->getAddress();
+                    }
+                    if ($location->getPostalCode()) {
+                        $addressParts[] = $location->getPostalCode();
+                    }
+                    if ($location->getCity()) {
+                        $addressParts[] = $location->getCity();
+                    }
+                    $locationAddress = implode(', ', $addressParts);
+                }
+            } catch (\Exception $e) {
+                $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+            }
+
+            // Prepare template variables
+            $templateVars = [
+                'customer_name' => $customerName,
+                'meet_name' => $meet->getName(),
+                'meet_date' => $meetDate,
+                'meet_time' => $meetTime,
+                'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
+                'is_admin_initiated' => $isAdminInitiated
+            ];
+
+            // Get store and sender info
+            $store = $this->storeManager->getStore();
+            $sender = [
+                'name' => $this->escaper->escapeHtml($store->getStoreName()),
+                'email' => $store->getStoreEmail() ?: 'noreply@zacatrus.es',
+            ];
+
+            // Send email
+            $transport = $this->transportBuilder
+                ->setTemplateIdentifier('events_unregistration')
+                ->setTemplateOptions(
+                    [
+                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                        'store' => $store->getId(),
+                    ]
+                )
+                ->setTemplateVars($templateVars)
+                ->setFrom($sender)
+                ->addTo($customerEmail, $customerName)
+                ->getTransport();
+
+            $transport->sendMessage();
+            $this->inlineTranslation->resume();
+
+            $this->logger->info(
+                '[Events Email] Unregistration email sent to ' . $customerEmail . 
+                ' for meet: ' . $meet->getName()
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->inlineTranslation->resume();
+            $this->logger->error('[Events Email] Error sending unregistration email: ' . $e->getMessage());
+            $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    /**
+     * Send waitlist promotion email (when status changes from waitlist to confirmed)
+     *
+     * @param RegistrationInterface $registration
+     * @return bool
+     */
+    public function sendWaitlistPromotionEmail(RegistrationInterface $registration): bool
+    {
+        try {
+            $this->inlineTranslation->suspend();
+
+            // Get customer data
+            $customer = $this->customerRepository->getById($registration->getCustomerId());
+            $customerEmail = $customer->getEmail();
+            $customerName = $customer->getFirstname() . ' ' . $customer->getLastname();
+
+            // Get meet data
+            $meet = $this->meetRepository->getById($registration->getMeetId());
+
+            // Format date and time
+            $startDate = new \DateTime($meet->getStartDate());
+            $meetDate = $startDate->format('d/m/Y');
+            $meetTime = $startDate->format('H:i');
+
+            // Get location data
+            $locationName = '';
+            $locationAddress = '';
+            try {
+                $location = $this->locationFactory->create()->load($meet->getLocationId());
+                if ($location && $location->getId()) {
+                    $locationName = $location->getName();
+                    $addressParts = [];
+                    if ($location->getAddress()) {
+                        $addressParts[] = $location->getAddress();
+                    }
+                    if ($location->getPostalCode()) {
+                        $addressParts[] = $location->getPostalCode();
+                    }
+                    if ($location->getCity()) {
+                        $addressParts[] = $location->getCity();
+                    }
+                    $locationAddress = implode(', ', $addressParts);
+                }
+            } catch (\Exception $e) {
+                $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+            }
+
+            // Generate QR code (always for confirmed status)
+            $this->logger->info('[Events Email] Generating QR code for promoted registration ID: ' . $registration->getRegistrationId());
+            try {
+                // Generate attendance URL
+                $attendanceUrl = $this->urlBuilder->getUrl(
+                    'events/index/attendance',
+                    ['registrationId' => $registration->getRegistrationId()],
+                    ['_secure' => true]
+                );
+                $qrCodeImage = $this->qrCodeGenerator->generateQrCodeImage(
+                    $attendanceUrl,
+                    300
+                );
+                if (empty($qrCodeImage)) {
+                    $this->logger->warning('[Events Email] QR code generation returned empty string');
+                    $qrCodeImage = '';
+                } else {
+                    $this->logger->info('[Events Email] QR code generated successfully, length: ' . strlen($qrCodeImage));
+                }
+            } catch (\Exception $e) {
+                $this->logger->error('[Events Email] Exception during QR code generation: ' . $e->getMessage());
+                $qrCodeImage = '';
+            }
+
+            // Prepare template variables
+            $templateVars = [
+                'registration_id' => $registration->getRegistrationId(),
+                'customer_name' => $customerName,
+                'meet_name' => $meet->getName(),
+                'meet_date' => $meetDate,
+                'meet_time' => $meetTime,
+                'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
+                'meet_description' => $meet->getDescription() ?: '',
+                'qr_code_image' => $qrCodeImage,
+            ];
+
+            // Get store and sender info
+            $store = $this->storeManager->getStore();
+            $sender = [
+                'name' => $this->escaper->escapeHtml($store->getStoreName()),
+                'email' => $store->getStoreEmail() ?: 'noreply@zacatrus.es',
+            ];
+
+            // Send email
+            $transport = $this->transportBuilder
+                ->setTemplateIdentifier('events_waitlist_promoted')
+                ->setTemplateOptions(
+                    [
+                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                        'store' => $store->getId(),
+                    ]
+                )
+                ->setTemplateVars($templateVars)
+                ->setFrom($sender)
+                ->addTo($customerEmail, $customerName)
+                ->getTransport();
+
+            $transport->sendMessage();
+            $this->inlineTranslation->resume();
+
+            $this->logger->info(
+                '[Events Email] Waitlist promotion email sent to ' . $customerEmail . 
+                ' for registration ID ' . $registration->getRegistrationId()
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->inlineTranslation->resume();
+            $this->logger->error('[Events Email] Error sending waitlist promotion email: ' . $e->getMessage());
+            $this->logger->error('[Events Email] Error class: ' . get_class($e));
+            $this->logger->error('[Events Email] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    /**
+     * Send confirmed to waitlist notification email
+     *
+     * @param RegistrationInterface $registration
+     * @return bool
+     */
+    public function sendConfirmedToWaitlistEmail(RegistrationInterface $registration): bool
+    {
+        try {
+            $this->inlineTranslation->suspend();
+
+            // Get customer data
+            $customer = $this->customerRepository->getById($registration->getCustomerId());
+            $customerEmail = $customer->getEmail();
+            $customerName = $customer->getFirstname() . ' ' . $customer->getLastname();
+
+            // Get meet data
+            $meet = $this->meetRepository->getById($registration->getMeetId());
+
+            // Format date and time
+            $startDate = new \DateTime($meet->getStartDate());
+            $meetDate = $startDate->format('d/m/Y');
+            $meetTime = $startDate->format('H:i');
+
+            // Get location data
+            $locationName = '';
+            $locationAddress = '';
+            try {
+                $location = $this->locationFactory->create()->load($meet->getLocationId());
+                if ($location && $location->getId()) {
+                    $locationName = $location->getName();
+                    $addressParts = [];
+                    if ($location->getAddress()) {
+                        $addressParts[] = $location->getAddress();
+                    }
+                    if ($location->getPostalCode()) {
+                        $addressParts[] = $location->getPostalCode();
+                    }
+                    if ($location->getCity()) {
+                        $addressParts[] = $location->getCity();
+                    }
+                    $locationAddress = implode(', ', $addressParts);
+                }
+            } catch (\Exception $e) {
+                $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+            }
+
+            // Prepare template variables
+            $templateVars = [
+                'registration_id' => $registration->getRegistrationId(),
+                'customer_name' => $customerName,
+                'meet_name' => $meet->getName(),
+                'meet_date' => $meetDate,
+                'meet_time' => $meetTime,
+                'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
+                'meet_description' => $meet->getDescription() ?: '',
+            ];
+
+            // Get store and sender info
+            $store = $this->storeManager->getStore();
+            $sender = [
+                'name' => $this->escaper->escapeHtml($store->getStoreName()),
+                'email' => $store->getStoreEmail() ?: 'noreply@zacatrus.es',
+            ];
+
+            // Send email
+            $transport = $this->transportBuilder
+                ->setTemplateIdentifier('events_confirmed_to_waitlist')
+                ->setTemplateOptions(
+                    [
+                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                        'store' => $store->getId(),
+                    ]
+                )
+                ->setTemplateVars($templateVars)
+                ->setFrom($sender)
+                ->addTo($customerEmail, $customerName)
+                ->getTransport();
+
+            $transport->sendMessage();
+            $this->inlineTranslation->resume();
+
+            $this->logger->info(
+                '[Events Email] Confirmed to waitlist email sent to ' . $customerEmail . 
+                ' for registration ID ' . $registration->getRegistrationId()
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->inlineTranslation->resume();
+            $this->logger->error('[Events Email] Error sending confirmed to waitlist email: ' . $e->getMessage());
+            $this->logger->error('[Events Email] Error class: ' . get_class($e));
+            $this->logger->error('[Events Email] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+}
+

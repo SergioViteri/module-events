@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Email Templates Configuration
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="events_registration_confirmed" label="Events: Registration Confirmed" file="registration_confirmed.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="events_registration_waitlist" label="Events: Registration Waitlist" file="registration_waitlist.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="events_waitlist_promoted" label="Events: Waitlist Promoted to Confirmed" file="waitlist_promoted.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="events_confirmed_to_waitlist" label="Events: Confirmed to Waitlist" file="confirmed_to_waitlist.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="events_unregistration" label="Events: Unregistration" file="unregistration.html" type="html" module="Zaca_Events" area="frontend"/>
+</config>
+

@@ -1,0 +1,73 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\Attendance\Check $block
+ */
+$registration = $block->getRegistration();
+$meet = $block->getMeet();
+$hasLocationCode = $block->getHasLocationCode();
+?>
+<style>
+.attendance-details {
+width: unset;
+}
+.location-code-form .field {
+    margin: 20px 0;
+  }
+</style>
+<div class="attendance-check">
+    <?= $block->getMessagesHtml() ?>
+
+    <?php if ($registration && $meet): ?>
+        <div class="attendance-info">
+            <table class="attendance-details">
+                <tr>
+                    <td><strong><?= $block->escapeHtml(__('Registration ID:')) ?></strong></td>
+                    <td><?= $block->escapeHtml($registration->getRegistrationId()) ?></td>
+                </tr>
+                <tr>
+                    <td><strong><?= $block->escapeHtml(__('Customer:')) ?></strong></td>
+                    <td><?= $block->escapeHtml($block->getCustomerName() ?: __('N/A')) ?></td>
+                </tr>
+                <tr>
+                    <td><strong><?= $block->escapeHtml(__('Event:')) ?></strong></td>
+                    <td><?= $block->escapeHtml($meet->getName()) ?></td>
+                </tr>
+                <tr>
+                    <td><strong><?= $block->escapeHtml(__('Starting Date:')) ?></strong></td>
+                    <td><?= $block->escapeHtml($block->formatDateTime($meet->getStartDate())) ?></td>
+                </tr>
+                <tr>
+                    <td><strong><?= $block->escapeHtml(__('Attendance Count:')) ?></strong></td>
+                    <td><?= $block->escapeHtml($registration->getAttendanceCount()) ?></td>
+                </tr>
+            </table>
+        </div>
+
+        <?php if (!$hasLocationCode): ?>
+            <div class="location-code-form">
+                <form method="post" action="<?= $block->escapeUrl($block->getAttendanceCheckUrl()) ?>">
+                    <input type="hidden" name="form_key" value="<?= $block->escapeHtml($block->getFormKey()) ?>" />
+                    <div class="field">
+                        <label for="location_code"><?= $block->escapeHtml(__('Location Code:')) ?></label>
+                        <input type="text" 
+                               id="location_code" 
+                               name="location_code" 
+                               required 
+                               autofocus
+                               class="input-text" />
+                    </div>
+                    <div class="actions">
+                        <button type="submit" class="action primary">
+                            <?= $block->escapeHtml(__('Validate Code')) ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        <?php endif; ?>
+    <?php else: ?>
+        <div class="message message-error error">
+            <div><?= $block->escapeHtml(__('Registration or event information not found.')) ?></div>
+        </div>
+    <?php endif; ?>
+</div>
+

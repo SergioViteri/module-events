@@ -1,0 +1,51 @@
+<!--@subject Event Unregistration Confirmation @-->
+<!--@vars {
+"var customer_name":"Customer Name",
+"var meet_name":"Meet Name",
+"var meet_date":"Meet Date",
+"var meet_time":"Meet Time",
+"var meet_location":"Meet Location"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr class="email-intro">
+        <td>
+            <p class="greeting">{{trans "Hello %customer_name," customer_name=$customer_name}}</p>
+            <p>
+                {{trans "Your registration for the following event has been cancelled:"}}
+            </p>
+        </td>
+    </tr>
+    <tr class="email-information">
+        <td>
+            <table class="message-details">
+                <tr>
+                    <td><strong>{{trans "Event:"}}</strong></td>
+                    <td>{{var meet_name}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Date:"}}</strong></td>
+                    <td>{{var meet_date}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Time:"}}</strong></td>
+                    <td>{{var meet_time}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Location:"}}</strong></td>
+                    <td>{{var meet_location}}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr class="email-footer">
+        <td>
+            <p>{{trans "We're sorry to see you won't be able to attend. We hope to see you at future events!"}}</p>
+        </td>
+    </tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}
+

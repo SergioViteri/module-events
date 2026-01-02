@@ -10,9 +10,14 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Zaca\Events\Api\StoreRepositoryInterface" type="Zaca\Events\Model\StoreRepository"/>
-    <preference for="Zaca\Events\Api\EventRepositoryInterface" type="Zaca\Events\Model\EventRepository"/>
+    <preference for="Zaca\Events\Api\Data\StoreInterface" type="Zaca\Events\Model\Store"/>
+    <preference for="Zaca\Events\Api\MeetRepositoryInterface" type="Zaca\Events\Model\MeetRepository"/>
+    <preference for="Zaca\Events\Api\Data\MeetInterface" type="Zaca\Events\Model\Meet"/>
     <preference for="Zaca\Events\Api\RegistrationRepositoryInterface" type="Zaca\Events\Model\RegistrationRepository"/>
+    <preference for="Zaca\Events\Api\Data\RegistrationInterface" type="Zaca\Events\Model\Registration"/>
     <preference for="Zaca\Events\Api\LeagueRepositoryInterface" type="Zaca\Events\Model\LeagueRepository"/>
+    <preference for="Zaca\Events\Api\Data\LeagueInterface" type="Zaca\Events\Model\League"/>
+    <preference for="Zaca\Events\Api\EventTypeRepositoryInterface" type="Zaca\Events\Model\EventTypeRepository"/>
     
     <!-- Grid Collections -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

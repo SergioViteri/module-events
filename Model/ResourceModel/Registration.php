@@ -18,7 +18,8 @@ class Registration extends AbstractDb
      */
     protected function _construct()
     {
-        $this->_init('zacatrus_events_registration', 'registration_id');
+        $this->_init('zaca_events_registration', 'registration_id');
+        // Note: table column is meet_id, not event_id
     }
 }
 

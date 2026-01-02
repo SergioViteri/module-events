@@ -168,7 +168,8 @@ class Main extends Generic implements TabInterface {
                 'disabled' => $isElementDisabled,
                 'options' => [
                     'none' => __('None'),
-                    'quincenal' => __('Quincenal'),
+                    'quincenal' => __('Biweekly'),
+                    'semanal' => __('Weekly'),
                 ],
             ]
         );

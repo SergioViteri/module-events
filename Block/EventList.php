@@ -9,22 +9,27 @@
 
 namespace Zaca\Events\Block;
 
-use Zaca\Events\Api\EventRepositoryInterface;
+use Zaca\Events\Api\MeetRepositoryInterface;
 use Zaca\Events\Api\StoreRepositoryInterface;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\EventTypeRepositoryInterface;
+use Zaca\Events\Model\LocationFactory;
+use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollectionFactory;
 use Magento\Customer\Model\Session;
-use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 
 class EventList extends Template
 {
     /**
-     * @var EventRepositoryInterface
+     * @var MeetRepositoryInterface
      */
-    protected $eventRepository;
+    protected $meetRepository;
 
     /**
      * @var StoreRepositoryInterface
@@ -42,9 +47,9 @@ class EventList extends Template
     protected $customerSession;
 
     /**
-     * @var SearchCriteriaBuilder
+     * @var SearchCriteriaBuilderFactory
      */
-    protected $searchCriteriaBuilder;
+    protected $searchCriteriaBuilderFactory;
 
     /**
      * @var FilterBuilder
@@ -67,74 +72,109 @@ class EventList extends Template
     protected $stores = null;
 
     /**
+     * @var array|null
+     */
+    protected $locations = null;
+
+    /**
+     * @var LocationCollectionFactory
+     */
+    protected $locationCollectionFactory;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    /**
+     * @var EventTypeRepositoryInterface
+     */
+    protected $eventTypeRepository;
+
+    /**
      * @param Context $context
-     * @param EventRepositoryInterface $eventRepository
+     * @param MeetRepositoryInterface $meetRepository
      * @param StoreRepositoryInterface $storeRepository
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
      * @param FilterBuilder $filterBuilder
      * @param SortOrderBuilder $sortOrderBuilder
+     * @param LocationCollectionFactory $locationCollectionFactory
+     * @param ScopeConfigInterface $scopeConfig
+     * @param EventTypeRepositoryInterface $eventTypeRepository
      * @param array $data
      */
     public function __construct(
         Context $context,
-        EventRepositoryInterface $eventRepository,
+        MeetRepositoryInterface $meetRepository,
         StoreRepositoryInterface $storeRepository,
         RegistrationRepositoryInterface $registrationRepository,
         Session $customerSession,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
+        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
         FilterBuilder $filterBuilder,
         SortOrderBuilder $sortOrderBuilder,
+        LocationCollectionFactory $locationCollectionFactory,
+        ScopeConfigInterface $scopeConfig,
+        EventTypeRepositoryInterface $eventTypeRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->eventRepository = $eventRepository;
+        $this->meetRepository = $meetRepository;
         $this->storeRepository = $storeRepository;
         $this->registrationRepository = $registrationRepository;
         $this->customerSession = $customerSession;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
         $this->filterBuilder = $filterBuilder;
         $this->sortOrderBuilder = $sortOrderBuilder;
+        $this->locationCollectionFactory = $locationCollectionFactory;
+        $this->scopeConfig = $scopeConfig;
+        $this->eventTypeRepository = $eventTypeRepository;
     }
 
     /**
-     * Get events
+     * Get meets
      *
-     * @return \Zaca\Events\Api\Data\EventInterface[]
+     * @return \Zaca\Events\Api\Data\MeetInterface[]
      */
     public function getEvents()
     {
         if ($this->events === null) {
-            $storeId = $this->getRequest()->getParam('store_id');
-            $eventType = $this->getRequest()->getParam('event_type');
+            try {
+                $locationId = $this->getRequest()->getParam('location_id');
+                $meetType = $this->getRequest()->getParam('meet_type');
 
-            $this->searchCriteriaBuilder->addFilter('is_active', 1);
-            
-            // Filter by store
-            if ($storeId) {
-                $this->searchCriteriaBuilder->addFilter('store_id', $storeId);
+                $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+                $searchCriteriaBuilder->addFilter('is_active', 1);
+                
+                // Filter by location
+                if ($locationId) {
+                    $searchCriteriaBuilder->addFilter('location_id', $locationId);
+                }
+
+                // Filter by meet type
+                if ($meetType) {
+                    $searchCriteriaBuilder->addFilter('meet_type', $meetType);
+                }
+
+                // Only future meets
+                $now = new \DateTime();
+                $searchCriteriaBuilder->addFilter('start_date', $now->format('Y-m-d H:i:s'), 'gteq');
+
+                // Sort by start date ascending
+                $sortOrder = $this->sortOrderBuilder
+                    ->setField('start_date')
+                    ->setDirection('ASC')
+                    ->create();
+                $searchCriteriaBuilder->addSortOrder($sortOrder);
+
+                $searchCriteria = $searchCriteriaBuilder->create();
+                $searchResults = $this->meetRepository->getList($searchCriteria);
+                $this->events = $searchResults->getItems();
+            } catch (\Exception $e) {
+                // Return empty array on error
+                $this->events = [];
             }
-
-            // Filter by event type
-            if ($eventType) {
-                $this->searchCriteriaBuilder->addFilter('event_type', $eventType);
-            }
-
-            // Only future events
-            $now = new \DateTime();
-            $this->searchCriteriaBuilder->addFilter('start_date', $now->format('Y-m-d H:i:s'), 'gteq');
-
-            // Sort by start date ascending
-            $sortOrder = $this->sortOrderBuilder
-                ->setField('start_date')
-                ->setDirection('ASC')
-                ->create();
-            $this->searchCriteriaBuilder->addSortOrder($sortOrder);
-
-            $searchCriteria = $this->searchCriteriaBuilder->create();
-            $searchResults = $this->eventRepository->getList($searchCriteria);
-            $this->events = $searchResults->getItems();
         }
 
         return $this->events;
@@ -148,27 +188,53 @@ class EventList extends Template
     public function getStores()
     {
         if ($this->stores === null) {
-            $this->searchCriteriaBuilder->addFilter('is_active', 1);
-            $searchCriteria = $this->searchCriteriaBuilder->create();
-            $searchResults = $this->storeRepository->getList($searchCriteria);
-            $this->stores = $searchResults->getItems();
+            try {
+                $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+                $searchCriteriaBuilder->addFilter('is_active', 1);
+                $searchCriteria = $searchCriteriaBuilder->create();
+                $searchResults = $this->storeRepository->getList($searchCriteria);
+                $this->stores = $searchResults->getItems();
+            } catch (\Exception $e) {
+                $this->stores = [];
+            }
         }
 
         return $this->stores;
     }
 
     /**
-     * Get event types
+     * Get locations
+     *
+     * @return \Zaca\Events\Model\Location[]
+     */
+    public function getLocations()
+    {
+        if ($this->locations === null) {
+            try {
+                $locationCollection = $this->locationCollectionFactory->create();
+                $locationCollection->addFieldToFilter('is_active', 1);
+                $this->locations = $locationCollection->getItems();
+            } catch (\Exception $e) {
+                $this->locations = [];
+            }
+        }
+
+        return $this->locations ?: [];
+    }
+
+    /**
+     * Get meet types
      *
      * @return array
      */
     public function getEventTypes()
     {
-        return [
-            'casual' => __('Casual'),
-            'league' => __('Liga ligera'),
-            'special' => __('Evento especial')
-        ];
+        $eventTypes = [];
+        $collection = $this->eventTypeRepository->getActiveEventTypes();
+        foreach ($collection as $eventType) {
+            $eventTypes[$eventType->getCode()] = __($eventType->getName());
+        }
+        return $eventTypes;
     }
 
     /**
@@ -182,21 +248,22 @@ class EventList extends Template
     }
 
     /**
-     * Get registration status for event
+     * Get registration status for meet
      *
-     * @param int $eventId
+     * @param int $meetId
      * @return string|null
      */
-    public function getRegistrationStatus($eventId)
+    public function getRegistrationStatus($meetId)
     {
         if (!$this->isCustomerLoggedIn()) {
             return null;
         }
 
         $customerId = $this->customerSession->getCustomerId();
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
         $collection = $this->registrationRepository->getList(
-            $this->searchCriteriaBuilder
-                ->addFilter('event_id', $eventId)
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $meetId)
                 ->addFilter('customer_id', $customerId)
                 ->create()
         );
@@ -210,44 +277,58 @@ class EventList extends Template
     }
 
     /**
-     * Get available slots for event
+     * Get available slots for meet
      *
-     * @param \Zaca\Events\Api\Data\EventInterface $event
+     * @param \Zaca\Events\Api\Data\MeetInterface $meet
      * @return int
      */
-    public function getAvailableSlots($event)
+    public function getAvailableSlots($meet)
     {
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
         $collection = $this->registrationRepository->getList(
-            $this->searchCriteriaBuilder
-                ->addFilter('event_id', $event->getEventId())
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $meet->getMeetId())
                 ->addFilter('status', 'confirmed')
                 ->create()
         );
 
         $confirmed = $collection->getTotalCount();
-        return max(0, $event->getMaxSlots() - $confirmed);
+        return max(0, $meet->getMaxSlots() - $confirmed);
     }
 
     /**
      * Get registration URL
      *
-     * @param int $eventId
+     * @param int $meetId
      * @return string
      */
-    public function getRegisterUrl($eventId)
+    public function getRegisterUrl($meetId)
     {
-        return $this->getUrl('events/index/register', ['eventId' => $eventId]);
+        return $this->getUrl('events/index/register', ['meetId' => $meetId]);
     }
 
     /**
      * Get unregister URL
      *
-     * @param int $eventId
+     * @param int $meetId
      * @return string
      */
-    public function getUnregisterUrl($eventId)
+    public function getUnregisterUrl($meetId)
     {
-        return $this->getUrl('events/index/unregister', ['eventId' => $eventId]);
+        return $this->getUrl('events/index/unregister', ['meetId' => $meetId]);
+    }
+
+    /**
+     * Check if module is enabled
+     *
+     * @return bool
+     */
+    public function isModuleEnabled()
+    {
+        return (bool) $this->scopeConfig->getValue(
+            'zaca_events/general/enabled',
+            ScopeInterface::SCOPE_STORE
+        );
     }
 }
 

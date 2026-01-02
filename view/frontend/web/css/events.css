@@ -8,8 +8,28 @@
 
 /* Base Styles - Mobile First */
 .zacatrus-events-list {
-    padding: 1rem;
     max-width: 100%;
+}
+
+/* Disabled Message - Full Width */
+.events-disabled-message {
+    padding: 2rem 1rem;
+    background: #fff3cd;
+    border-top: 1px solid #ffc107;
+    border-bottom: 1px solid #ffc107;
+}
+
+.events-disabled-message .message {
+    margin: 0 auto;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+}
+
+@media (min-width: 768px) {
+    .events-disabled-message {
+        padding: 3rem 2rem;
+    }
 }
 
 .page-title-wrapper {
@@ -42,7 +62,169 @@
     display: block;
     font-weight: 500;
     margin-bottom: 0.5rem;
+}
+
+/* Location Filter Buttons */
+.location-filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.location-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.location-filter-btn {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 120px;
+}
+
+.location-filter-btn:hover {
+    border-color: #007bff;
+    background: #f0f8ff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.location-filter-btn.active {
+    background: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+.location-filter-btn.active:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Meet Type Filter Buttons */
+.meet-type-filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.meet-type-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.meet-type-filter-btn {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 120px;
+}
+
+.meet-type-filter-btn:hover {
+    border-color: #007bff;
+    background: #f0f8ff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.meet-type-filter-btn.active {
+    background: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+.meet-type-filter-btn.active:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+.location-name {
+    display: block;
+}
+
+.location-address-tooltip {
+    display: none;
+}
+
+/* Location Address Popup */
+.location-address-popup {
+    position: absolute;
+    background: #fff;
+    border: 2px solid #007bff;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 200px;
+    max-width: 300px;
+    display: none;
+}
+
+.location-address-popup .address-text {
+    display: block;
+    color: #333;
+    line-height: 1.5;
+    padding: 6px;
+}
+
+.location-address-popup::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #007bff;
+}
+
+.location-address-popup::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #fff;
+}
+
+.location-address-popup.above::before {
+    top: auto;
+    bottom: -8px;
+    border-bottom: none;
+    border-top: 8px solid #007bff;
+}
+
+.location-address-popup.above::after {
+    top: auto;
+    bottom: -6px;
+    border-bottom: none;
+    border-top: 7px solid #fff;
+}
+
+.location-address-popup.clicked {
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
 }
 
 .filter-select {
@@ -50,7 +232,6 @@
     padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 1rem;
     background: white;
 }
 
@@ -117,7 +298,6 @@
     padding: 0.25rem 0.75rem;
     background: #e9ecef;
     border-radius: 12px;
-    font-size: 0.85rem;
     font-weight: 500;
     color: #495057;
 }
@@ -128,7 +308,6 @@
 
 .event-detail {
     margin-bottom: 0.75rem;
-    font-size: 0.95rem;
     line-height: 1.5;
 }
 
@@ -180,12 +359,11 @@
 }
 
 .status-confirmed {
-    background: #d4edda;
+    /*background: #d4edda;*/
     color: #155724;
 }
 
 .status-waitlist {
-    background: #fff3cd;
     color: #856404;
 }
 
@@ -293,8 +471,6 @@
 /* Tablet and Up */
 @media (min-width: 768px) {
     .zacatrus-events-list {
-        padding: 2rem;
-        max-width: 1200px;
         margin: 0 auto;
     }
 
@@ -351,4 +527,9 @@
         min-width: 140px;
     }
 }
-
+.filter-buttons {
+    margin: 12px 0;
+}
+.zacatrus-events-list .filter-group {
+    margin-bottom: 20px;
+  }

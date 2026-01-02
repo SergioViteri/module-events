@@ -16,10 +16,10 @@
              sortOrder="100" 
              parent="Magento_Backend::stores"
              resource="Zaca_Events::events"/>
-        <add id="Zaca_Events::stores" title="Stores" module="Zaca_Events" sortOrder="10" parent="Zaca_Events::events" action="zaca_events/store" resource="Zaca_Events::stores"/>
-        <add id="Zaca_Events::events_manage" title="Events" module="Zaca_Events" sortOrder="20" parent="Zaca_Events::events" action="zaca_events/event" resource="Zaca_Events::events_manage"/>
-        <add id="Zaca_Events::leagues" title="Leagues" module="Zaca_Events" sortOrder="30" parent="Zaca_Events::events" action="zaca_events/league" resource="Zaca_Events::leagues"/>
-        <add id="Zaca_Events::registrations" title="Registrations" module="Zaca_Events" sortOrder="40" parent="Zaca_Events::events" action="zaca_events/registration" resource="Zaca_Events::registrations"/>
+        <add id="Zaca_Events::locations" title="Locations" module="Zaca_Events" sortOrder="15" parent="Zaca_Events::events" action="zaca_events/location" resource="Zaca_Events::locations"/>
+        <add id="Zaca_Events::event_types" title="Event Types" module="Zaca_Events" sortOrder="17" parent="Zaca_Events::events" action="zaca_events/eventtype" resource="Zaca_Events::event_types"/>
+        <add id="Zaca_Events::meets" title="Meets" module="Zaca_Events" sortOrder="20" parent="Zaca_Events::events" action="zaca_events/meet" resource="Zaca_Events::meets"/>
+        <add id="Zaca_Events::participants" title="Participants" module="Zaca_Events" sortOrder="40" parent="Zaca_Events::events" action="zaca_events/participant" resource="Zaca_Events::participants"/>
     </menu>
 </config>
 

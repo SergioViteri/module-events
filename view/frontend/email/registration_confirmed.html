@@ -1,0 +1,75 @@
+<!--@subject Event Registration Confirmed @-->
+<!--@vars {
+"var registration_id":"Registration ID",
+"var customer_name":"Customer Name",
+"var meet_name":"Meet Name",
+"var meet_date":"Meet Date",
+"var meet_time":"Meet Time",
+"var meet_location":"Meet Location",
+"var meet_description":"Meet Description",
+"var status":"Status",
+"var qr_code_image":"QR Code Image"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr class="email-intro">
+        <td>
+            <p class="greeting">{{trans "Hello %customer_name," customer_name=$customer_name}}</p>
+            <p>
+                {{trans "Your registration for the event has been confirmed!"}}
+            </p>
+        </td>
+    </tr>
+    <tr class="email-information">
+        <td>
+            <table class="message-details">
+                <tr>
+                    <td><strong>{{trans "Registration ID:"}}</strong></td>
+                    <td>{{var registration_id}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Event:"}}</strong></td>
+                    <td>{{var meet_name}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Date:"}}</strong></td>
+                    <td>{{var meet_date}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Time:"}}</strong></td>
+                    <td>{{var meet_time}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Location:"}}</strong></td>
+                    <td>{{var meet_location}}</td>
+                </tr>
+                {{depend meet_description}}
+                <tr>
+                    <td><strong>{{trans "Description:"}}</strong></td>
+                    <td>{{var meet_description}}</td>
+                </tr>
+                {{/depend}}
+                <tr>
+                    <td><strong>{{trans "Status:"}}</strong></td>
+                    <td>{{var status}}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr class="email-qrcode">
+        <td>
+            <p><strong>{{trans "Please bring this QR code to the event:"}}</strong></p>
+            <p><img src="{{var qr_code_image}}" alt="{{trans "Registration QR Code"}}" style="max-width: 300px; height: auto;" /></p>
+        </td>
+    </tr>
+    <tr class="email-footer">
+        <td>
+            <p>{{trans "We look forward to seeing you at the event!"}}</p>
+        </td>
+    </tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}
+

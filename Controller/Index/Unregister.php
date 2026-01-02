@@ -63,25 +63,25 @@ class Unregister extends Action
         if (!$this->customerSession->isLoggedIn()) {
             return $result->setData([
                 'success' => false,
-                'message' => __('You must be logged in to unregister from events.')
+                'message' => __('You must be logged in to unregister from meets.')
             ]);
         }
 
-        $eventId = (int) $this->getRequest()->getParam('eventId');
-        if (!$eventId) {
+        $meetId = (int) $this->getRequest()->getParam('meetId');
+        if (!$meetId) {
             return $result->setData([
                 'success' => false,
-                'message' => __('Event ID is required.')
+                'message' => __('Meet ID is required.')
             ]);
         }
 
         try {
             $customerId = $this->customerSession->getCustomerId();
-            $this->registrationRepository->unregisterCustomer($customerId, $eventId);
+            $this->registrationRepository->unregisterCustomer($customerId, $meetId);
             
             return $result->setData([
                 'success' => true,
-                'message' => __('You have been successfully unregistered from this event.')
+                'message' => __('You have been successfully unregistered from this meet.')
             ]);
         } catch (LocalizedException $e) {
             return $result->setData([

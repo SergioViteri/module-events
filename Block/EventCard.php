@@ -9,25 +9,26 @@
 
 namespace Zaca\Events\Block;
 
-use Zaca\Events\Api\Data\EventInterface;
-use Zaca\Events\Api\StoreRepositoryInterface;
+use Zaca\Events\Api\Data\MeetInterface;
+use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\EventTypeRepositoryInterface;
 use Magento\Customer\Model\Session;
-use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 
 class EventCard extends Template
 {
     /**
-     * @var EventInterface
+     * @var MeetInterface
      */
     protected $event;
 
     /**
-     * @var StoreRepositoryInterface
+     * @var LocationFactory
      */
-    protected $storeRepository;
+    protected $locationFactory;
 
     /**
      * @var RegistrationRepositoryInterface
@@ -40,49 +41,57 @@ class EventCard extends Template
     protected $customerSession;
 
     /**
-     * @var SearchCriteriaBuilder
+     * @var SearchCriteriaBuilderFactory
      */
-    protected $searchCriteriaBuilder;
+    protected $searchCriteriaBuilderFactory;
+
+    /**
+     * @var EventTypeRepositoryInterface
+     */
+    protected $eventTypeRepository;
 
     /**
      * @param Context $context
-     * @param StoreRepositoryInterface $storeRepository
+     * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
+     * @param EventTypeRepositoryInterface $eventTypeRepository
      * @param array $data
      */
     public function __construct(
         Context $context,
-        StoreRepositoryInterface $storeRepository,
+        LocationFactory $locationFactory,
         RegistrationRepositoryInterface $registrationRepository,
         Session $customerSession,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
+        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
+        EventTypeRepositoryInterface $eventTypeRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->storeRepository = $storeRepository;
+        $this->locationFactory = $locationFactory;
         $this->registrationRepository = $registrationRepository;
         $this->customerSession = $customerSession;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
+        $this->eventTypeRepository = $eventTypeRepository;
     }
 
     /**
-     * Set event
+     * Set meet
      *
-     * @param EventInterface $event
+     * @param MeetInterface $event
      * @return $this
      */
-    public function setEvent(EventInterface $event)
+    public function setEvent(MeetInterface $event)
     {
         $this->event = $event;
         return $this;
     }
 
     /**
-     * Get event
+     * Get meet
      *
-     * @return EventInterface|null
+     * @return MeetInterface|null
      */
     public function getEvent()
     {
@@ -90,7 +99,7 @@ class EventCard extends Template
     }
 
     /**
-     * Get store name
+     * Get location name
      *
      * @return string
      */
@@ -101,8 +110,12 @@ class EventCard extends Template
         }
 
         try {
-            $store = $this->storeRepository->getById($this->event->getStoreId());
-            return $store->getName() . ' - ' . $store->getCity();
+            $location = $this->locationFactory->create()->load($this->event->getLocationId());
+            if ($location->getId()) {
+                $name = $location->getName();
+                return $name;
+            }
+            return '';
         } catch (\Exception $e) {
             return '';
         }
@@ -130,13 +143,18 @@ class EventCard extends Template
             return '';
         }
 
-        $types = [
-            'casual' => __('Casual'),
-            'league' => __('Liga ligera'),
-            'special' => __('Evento especial')
-        ];
+        $meetTypeCode = $this->event->getMeetType();
+        if (empty($meetTypeCode)) {
+            return '';
+        }
 
-        return $types[$this->event->getEventType()] ?? $this->event->getEventType();
+        try {
+            $eventType = $this->eventTypeRepository->getByCode($meetTypeCode);
+            return __($eventType->getName());
+        } catch (\Exception $e) {
+            // Fallback to code if event type not found
+            return $meetTypeCode;
+        }
     }
 
     /**
@@ -150,9 +168,10 @@ class EventCard extends Template
             return 0;
         }
 
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
         $collection = $this->registrationRepository->getList(
-            $this->searchCriteriaBuilder
-                ->addFilter('event_id', $this->event->getEventId())
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $this->event->getMeetId())
                 ->addFilter('status', 'confirmed')
                 ->create()
         );
@@ -173,9 +192,10 @@ class EventCard extends Template
         }
 
         $customerId = $this->customerSession->getCustomerId();
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
         $collection = $this->registrationRepository->getList(
-            $this->searchCriteriaBuilder
-                ->addFilter('event_id', $this->event->getEventId())
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $this->event->getMeetId())
                 ->addFilter('customer_id', $customerId)
                 ->create()
         );
@@ -195,9 +215,10 @@ class EventCard extends Template
         }
 
         $customerId = $this->customerSession->getCustomerId();
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
         $collection = $this->registrationRepository->getList(
-            $this->searchCriteriaBuilder
-                ->addFilter('event_id', $this->event->getEventId())
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $this->event->getMeetId())
                 ->addFilter('customer_id', $customerId)
                 ->create()
         );
@@ -208,6 +229,38 @@ class EventCard extends Template
         }
 
         return null;
+    }
+
+    /**
+     * Check if customer is logged in
+     *
+     * @return bool
+     */
+    public function isCustomerLoggedIn()
+    {
+        return $this->customerSession->isLoggedIn();
+    }
+
+    /**
+     * Get registration URL
+     *
+     * @param int $meetId
+     * @return string
+     */
+    public function getRegisterUrl($meetId)
+    {
+        return $this->getUrl('events/index/register', ['_query' => ['meetId' => $meetId]]);
+    }
+
+    /**
+     * Get unregister URL
+     *
+     * @param int $meetId
+     * @return string
+     */
+    public function getUnregisterUrl($meetId)
+    {
+        return $this->getUrl('events/index/unregister', ['_query' => ['meetId' => $meetId]]);
     }
 }
 
