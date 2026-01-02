@@ -7,12 +7,12 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Index;
+namespace Zaca\Events\Controller\Index;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
-use Zacatrus\Events\Api\EventRepositoryInterface;
+use Zaca\Events\Api\EventRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\SortOrderBuilder;
@@ -55,17 +55,21 @@ class ListEvents extends Action
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
+        /*
         EventRepositoryInterface $eventRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         FilterBuilder $filterBuilder,
         SortOrderBuilder $sortOrderBuilder
+        */
     ) {
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
+        /*
         $this->eventRepository = $eventRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->filterBuilder = $filterBuilder;
         $this->sortOrderBuilder = $sortOrderBuilder;
+        */
     }
 
     /**

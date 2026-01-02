@@ -1,10 +1,10 @@
 <?php
 
-namespace Zacatrus\Events\Block\Adminhtml\Event\Edit\Tab;
+namespace Zaca\Events\Block\Adminhtml\Event\Edit\Tab;
 
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
-use Zacatrus\Events\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
+use Zaca\Events\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
 
 class Main extends Generic implements TabInterface {
     /**
@@ -51,7 +51,7 @@ class Main extends Generic implements TabInterface {
      * @return $this
      */
     protected function _prepareForm() {
-        $model = $this->_coreRegistry->registry('zacatrus_events_event');
+        $model = $this->_coreRegistry->registry('zaca_events_event');
         $isElementDisabled = false;
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('event_');

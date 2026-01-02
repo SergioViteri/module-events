@@ -1,5 +1,5 @@
 <?php
-namespace Zacatrus\Events\Block\Adminhtml\Registration;
+namespace Zaca\Events\Block\Adminhtml\Registration;
 
 /**
  * Block for edit page
@@ -32,7 +32,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
     protected function _construct()
     {
         $this->_objectId = 'registration_id';
-        $this->_blockGroup = 'Zacatrus_Events';
+        $this->_blockGroup = 'Zaca_Events';
         $this->_controller = 'adminhtml_registration';
 
         parent::_construct();
@@ -60,8 +60,8 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
      */
     public function getHeaderText()
     {
-        if ($this->_coreRegistry->registry('zacatrus_events_registration')->getId()) {
-            return __("Edit Registration #%1", $this->_coreRegistry->registry('zacatrus_events_registration')->getId());
+        if ($this->_coreRegistry->registry('zaca_events_registration')->getId()) {
+            return __("Edit Registration #%1", $this->_coreRegistry->registry('zaca_events_registration')->getId());
         } else {
             return __('New Registration');
         }
@@ -74,7 +74,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
      */
     protected function _getSaveAndContinueUrl()
     {
-        return $this->getUrl('zacatrus_events/*/save', ['_current' => true, 'back' => 'edit', 'active_tab' => '{{tab_id}}']);
+        return $this->getUrl('zaca_events/*/save', ['_current' => true, 'back' => 'edit', 'active_tab' => '{{tab_id}}']);
     }
 }
 

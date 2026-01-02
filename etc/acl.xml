@@ -4,13 +4,13 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                    <resource id="Zacatrus_Events::zaca" title="Zacatrus Events" sortOrder="10">
-                        <resource id="Zacatrus_Events::config" title="Zacatrus Events Configuration" sortOrder="10"/>
-                        <resource id="Zacatrus_Events::events" title="Events Management" sortOrder="20">
-                            <resource id="Zacatrus_Events::stores" title="Stores Management" sortOrder="10"/>
-                            <resource id="Zacatrus_Events::events_manage" title="Events Management" sortOrder="20"/>
-                            <resource id="Zacatrus_Events::leagues" title="Leagues Management" sortOrder="30"/>
-                            <resource id="Zacatrus_Events::registrations" title="Registrations Management" sortOrder="40"/>
+                    <resource id="Zaca_Events::zaca" title="Zacatrus Events" sortOrder="10">
+                        <resource id="Zaca_Events::config" title="Zacatrus Events Configuration" sortOrder="10"/>
+                        <resource id="Zaca_Events::events" title="Events Management" sortOrder="20">
+                            <resource id="Zaca_Events::stores" title="Stores Management" sortOrder="10"/>
+                            <resource id="Zaca_Events::events_manage" title="Events Management" sortOrder="20"/>
+                            <resource id="Zaca_Events::leagues" title="Leagues Management" sortOrder="30"/>
+                            <resource id="Zaca_Events::registrations" title="Registrations Management" sortOrder="40"/>
                         </resource>
                     </resource>
             </resource>

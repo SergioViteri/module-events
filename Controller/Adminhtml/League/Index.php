@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\League;
+namespace Zaca\Events\Controller\Adminhtml\League;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -37,7 +37,7 @@ class Index extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::leagues');
+        return $this->_authorization->isAllowed('Zaca_Events::leagues');
     }
 
     /**
@@ -48,7 +48,7 @@ class Index extends Action
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->setActiveMenu('Zacatrus_Events::leagues');
+        $resultPage->setActiveMenu('Zaca_Events::leagues');
         $resultPage->getConfig()->getTitle()->prepend(__('Leagues'));
         return $resultPage;
     }

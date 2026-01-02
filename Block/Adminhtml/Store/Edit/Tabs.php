@@ -1,5 +1,5 @@
 <?php
-namespace Zacatrus\Events\Block\Adminhtml\Store\Edit;
+namespace Zaca\Events\Block\Adminhtml\Store\Edit;
 
 class Tabs extends \Magento\Backend\Block\Widget\Tabs {
     protected function _construct() {

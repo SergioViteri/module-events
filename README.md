@@ -6,10 +6,10 @@ Módulo de gestión de eventos para Magento 2.
 
 ### Opción 1: Instalación manual
 
-1. Copia el contenido de este directorio a `app/code/Zacatrus/Events/` en tu instalación de Magento
+1. Copia el contenido de este directorio a `app/code/Zaca/Events/` en tu instalación de Magento
 2. Ejecuta:
 ```bash
-bin/magento module:enable Zacatrus_Events
+bin/magento module:enable Zaca_Events
 bin/magento setup:upgrade
 bin/magento setup:di:compile
 bin/magento cache:flush
@@ -32,7 +32,7 @@ bin/magento cache:flush
 2. Instala el módulo:
 ```bash
 composer require zaca/events:*
-bin/magento module:enable Zacatrus_Events
+bin/magento module:enable Zaca_Events
 bin/magento setup:upgrade
 bin/magento setup:di:compile
 bin/magento cache:flush

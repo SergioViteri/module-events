@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\Event;
+namespace Zaca\Events\Controller\Adminhtml\Event;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -37,7 +37,7 @@ class Index extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::events_manage');
+        return $this->_authorization->isAllowed('Zaca_Events::events_manage');
     }
 
     /**
@@ -48,7 +48,7 @@ class Index extends Action
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->setActiveMenu('Zacatrus_Events::events_manage');
+        $resultPage->setActiveMenu('Zaca_Events::events_manage');
         $resultPage->getConfig()->getTitle()->prepend(__('Events'));
         return $resultPage;
     }

@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Ui\Component\Listing\Column;
+namespace Zaca\Events\Ui\Component\Listing\Column;
 
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -52,11 +52,11 @@ class StoreActions extends Column
                 $name = $this->getData('name');
                 if (isset($item['store_id'])) {
                     $item[$name]['edit'] = [
-                        'href' => $this->urlBuilder->getUrl('zacatrus_events/store/edit', ['store_id' => $item['store_id']]),
+                        'href' => $this->urlBuilder->getUrl('zaca_events/store/edit', ['store_id' => $item['store_id']]),
                         'label' => __('Edit')
                     ];
                     $item[$name]['delete'] = [
-                        'href' => $this->urlBuilder->getUrl('zacatrus_events/store/delete', ['store_id' => $item['store_id']]),
+                        'href' => $this->urlBuilder->getUrl('zaca_events/store/delete', ['store_id' => $item['store_id']]),
                         'label' => __('Delete'),
                         'confirm' => [
                             'title' => __('Delete Store'),

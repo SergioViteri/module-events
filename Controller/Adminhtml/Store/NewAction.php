@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\Store;
+namespace Zaca\Events\Controller\Adminhtml\Store;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\View\Result\ForwardFactory;
@@ -36,7 +36,7 @@ class NewAction extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::stores');
+        return $this->_authorization->isAllowed('Zaca_Events::stores');
     }
 
     /**

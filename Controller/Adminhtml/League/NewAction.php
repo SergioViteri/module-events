@@ -1,5 +1,5 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\League;
+namespace Zaca\Events\Controller\Adminhtml\League;
 
 /**
  * Class NewAction
@@ -22,7 +22,7 @@ class NewAction extends \Magento\Backend\App\Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::leagues');
+        return $this->_authorization->isAllowed('Zaca_Events::leagues');
     }
     
     /**

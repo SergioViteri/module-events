@@ -7,11 +7,11 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Block;
+namespace Zaca\Events\Block;
 
-use Zacatrus\Events\Api\EventRepositoryInterface;
-use Zacatrus\Events\Api\StoreRepositoryInterface;
-use Zacatrus\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\EventRepositoryInterface;
+use Zaca\Events\Api\StoreRepositoryInterface;
+use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\FilterBuilder;
@@ -101,7 +101,7 @@ class EventList extends Template
     /**
      * Get events
      *
-     * @return \Zacatrus\Events\Api\Data\EventInterface[]
+     * @return \Zaca\Events\Api\Data\EventInterface[]
      */
     public function getEvents()
     {
@@ -143,7 +143,7 @@ class EventList extends Template
     /**
      * Get stores
      *
-     * @return \Zacatrus\Events\Api\Data\StoreInterface[]
+     * @return \Zaca\Events\Api\Data\StoreInterface[]
      */
     public function getStores()
     {
@@ -212,7 +212,7 @@ class EventList extends Template
     /**
      * Get available slots for event
      *
-     * @param \Zacatrus\Events\Api\Data\EventInterface $event
+     * @param \Zaca\Events\Api\Data\EventInterface $event
      * @return int
      */
     public function getAvailableSlots($event)

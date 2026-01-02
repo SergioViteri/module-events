@@ -7,12 +7,12 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\Event;
+namespace Zaca\Events\Model\Event;
 
-use Zacatrus\Events\Api\Data\EventInterface;
-use Zacatrus\Events\Api\Data\EventInterfaceFactory;
-use Zacatrus\Events\Api\EventRepositoryInterface;
-use Zacatrus\Events\Model\ResourceModel\Event\CollectionFactory;
+use Zaca\Events\Api\Data\EventInterface;
+use Zaca\Events\Api\Data\EventInterfaceFactory;
+use Zaca\Events\Api\EventRepositoryInterface;
+use Zaca\Events\Model\ResourceModel\Event\CollectionFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\CouldNotSaveException;
 

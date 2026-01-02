@@ -1,9 +1,9 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Registration;
+namespace Zaca\Events\Controller\Adminhtml\Registration;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\Session;
-use Zacatrus\Events\Model\RegistrationFactory;
+use Zaca\Events\Model\RegistrationFactory;
 
 class Save extends Action
 {
@@ -37,7 +37,7 @@ class Save extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::registrations');
+        return $this->_authorization->isAllowed('Zaca_Events::registrations');
     }
 
     /**

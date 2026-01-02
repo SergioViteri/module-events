@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\League\Grid;
+namespace Zaca\Events\Model\ResourceModel\League\Grid;
 
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface as FetchStrategy;
 use Magento\Framework\Data\Collection\EntityFactoryInterface as EntityFactory;
@@ -33,7 +33,7 @@ class Collection extends \Magento\Framework\View\Element\UiComponent\DataProvide
         FetchStrategy $fetchStrategy,
         EventManager $eventManager,
         $mainTable = 'zacatrus_events_league',
-        $resourceModel = 'Zacatrus\Events\Model\ResourceModel\League',
+        $resourceModel = 'Zaca\Events\Model\ResourceModel\League',
         $identifierName = 'league_id',
         $connectionName = null
     ) {

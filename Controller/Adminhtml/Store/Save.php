@@ -7,11 +7,11 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\Store;
+namespace Zaca\Events\Controller\Adminhtml\Store;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\Session;
-use Zacatrus\Events\Model\StoreFactory;
+use Zaca\Events\Model\StoreFactory;
 
 class Save extends Action
 {
@@ -45,7 +45,7 @@ class Save extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::stores');
+        return $this->_authorization->isAllowed('Zaca_Events::stores');
     }
 
     /**

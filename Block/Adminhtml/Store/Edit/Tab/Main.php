@@ -1,6 +1,6 @@
 <?php
 
-namespace Zacatrus\Events\Block\Adminhtml\Store\Edit\Tab;
+namespace Zaca\Events\Block\Adminhtml\Store\Edit\Tab;
 
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
@@ -42,7 +42,7 @@ class Main extends Generic implements TabInterface {
      * @return $this
      */
     protected function _prepareForm() {
-        $model = $this->_coreRegistry->registry('zacatrus_events_store');
+        $model = $this->_coreRegistry->registry('zaca_events_store');
         $isElementDisabled = false;
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('store_');

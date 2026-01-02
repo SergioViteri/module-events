@@ -1,6 +1,6 @@
 <?php
 
-namespace Zacatrus\Events\Block\Adminhtml\Event\Edit;
+namespace Zaca\Events\Block\Adminhtml\Event\Edit;
 
 class Form extends \Magento\Backend\Block\Widget\Form\Generic {
     protected function _prepareForm() {

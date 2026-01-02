@@ -7,11 +7,11 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Block;
+namespace Zaca\Events\Block;
 
-use Zacatrus\Events\Api\Data\EventInterface;
-use Zacatrus\Events\Api\StoreRepositoryInterface;
-use Zacatrus\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\Data\EventInterface;
+use Zaca\Events\Api\StoreRepositoryInterface;
+use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\View\Element\Template;

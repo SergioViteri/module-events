@@ -1,6 +1,6 @@
 <?php
 
-namespace Zacatrus\Events\Block\Adminhtml\League\Edit;
+namespace Zaca\Events\Block\Adminhtml\League\Edit;
 
 class Form extends \Magento\Backend\Block\Widget\Form\Generic {
     protected function _prepareForm() {

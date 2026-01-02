@@ -7,13 +7,13 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Api\LeagueRepositoryInterface;
-use Zacatrus\Events\Api\Data\LeagueInterface;
-use Zacatrus\Events\Api\Data\LeagueInterfaceFactory;
-use Zacatrus\Events\Model\ResourceModel\League as LeagueResourceModel;
-use Zacatrus\Events\Model\ResourceModel\League\CollectionFactory as LeagueCollectionFactory;
+use Zaca\Events\Api\LeagueRepositoryInterface;
+use Zaca\Events\Api\Data\LeagueInterface;
+use Zaca\Events\Api\Data\LeagueInterfaceFactory;
+use Zaca\Events\Model\ResourceModel\League as LeagueResourceModel;
+use Zaca\Events\Model\ResourceModel\League\CollectionFactory as LeagueCollectionFactory;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;

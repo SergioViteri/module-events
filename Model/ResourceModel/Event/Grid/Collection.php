@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\Event\Grid;
+namespace Zaca\Events\Model\ResourceModel\Event\Grid;
 
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface as FetchStrategy;
 use Magento\Framework\Data\Collection\EntityFactoryInterface as EntityFactory;
@@ -33,7 +33,7 @@ class Collection extends \Magento\Framework\View\Element\UiComponent\DataProvide
         FetchStrategy $fetchStrategy,
         EventManager $eventManager,
         $mainTable = 'zacatrus_events_event',
-        $resourceModel = 'Zacatrus\Events\Model\ResourceModel\Event',
+        $resourceModel = 'Zaca\Events\Model\ResourceModel\Event',
         $identifierName = 'event_id',
         $connectionName = null
     ) {

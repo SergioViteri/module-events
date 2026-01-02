@@ -25,8 +25,8 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Zacatrus_Events::registrations</aclResource>
-        <dataProvider class="Zacatrus\Events\Ui\Component\DataProvider" name="zacatrus_events_registration_listing_data_source">
+        <aclResource>Zaca_Events::registrations</aclResource>
+        <dataProvider class="Zaca\Events\Ui\Component\DataProvider" name="zacatrus_events_registration_listing_data_source">
             <settings>
                 <requestFieldName>id</requestFieldName>
                 <primaryFieldName>registration_id</primaryFieldName>
@@ -117,7 +117,7 @@
                 <label translate="true">Registration Date</label>
             </settings>
         </column>
-        <actionsColumn name="actions" class="Zacatrus\Events\Ui\Component\Listing\Column\RegistrationActions">
+        <actionsColumn name="actions" class="Zaca\Events\Ui\Component\Listing\Column\RegistrationActions">
             <settings>
                 <indexField>registration_id</indexField>
             </settings>

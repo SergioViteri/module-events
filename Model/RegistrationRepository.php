@@ -7,14 +7,14 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Api\RegistrationRepositoryInterface;
-use Zacatrus\Events\Api\Data\RegistrationInterface;
-use Zacatrus\Events\Api\Data\RegistrationInterfaceFactory;
-use Zacatrus\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
-use Zacatrus\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
-use Zacatrus\Events\Model\EventRepository;
+use Zaca\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\Data\RegistrationInterface;
+use Zaca\Events\Api\Data\RegistrationInterfaceFactory;
+use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
+use Zaca\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
+use Zaca\Events\Model\EventRepository;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;

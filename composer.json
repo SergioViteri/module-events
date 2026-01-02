@@ -22,14 +22,14 @@
             "registration.php"
         ],
         "psr-4": {
-            "Zacatrus\\Events\\": ""
+            "Zaca\\Events\\": ""
         }
     },
     "extra": {
         "map": [
             [
                 "*",
-                "app/code/Zacatrus/Events"
+                "app/code/Zaca/Events"
             ]
         ]
     }

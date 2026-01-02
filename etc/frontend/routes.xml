@@ -4,14 +4,14 @@
  * Zacatrus Events Frontend Routes Configuration
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
     <router id="standard">
-        <route id="zacatrus_events" frontName="events">
-            <module name="Zacatrus_Events"/>
+        <route id="zaca_events" frontName="events">
+            <module name="Zaca_Events"/>
         </route>
     </router>
 </config>

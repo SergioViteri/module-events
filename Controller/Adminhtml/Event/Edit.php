@@ -1,11 +1,11 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Event;
+namespace Zaca\Events\Controller\Adminhtml\Event;
 
 use Magento\Backend\App\Action;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Registry;
 use Magento\Backend\Model\Session;
-use Zacatrus\Events\Model\EventFactory;
+use Zaca\Events\Model\EventFactory;
 
 /**
  * Edit form controller
@@ -52,7 +52,7 @@ class Edit extends \Magento\Backend\App\Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::events_manage');
+        return $this->_authorization->isAllowed('Zaca_Events::events_manage');
     }
 
     /**
@@ -64,7 +64,7 @@ class Edit extends \Magento\Backend\App\Action
     {
         /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
-        $resultPage->setActiveMenu('Zacatrus_Events::events_manage')
+        $resultPage->setActiveMenu('Zaca_Events::events_manage')
             ->addBreadcrumb(__('Events'), __('Events'))
             ->addBreadcrumb(__('Manage Events'), __('Manage Events'));
         return $resultPage;
@@ -90,7 +90,7 @@ class Edit extends \Magento\Backend\App\Action
         if (!empty($data)) {
             $model->setData($data);
         }
-        $this->_coreRegistry->register('zacatrus_events_event', $model);
+        $this->_coreRegistry->register('zaca_events_event', $model);
 
         $resultPage = $this->_initAction();
         $resultPage->addBreadcrumb(

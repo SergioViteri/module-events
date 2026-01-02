@@ -4,22 +4,22 @@
  * Zacatrus Events Admin Menu Configuration
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Zacatrus_Events::events" 
+        <add id="Zaca_Events::events" 
              title="Zacatrus Events" 
-             module="Zacatrus_Events" 
+             module="Zaca_Events" 
              sortOrder="100" 
              parent="Magento_Backend::stores"
-             resource="Zacatrus_Events::events"/>
-        <add id="Zacatrus_Events::stores" title="Stores" module="Zacatrus_Events" sortOrder="10" parent="Zacatrus_Events::events" action="zacatrus_events/store" resource="Zacatrus_Events::stores"/>
-        <add id="Zacatrus_Events::events_manage" title="Events" module="Zacatrus_Events" sortOrder="20" parent="Zacatrus_Events::events" action="zacatrus_events/event" resource="Zacatrus_Events::events_manage"/>
-        <add id="Zacatrus_Events::leagues" title="Leagues" module="Zacatrus_Events" sortOrder="30" parent="Zacatrus_Events::events" action="zacatrus_events/league" resource="Zacatrus_Events::leagues"/>
-        <add id="Zacatrus_Events::registrations" title="Registrations" module="Zacatrus_Events" sortOrder="40" parent="Zacatrus_Events::events" action="zacatrus_events/registration" resource="Zacatrus_Events::registrations"/>
+             resource="Zaca_Events::events"/>
+        <add id="Zaca_Events::stores" title="Stores" module="Zaca_Events" sortOrder="10" parent="Zaca_Events::events" action="zaca_events/store" resource="Zaca_Events::stores"/>
+        <add id="Zaca_Events::events_manage" title="Events" module="Zaca_Events" sortOrder="20" parent="Zaca_Events::events" action="zaca_events/event" resource="Zaca_Events::events_manage"/>
+        <add id="Zaca_Events::leagues" title="Leagues" module="Zaca_Events" sortOrder="30" parent="Zaca_Events::events" action="zaca_events/league" resource="Zaca_Events::leagues"/>
+        <add id="Zaca_Events::registrations" title="Registrations" module="Zaca_Events" sortOrder="40" parent="Zaca_Events::events" action="zaca_events/registration" resource="Zaca_Events::registrations"/>
     </menu>
 </config>
 

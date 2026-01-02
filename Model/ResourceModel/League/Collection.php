@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\League;
+namespace Zaca\Events\Model\ResourceModel\League;
 
-use Zacatrus\Events\Model\League as LeagueModel;
-use Zacatrus\Events\Model\ResourceModel\League as LeagueResourceModel;
+use Zaca\Events\Model\League as LeagueModel;
+use Zaca\Events\Model\ResourceModel\League as LeagueResourceModel;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 class Collection extends AbstractCollection

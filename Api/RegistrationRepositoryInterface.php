@@ -7,9 +7,9 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Api;
+namespace Zaca\Events\Api;
 
-use Zacatrus\Events\Api\Data\RegistrationInterface;
+use Zaca\Events\Api\Data\RegistrationInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Exception\CouldNotSaveException;

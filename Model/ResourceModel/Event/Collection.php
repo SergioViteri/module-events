@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\Event;
+namespace Zaca\Events\Model\ResourceModel\Event;
 
-use Zacatrus\Events\Model\Event as EventModel;
-use Zacatrus\Events\Model\ResourceModel\Event as EventResourceModel;
+use Zaca\Events\Model\Event as EventModel;
+use Zaca\Events\Model\ResourceModel\Event as EventResourceModel;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 class Collection extends AbstractCollection

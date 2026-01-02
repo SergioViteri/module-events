@@ -1,11 +1,11 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Store;
+namespace Zaca\Events\Controller\Adminhtml\Store;
 
 use Magento\Backend\App\Action;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Registry;
 use Magento\Backend\Model\Session;
-use Zacatrus\Events\Model\StoreFactory;
+use Zaca\Events\Model\StoreFactory;
 
 /**
  * Edit form controller
@@ -52,7 +52,7 @@ class Edit extends \Magento\Backend\App\Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::stores');
+        return $this->_authorization->isAllowed('Zaca_Events::stores');
     }
 
     /**
@@ -64,7 +64,7 @@ class Edit extends \Magento\Backend\App\Action
     {
         /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
-        $resultPage->setActiveMenu('Zacatrus_Events::stores')
+        $resultPage->setActiveMenu('Zaca_Events::stores')
             ->addBreadcrumb(__('Stores'), __('Stores'))
             ->addBreadcrumb(__('Manage Stores'), __('Manage Stores'));
         return $resultPage;
@@ -90,7 +90,7 @@ class Edit extends \Magento\Backend\App\Action
         if (!empty($data)) {
             $model->setData($data);
         }
-        $this->_coreRegistry->register('zacatrus_events_store', $model);
+        $this->_coreRegistry->register('zaca_events_store', $model);
 
         $resultPage = $this->_initAction();
         $resultPage->addBreadcrumb(

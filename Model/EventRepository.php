@@ -7,14 +7,14 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Api\EventRepositoryInterface;
-use Zacatrus\Events\Api\Data\EventInterface;
-use Zacatrus\Events\Api\Data\EventInterfaceFactory;
-use Zacatrus\Events\Model\ResourceModel\Event as EventResourceModel;
-use Zacatrus\Events\Model\ResourceModel\Event\CollectionFactory as EventCollectionFactory;
-use Zacatrus\Events\Model\Event\RecurrenceGenerator;
+use Zaca\Events\Api\EventRepositoryInterface;
+use Zaca\Events\Api\Data\EventInterface;
+use Zaca\Events\Api\Data\EventInterfaceFactory;
+use Zaca\Events\Model\ResourceModel\Event as EventResourceModel;
+use Zaca\Events\Model\ResourceModel\Event\CollectionFactory as EventCollectionFactory;
+use Zaca\Events\Model\Event\RecurrenceGenerator;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;

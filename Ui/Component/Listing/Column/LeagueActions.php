@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Ui\Component\Listing\Column;
+namespace Zaca\Events\Ui\Component\Listing\Column;
 
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -52,11 +52,11 @@ class LeagueActions extends Column
                 $name = $this->getData('name');
                 if (isset($item['league_id'])) {
                     $item[$name]['edit'] = [
-                        'href' => $this->urlBuilder->getUrl('zacatrus_events/league/edit', ['league_id' => $item['league_id']]),
+                        'href' => $this->urlBuilder->getUrl('zaca_events/league/edit', ['league_id' => $item['league_id']]),
                         'label' => __('Edit')
                     ];
                     $item[$name]['delete'] = [
-                        'href' => $this->urlBuilder->getUrl('zacatrus_events/league/delete', ['league_id' => $item['league_id']]),
+                        'href' => $this->urlBuilder->getUrl('zaca_events/league/delete', ['league_id' => $item['league_id']]),
                         'label' => __('Delete'),
                         'confirm' => [
                             'title' => __('Delete League'),

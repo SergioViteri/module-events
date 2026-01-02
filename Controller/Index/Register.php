@@ -7,9 +7,9 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Index;
+namespace Zaca\Events\Controller\Index;
 
-use Zacatrus\Events\Api\RegistrationRepositoryInterface;
+use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;

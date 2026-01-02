@@ -7,11 +7,11 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Ui\Component\Form;
+namespace Zaca\Events\Ui\Component\Form;
 
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\App\RequestInterface;
-use Zacatrus\Events\Model\StoreFactory;
+use Zaca\Events\Model\StoreFactory;
 use Magento\Ui\DataProvider\AbstractDataProvider;
 
 class DataProvider extends AbstractDataProvider
@@ -84,12 +84,12 @@ class DataProvider extends AbstractDataProvider
             }
         }
 
-        $data = $this->dataPersistor->get('zacatrus_events_store');
+        $data = $this->dataPersistor->get('zaca_events_store');
         if (!empty($data)) {
             $store = $this->collection->getNewEmptyItem();
             $store->setData($data);
             $this->loadedData[$store->getId()] = $store->getData();
-            $this->dataPersistor->clear('zacatrus_events_store');
+            $this->dataPersistor->clear('zaca_events_store');
         }
 
         return $this->loadedData;

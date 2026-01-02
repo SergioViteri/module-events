@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\Registration;
+namespace Zaca\Events\Model\ResourceModel\Registration;
 
-use Zacatrus\Events\Model\Registration as RegistrationModel;
-use Zacatrus\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
+use Zaca\Events\Model\Registration as RegistrationModel;
+use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 class Collection extends AbstractCollection

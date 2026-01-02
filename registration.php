@@ -11,7 +11,7 @@ use Magento\Framework\Component\ComponentRegistrar;
 
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
-    'Zacatrus_Events',
+    'Zaca_Events',
     __DIR__
 );
 

@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Model\ResourceModel\League as LeagueResourceModel;
-use Zacatrus\Events\Api\Data\LeagueInterface;
+use Zaca\Events\Model\ResourceModel\League as LeagueResourceModel;
+use Zaca\Events\Api\Data\LeagueInterface;
 use Magento\Framework\Model\AbstractModel;
 
 class League extends AbstractModel implements LeagueInterface

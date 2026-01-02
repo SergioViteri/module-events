@@ -1,5 +1,5 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Registration;
+namespace Zaca\Events\Controller\Adminhtml\Registration;
 
 /**
  * Class NewAction
@@ -22,7 +22,7 @@ class NewAction extends \Magento\Backend\App\Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::registrations');
+        return $this->_authorization->isAllowed('Zaca_Events::registrations');
     }
     
     /**

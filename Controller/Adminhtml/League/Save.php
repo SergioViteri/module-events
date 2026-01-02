@@ -1,9 +1,9 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\League;
+namespace Zaca\Events\Controller\Adminhtml\League;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\Session;
-use Zacatrus\Events\Model\LeagueFactory;
+use Zaca\Events\Model\LeagueFactory;
 
 class Save extends Action
 {
@@ -37,7 +37,7 @@ class Save extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::leagues');
+        return $this->_authorization->isAllowed('Zaca_Events::leagues');
     }
 
     /**

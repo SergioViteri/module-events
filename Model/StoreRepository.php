@@ -7,13 +7,13 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Api\StoreRepositoryInterface;
-use Zacatrus\Events\Api\Data\StoreInterface;
-use Zacatrus\Events\Api\Data\StoreInterfaceFactory;
-use Zacatrus\Events\Model\ResourceModel\Store as StoreResourceModel;
-use Zacatrus\Events\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
+use Zaca\Events\Api\StoreRepositoryInterface;
+use Zaca\Events\Api\Data\StoreInterface;
+use Zaca\Events\Api\Data\StoreInterfaceFactory;
+use Zaca\Events\Model\ResourceModel\Store as StoreResourceModel;
+use Zaca\Events\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;

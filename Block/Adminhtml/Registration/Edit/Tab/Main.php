@@ -1,10 +1,10 @@
 <?php
 
-namespace Zacatrus\Events\Block\Adminhtml\Registration\Edit\Tab;
+namespace Zaca\Events\Block\Adminhtml\Registration\Edit\Tab;
 
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
-use Zacatrus\Events\Model\ResourceModel\Event\CollectionFactory as EventCollectionFactory;
+use Zaca\Events\Model\ResourceModel\Event\CollectionFactory as EventCollectionFactory;
 use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory as CustomerCollectionFactory;
 
 class Main extends Generic implements TabInterface {
@@ -60,7 +60,7 @@ class Main extends Generic implements TabInterface {
      * @return $this
      */
     protected function _prepareForm() {
-        $model = $this->_coreRegistry->registry('zacatrus_events_registration');
+        $model = $this->_coreRegistry->registry('zaca_events_registration');
         $isElementDisabled = false;
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('registration_');

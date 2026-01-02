@@ -1,5 +1,5 @@
 <?php
-namespace Zacatrus\Events\Block\Adminhtml\League;
+namespace Zaca\Events\Block\Adminhtml\League;
 
 /**
  * Block for edit page
@@ -32,7 +32,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
     protected function _construct()
     {
         $this->_objectId = 'league_id';
-        $this->_blockGroup = 'Zacatrus_Events';
+        $this->_blockGroup = 'Zaca_Events';
         $this->_controller = 'adminhtml_league';
 
         parent::_construct();
@@ -60,8 +60,8 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
      */
     public function getHeaderText()
     {
-        if ($this->_coreRegistry->registry('zacatrus_events_league')->getId()) {
-            return __("Edit League '%1'", $this->escapeHtml($this->_coreRegistry->registry('zacatrus_events_league')->getName()));
+        if ($this->_coreRegistry->registry('zaca_events_league')->getId()) {
+            return __("Edit League '%1'", $this->escapeHtml($this->_coreRegistry->registry('zaca_events_league')->getName()));
         } else {
             return __('New League');
         }
@@ -74,7 +74,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
      */
     protected function _getSaveAndContinueUrl()
     {
-        return $this->getUrl('zacatrus_events/*/save', ['_current' => true, 'back' => 'edit', 'active_tab' => '{{tab_id}}']);
+        return $this->getUrl('zaca_events/*/save', ['_current' => true, 'back' => 'edit', 'active_tab' => '{{tab_id}}']);
     }
 }
 

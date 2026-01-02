@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
-use Zacatrus\Events\Api\Data\RegistrationInterface;
+use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
+use Zaca\Events\Api\Data\RegistrationInterface;
 use Magento\Framework\Model\AbstractModel;
 
 class Registration extends AbstractModel implements RegistrationInterface

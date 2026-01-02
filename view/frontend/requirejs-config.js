@@ -2,14 +2,14 @@
  * Zacatrus Events RequireJS Configuration
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 
 var config = {
     map: {
         '*': {
-            'zacatrusEventsRegistration': 'Zacatrus_Events/js/event-registration'
+            'zacatrusEventsRegistration': 'Zaca_Events/js/event-registration'
         }
     }
 };

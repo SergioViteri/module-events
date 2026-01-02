@@ -25,8 +25,8 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Zacatrus_Events::events_manage</aclResource>
-        <dataProvider class="Zacatrus\Events\Ui\Component\DataProvider" name="zacatrus_events_event_listing_data_source">
+        <aclResource>Zaca_Events::events_manage</aclResource>
+        <dataProvider class="Zaca\Events\Ui\Component\DataProvider" name="zacatrus_events_event_listing_data_source">
             <settings>
                 <requestFieldName>id</requestFieldName>
                 <primaryFieldName>event_id</primaryFieldName>
@@ -129,7 +129,7 @@
                 <label translate="true">Is Active</label>
             </settings>
         </column>
-        <actionsColumn name="actions" class="Zacatrus\Events\Ui\Component\Listing\Column\EventActions">
+        <actionsColumn name="actions" class="Zaca\Events\Ui\Component\Listing\Column\EventActions">
             <settings>
                 <indexField>event_id</indexField>
             </settings>

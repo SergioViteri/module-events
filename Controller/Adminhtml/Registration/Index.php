@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\Registration;
+namespace Zaca\Events\Controller\Adminhtml\Registration;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -37,7 +37,7 @@ class Index extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::registrations');
+        return $this->_authorization->isAllowed('Zaca_Events::registrations');
     }
 
     /**
@@ -48,7 +48,7 @@ class Index extends Action
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->setActiveMenu('Zacatrus_Events::registrations');
+        $resultPage->setActiveMenu('Zaca_Events::registrations');
         $resultPage->getConfig()->getTitle()->prepend(__('Registrations'));
         return $resultPage;
     }

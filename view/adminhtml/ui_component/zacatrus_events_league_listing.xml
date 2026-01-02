@@ -25,8 +25,8 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Zacatrus_Events::leagues</aclResource>
-        <dataProvider class="Zacatrus\Events\Ui\Component\DataProvider" name="zacatrus_events_league_listing_data_source">
+        <aclResource>Zaca_Events::leagues</aclResource>
+        <dataProvider class="Zaca\Events\Ui\Component\DataProvider" name="zacatrus_events_league_listing_data_source">
             <settings>
                 <requestFieldName>id</requestFieldName>
                 <primaryFieldName>league_id</primaryFieldName>
@@ -115,7 +115,7 @@
                 <label translate="true">Is Active</label>
             </settings>
         </column>
-        <actionsColumn name="actions" class="Zacatrus\Events\Ui\Component\Listing\Column\LeagueActions">
+        <actionsColumn name="actions" class="Zaca\Events\Ui\Component\Listing\Column\LeagueActions">
             <settings>
                 <indexField>league_id</indexField>
             </settings>

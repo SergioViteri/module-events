@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Api\Data;
+namespace Zaca\Events\Api\Data;
 
 interface StoreInterface
 {

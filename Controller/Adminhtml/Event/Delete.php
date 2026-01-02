@@ -1,8 +1,8 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Event;
+namespace Zaca\Events\Controller\Adminhtml\Event;
 
 use Magento\Backend\App\Action;
-use Zacatrus\Events\Model\EventFactory;
+use Zaca\Events\Model\EventFactory;
 
 class Delete extends Action
 {
@@ -28,7 +28,7 @@ class Delete extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::events_manage');
+        return $this->_authorization->isAllowed('Zaca_Events::events_manage');
     }
 
     /**

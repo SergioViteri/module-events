@@ -4,12 +4,12 @@
  * Zacatrus Events Module Configuration
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Zacatrus_Events" setup_version="1.0.0">
+    <module name="Zaca_Events" setup_version="1.0.0">
         <sequence>
             <module name="Magento_Customer"/>
             <module name="Magento_Store"/>

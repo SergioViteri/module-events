@@ -35,7 +35,7 @@
         <settings>
             <submitUrl path="zacatrus_events/store/save"/>
         </settings>
-        <dataProvider class="Zacatrus\Events\Ui\Component\Form\DataProvider" name="zacatrus_events_store_form_data_source">
+        <dataProvider class="Zaca\Events\Ui\Component\Form\DataProvider" name="zacatrus_events_store_form_data_source">
             <settings>
                 <requestFieldName>store_id</requestFieldName>
                 <primaryFieldName>store_id</primaryFieldName>

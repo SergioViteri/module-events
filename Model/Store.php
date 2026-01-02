@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Model\ResourceModel\Store as StoreResourceModel;
-use Zacatrus\Events\Api\Data\StoreInterface;
+use Zaca\Events\Model\ResourceModel\Store as StoreResourceModel;
+use Zaca\Events\Api\Data\StoreInterface;
 use Magento\Framework\Model\AbstractModel;
 
 class Store extends AbstractModel implements StoreInterface

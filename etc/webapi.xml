@@ -4,28 +4,28 @@
  * Zacatrus Events Web API Configuration
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 -->
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
     <!-- Public Events API (requires customer authentication) -->
     <route url="/V1/zacatrus-events/events" method="GET">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="getList"/>
         <resources>
             <resource ref="self"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/events/:eventId" method="GET">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="getById"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="getById"/>
         <resources>
             <resource ref="self"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/events/:eventId/register" method="POST">
-        <service class="Zacatrus\Events\Api\RegistrationRepositoryInterface" method="registerCustomer"/>
+        <service class="Zaca\Events\Api\RegistrationRepositoryInterface" method="registerCustomer"/>
         <resources>
             <resource ref="self"/>
         </resources>
@@ -36,7 +36,7 @@
     </route>
 
     <route url="/V1/zacatrus-events/events/:eventId/register" method="DELETE">
-        <service class="Zacatrus\Events\Api\RegistrationRepositoryInterface" method="unregisterCustomer"/>
+        <service class="Zaca\Events\Api\RegistrationRepositoryInterface" method="unregisterCustomer"/>
         <resources>
             <resource ref="self"/>
         </resources>
@@ -47,7 +47,7 @@
     </route>
 
     <route url="/V1/zacatrus-events/my-registrations" method="GET">
-        <service class="Zacatrus\Events\Api\RegistrationRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\RegistrationRepositoryInterface" method="getList"/>
         <resources>
             <resource ref="self"/>
         </resources>
@@ -55,107 +55,107 @@
 
     <!-- Admin API -->
     <route url="/V1/zacatrus-events/stores" method="GET">
-        <service class="Zacatrus\Events\Api\StoreRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="getList"/>
         <resources>
-            <resource ref="Zacatrus_Events::stores"/>
+            <resource ref="Zaca_Events::stores"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/stores" method="POST">
-        <service class="Zacatrus\Events\Api\StoreRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::stores"/>
+            <resource ref="Zaca_Events::stores"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/stores/:storeId" method="GET">
-        <service class="Zacatrus\Events\Api\StoreRepositoryInterface" method="getById"/>
+        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="getById"/>
         <resources>
-            <resource ref="Zacatrus_Events::stores"/>
+            <resource ref="Zaca_Events::stores"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/stores/:storeId" method="PUT">
-        <service class="Zacatrus\Events\Api\StoreRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::stores"/>
+            <resource ref="Zaca_Events::stores"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/stores/:storeId" method="DELETE">
-        <service class="Zacatrus\Events\Api\StoreRepositoryInterface" method="deleteById"/>
+        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="deleteById"/>
         <resources>
-            <resource ref="Zacatrus_Events::stores"/>
+            <resource ref="Zaca_Events::stores"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/events" method="GET">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="getList"/>
         <resources>
-            <resource ref="Zacatrus_Events::events_manage"/>
+            <resource ref="Zaca_Events::events_manage"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/events" method="POST">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::events_manage"/>
+            <resource ref="Zaca_Events::events_manage"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/events/:eventId" method="PUT">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::events_manage"/>
+            <resource ref="Zaca_Events::events_manage"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/events/:eventId" method="DELETE">
-        <service class="Zacatrus\Events\Api\EventRepositoryInterface" method="deleteById"/>
+        <service class="Zaca\Events\Api\EventRepositoryInterface" method="deleteById"/>
         <resources>
-            <resource ref="Zacatrus_Events::events_manage"/>
+            <resource ref="Zaca_Events::events_manage"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/leagues" method="GET">
-        <service class="Zacatrus\Events\Api\LeagueRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="getList"/>
         <resources>
-            <resource ref="Zacatrus_Events::leagues"/>
+            <resource ref="Zaca_Events::leagues"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/leagues" method="POST">
-        <service class="Zacatrus\Events\Api\LeagueRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::leagues"/>
+            <resource ref="Zaca_Events::leagues"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/leagues/:leagueId" method="GET">
-        <service class="Zacatrus\Events\Api\LeagueRepositoryInterface" method="getById"/>
+        <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="getById"/>
         <resources>
-            <resource ref="Zacatrus_Events::leagues"/>
+            <resource ref="Zaca_Events::leagues"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/leagues/:leagueId" method="PUT">
-        <service class="Zacatrus\Events\Api\LeagueRepositoryInterface" method="save"/>
+        <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="save"/>
         <resources>
-            <resource ref="Zacatrus_Events::leagues"/>
+            <resource ref="Zaca_Events::leagues"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/leagues/:leagueId" method="DELETE">
-        <service class="Zacatrus\Events\Api\LeagueRepositoryInterface" method="deleteById"/>
+        <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="deleteById"/>
         <resources>
-            <resource ref="Zacatrus_Events::leagues"/>
+            <resource ref="Zaca_Events::leagues"/>
         </resources>
     </route>
 
     <route url="/V1/zacatrus-events/admin/registrations" method="GET">
-        <service class="Zacatrus\Events\Api\RegistrationRepositoryInterface" method="getList"/>
+        <service class="Zaca\Events\Api\RegistrationRepositoryInterface" method="getList"/>
         <resources>
-            <resource ref="Zacatrus_Events::registrations"/>
+            <resource ref="Zaca_Events::registrations"/>
         </resources>
     </route>
 </routes>

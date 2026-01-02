@@ -2,7 +2,7 @@
  * Zacatrus Events Registration JavaScript
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 

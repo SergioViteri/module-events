@@ -3,11 +3,11 @@
     <update handle="editor"/>
     <body>
         <referenceContainer name="content">
-            <block class="Zacatrus\Events\Block\Adminhtml\Event\Edit" name="event_edit"/>
+            <block class="Zaca\Events\Block\Adminhtml\Event\Edit" name="event_edit"/>
         </referenceContainer>
         <referenceContainer name="left">
-            <block class="Zacatrus\Events\Block\Adminhtml\Event\Edit\Tabs" name="event_edit_tabs">
-                <block class="Zacatrus\Events\Block\Adminhtml\Event\Edit\Tab\Main" name="event_edit_tab_main"/>
+            <block class="Zaca\Events\Block\Adminhtml\Event\Edit\Tabs" name="event_edit_tabs">
+                <block class="Zaca\Events\Block\Adminhtml\Event\Edit\Tab\Main" name="event_edit_tab_main"/>
                 <action method="addTab">
                     <argument name="name" xsi:type="string">main_section</argument>
                     <argument name="block" xsi:type="string">event_edit_tab_main</argument>

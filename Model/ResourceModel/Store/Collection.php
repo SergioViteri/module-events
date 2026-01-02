@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model\ResourceModel\Store;
+namespace Zaca\Events\Model\ResourceModel\Store;
 
-use Zacatrus\Events\Model\Store as StoreModel;
-use Zacatrus\Events\Model\ResourceModel\Store as StoreResourceModel;
+use Zaca\Events\Model\Store as StoreModel;
+use Zaca\Events\Model\ResourceModel\Store as StoreResourceModel;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 class Collection extends AbstractCollection

@@ -4,7 +4,7 @@
  * Zacatrus Events Store Listing UI Component
  *
  * @category    Zacatrus
- * @package     Zacatrus_Events
+ * @package     Zaca_Events
  * @author      Zacatrus
  */
 -->
@@ -34,8 +34,8 @@
             </storageConfig>
             <updateUrl path="mui/index/render"/>
         </settings>
-        <aclResource>Zacatrus_Events::stores</aclResource>
-        <dataProvider class="Zacatrus\Events\Ui\Component\DataProvider" name="zacatrus_events_store_listing_data_source">
+        <aclResource>Zaca_Events::stores</aclResource>
+        <dataProvider class="Zaca\Events\Ui\Component\DataProvider" name="zacatrus_events_store_listing_data_source">
             <settings>
                 <requestFieldName>id</requestFieldName>
                 <primaryFieldName>store_id</primaryFieldName>
@@ -144,7 +144,7 @@
                 <label translate="true">Created At</label>
             </settings>
         </column>
-        <actionsColumn name="actions" class="Zacatrus\Events\Ui\Component\Listing\Column\StoreActions">
+        <actionsColumn name="actions" class="Zaca\Events\Ui\Component\Listing\Column\StoreActions">
             <settings>
                 <indexField>store_id</indexField>
             </settings>

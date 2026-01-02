@@ -7,7 +7,7 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Controller\Adminhtml\Store;
+namespace Zaca\Events\Controller\Adminhtml\Store;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -37,7 +37,7 @@ class Index extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::stores');
+        return $this->_authorization->isAllowed('Zaca_Events::stores');
     }
 
     /**
@@ -48,7 +48,7 @@ class Index extends Action
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->setActiveMenu('Zacatrus_Events::stores');
+        $resultPage->setActiveMenu('Zaca_Events::stores');
         $resultPage->getConfig()->getTitle()->prepend(__('Stores'));
         return $resultPage;
     }

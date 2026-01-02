@@ -7,10 +7,10 @@
  * @author      Zacatrus
  */
 
-namespace Zacatrus\Events\Model;
+namespace Zaca\Events\Model;
 
-use Zacatrus\Events\Model\ResourceModel\Event as EventResourceModel;
-use Zacatrus\Events\Api\Data\EventInterface;
+use Zaca\Events\Model\ResourceModel\Event as EventResourceModel;
+use Zaca\Events\Api\Data\EventInterface;
 use Magento\Framework\Model\AbstractModel;
 
 class Event extends AbstractModel implements EventInterface

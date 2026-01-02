@@ -1,8 +1,8 @@
 <?php
-namespace Zacatrus\Events\Controller\Adminhtml\Registration;
+namespace Zaca\Events\Controller\Adminhtml\Registration;
 
 use Magento\Backend\App\Action;
-use Zacatrus\Events\Model\RegistrationFactory;
+use Zaca\Events\Model\RegistrationFactory;
 
 class Delete extends Action
 {
@@ -28,7 +28,7 @@ class Delete extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('Zacatrus_Events::registrations');
+        return $this->_authorization->isAllowed('Zaca_Events::registrations');
     }
 
     /**
