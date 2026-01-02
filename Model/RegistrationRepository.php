@@ -207,9 +207,6 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         
         $now = new \DateTime();
         $startDate = new \DateTime($meet->getStartDate());
-        if ($startDate <= $now) {
-            throw new LocalizedException(__('This meet has already started or finished.'));
-        }
 
         // Check available slots
         $confirmedRegistrations = $this->registrationCollectionFactory->create();

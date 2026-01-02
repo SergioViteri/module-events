@@ -209,8 +209,8 @@ class Email extends AbstractHelper
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'meet_description' => $meet->getDescription() ?: '',
                 'status' => $registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED
-                    ? __('Confirmed')
-                    : __('Waitlist'),
+                    ? __('Confirmed')->render()
+                    : __('Waitlist')->render(),
                 'is_admin_initiated' => $isAdminInitiated
             ];
             

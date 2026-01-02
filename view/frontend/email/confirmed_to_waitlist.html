@@ -43,16 +43,15 @@
                     <td><strong>{{trans "Location:"}}</strong></td>
                     <td>{{var meet_location}}</td>
                 </tr>
-                {{depend meet_description}}
-                <tr>
-                    <td><strong>{{trans "Description:"}}</strong></td>
-                    <td>{{var meet_description}}</td>
-                </tr>
-                {{/depend}}
                 <tr>
                     <td><strong>{{trans "Status:"}}</strong></td>
                     <td>{{trans "Waitlist"}}</td>
                 </tr>
+                {{depend meet_description}}
+                <tr>
+                    <td colspan="2">{{var meet_description|raw}}</td>
+                </tr>
+                {{/depend}}
             </table>
         </td>
     </tr>

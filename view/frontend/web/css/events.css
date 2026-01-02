@@ -677,7 +677,7 @@
     }
 
     .event-theme {
-        font-size: 1.15rem;
+        font-size: 1.4rem;
         padding: 0.6rem 1.2rem;
     }
 }
@@ -725,12 +725,6 @@
     margin-top: 1.5rem;
     padding-top: 1.5rem;
     border-top: 2px solid #eee;
-}
-
-.event-card-detailed .event-description strong {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-size: 1.1rem;
 }
 
 .event-card-detailed .description-content {
