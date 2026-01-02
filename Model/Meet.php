@@ -90,6 +90,22 @@ class Meet extends AbstractModel implements MeetInterface
     /**
      * @inheritdoc
      */
+    public function getThemeId()
+    {
+        return $this->getData(self::THEME_ID);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setThemeId($themeId)
+    {
+        return $this->setData(self::THEME_ID, $themeId);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getStartDate()
     {
         return $this->getData(self::START_DATE);
@@ -165,6 +181,22 @@ class Meet extends AbstractModel implements MeetInterface
     public function setRecurrenceType($recurrenceType)
     {
         return $this->setData(self::RECURRENCE_TYPE, $recurrenceType);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEndDate()
+    {
+        return $this->getData(self::END_DATE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEndDate($endDate)
+    {
+        return $this->setData(self::END_DATE, $endDate);
     }
 
     /**

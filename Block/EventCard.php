@@ -13,6 +13,7 @@ use Zaca\Events\Api\Data\MeetInterface;
 use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
+use Zaca\Events\Api\ThemeRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\View\Element\Template;
@@ -51,12 +52,18 @@ class EventCard extends Template
     protected $eventTypeRepository;
 
     /**
+     * @var ThemeRepositoryInterface
+     */
+    protected $themeRepository;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
      * @param EventTypeRepositoryInterface $eventTypeRepository
+     * @param ThemeRepositoryInterface $themeRepository
      * @param array $data
      */
     public function __construct(
@@ -66,6 +73,7 @@ class EventCard extends Template
         Session $customerSession,
         SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
         EventTypeRepositoryInterface $eventTypeRepository,
+        ThemeRepositoryInterface $themeRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -74,6 +82,7 @@ class EventCard extends Template
         $this->customerSession = $customerSession;
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
         $this->eventTypeRepository = $eventTypeRepository;
+        $this->themeRepository = $themeRepository;
     }
 
     /**
@@ -261,6 +270,145 @@ class EventCard extends Template
     public function getUnregisterUrl($meetId)
     {
         return $this->getUrl('events/index/unregister', ['_query' => ['meetId' => $meetId]]);
+    }
+
+    /**
+     * Get login URL with return URL parameter
+     *
+     * @return string
+     */
+    public function getLoginUrlWithReturn()
+    {
+        $currentUrl = $this->_urlBuilder->getCurrentUrl();
+        return $this->getUrl('customer/account/login', ['_query' => ['referer' => base64_encode($currentUrl)]]);
+    }
+
+    /**
+     * Get event description with HTML allowed
+     *
+     * @return string
+     */
+    public function getDescriptionHtml()
+    {
+        if (!$this->event) {
+            return '';
+        }
+
+        return $this->event->getDescription() ?: '';
+    }
+
+    /**
+     * Check if event is recurring
+     *
+     * @return bool
+     */
+    public function isRecurring()
+    {
+        if (!$this->event) {
+            return false;
+        }
+
+        return $this->event->getRecurrenceType() !== MeetInterface::RECURRENCE_TYPE_NONE;
+    }
+
+    /**
+     * Get next occurrence date for recurring events
+     *
+     * @return string|null
+     */
+    public function getNextOccurrenceDate()
+    {
+        if (!$this->isRecurring() || !$this->event) {
+            return null;
+        }
+
+        $startDate = new \DateTime($this->event->getStartDate());
+        $now = new \DateTime();
+        $recurrenceType = $this->event->getRecurrenceType();
+
+        // Calculate next occurrence
+        $nextDate = clone $startDate;
+
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            // Biweekly (every 15 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+15 days');
+            }
+        } elseif ($recurrenceType === MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            // Weekly (every 7 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+7 days');
+            }
+        } else {
+            return null;
+        }
+
+        return $nextDate->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Get periodicity label
+     *
+     * @return string|null
+     */
+    public function getPeriodicityLabel()
+    {
+        if (!$this->isRecurring() || !$this->event) {
+            return null;
+        }
+
+        $recurrenceType = $this->event->getRecurrenceType();
+
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            return __('Biweekly');
+        } elseif ($recurrenceType === MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            return __('Weekly');
+        }
+
+        return null;
+    }
+
+    /**
+     * Format event date display (handles recurring events)
+     *
+     * @return string
+     */
+    public function getFormattedEventDate()
+    {
+        if (!$this->event) {
+            return '';
+        }
+
+        if ($this->isRecurring()) {
+            $nextDate = $this->getNextOccurrenceDate();
+            $periodicity = $this->getPeriodicityLabel();
+            
+            if ($nextDate && $periodicity) {
+                $formattedDate = $this->formatEventDate($nextDate);
+                return $formattedDate . ' (' . $periodicity . ')';
+            }
+        }
+
+        return $this->formatEventDate($this->event->getStartDate());
+    }
+
+    /**
+     * Get theme name for the event
+     *
+     * @return string|null
+     */
+    public function getThemeName()
+    {
+        if (!$this->event || !$this->event->getThemeId()) {
+            return null;
+        }
+
+        try {
+            $theme = $this->themeRepository->getById($this->event->getThemeId());
+            return $theme->getName();
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
 

@@ -13,6 +13,8 @@ use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
 use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollectionFactory;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
+use Zaca\Events\Api\ThemeRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 
 class Main extends Generic implements TabInterface
 {
@@ -39,12 +41,24 @@ class Main extends Generic implements TabInterface
     protected $eventTypeRepository;
 
     /**
+     * @var ThemeRepositoryInterface
+     */
+    protected $themeRepository;
+
+    /**
+     * @var SearchCriteriaBuilderFactory
+     */
+    protected $searchCriteriaBuilderFactory;
+
+    /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\Registry             $registry
      * @param \Magento\Framework\Data\FormFactory     $formFactory
      * @param \Magento\Backend\Model\Auth\Session     $adminSession
      * @param LocationCollectionFactory              $locationCollectionFactory
      * @param EventTypeRepositoryInterface           $eventTypeRepository
+     * @param ThemeRepositoryInterface               $themeRepository
+     * @param SearchCriteriaBuilderFactory           $searchCriteriaBuilderFactory
      * @param array                                   $data
      */
     public function __construct(
@@ -54,11 +68,15 @@ class Main extends Generic implements TabInterface
         \Magento\Backend\Model\Auth\Session $adminSession,
         LocationCollectionFactory $locationCollectionFactory,
         EventTypeRepositoryInterface $eventTypeRepository,
+        ThemeRepositoryInterface $themeRepository,
+        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
         array $data = []
     ) {
         $this->_adminSession = $adminSession;
         $this->locationCollectionFactory = $locationCollectionFactory;
         $this->eventTypeRepository = $eventTypeRepository;
+        $this->themeRepository = $themeRepository;
+        $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -130,6 +148,34 @@ class Main extends Generic implements TabInterface
             ]
         );
         
+        // Get themes from database
+        $themeOptions = ['' => __('-- Please Select --')];
+        try {
+            $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+            $searchCriteriaBuilder->addFilter('is_active', 1);
+            $searchCriteria = $searchCriteriaBuilder->create();
+            $themes = $this->themeRepository->getList($searchCriteria);
+            foreach ($themes->getItems() as $theme) {
+                $themeOptions[$theme->getThemeId()] = $theme->getName();
+            }
+        } catch (\Exception $e) {
+            // If themes don't exist yet, just use empty options
+        }
+        
+        $fieldset->addField(
+            'theme_id',
+            'select',
+            [
+                'name' => 'theme_id',
+                'label' => __('Theme'),
+                'title' => __('Theme'),
+                'required' => false,
+                'disabled' => $isElementDisabled,
+                'options' => $themeOptions,
+                'note' => __('Optional. Select a theme for this meet.'),
+            ]
+        );
+        
         $fieldset->addField(
             'start_date',
             'date',
@@ -140,6 +186,20 @@ class Main extends Generic implements TabInterface
                 'date_format' => 'yyyy-MM-dd',
                 'time_format' => 'HH:mm:ss',
                 'required' => true,
+            ]
+        );
+        
+        $fieldset->addField(
+            'end_date',
+            'date',
+            [
+                'name' => 'end_date',
+                'label' => __('End Date'),
+                'title' => __('End Date (for recurring events)'),
+                'date_format' => 'yyyy-MM-dd',
+                'time_format' => 'HH:mm:ss',
+                'required' => false,
+                'note' => __('Optional. Set an end date for recurring events to limit when they stop appearing.'),
             ]
         );
         

@@ -13,7 +13,12 @@ $registrationStatus = $block->getRegistrationStatus();
 ?>
 <div class="event-card" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
     <div class="event-header">
-        <h3 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h3>
+        <div class="event-name-wrapper">
+            <h3 class="event-name"><?= $block->escapeHtml($event->getName()) ?></h3>
+            <?php if ($block->getThemeName()): ?>
+                <span class="event-theme"><?= $block->escapeHtml($block->getThemeName()) ?></span>
+            <?php endif; ?>
+        </div>
         <span class="event-type"><?= $block->escapeHtml($block->getEventTypeLabel()) ?></span>
     </div>
 
@@ -25,7 +30,7 @@ $registrationStatus = $block->getRegistrationStatus();
 
         <div class="event-detail">
             <strong><?= $block->escapeHtml(__('Date:')) ?></strong>
-            <span><?= $block->escapeHtml($block->formatEventDate($event->getStartDate())) ?></span>
+            <span><?= $block->escapeHtml($block->getFormattedEventDate()) ?></span>
         </div>
 
         <div class="event-detail">
@@ -42,7 +47,7 @@ $registrationStatus = $block->getRegistrationStatus();
 
         <?php if ($event->getDescription()): ?>
             <div class="event-description">
-                <?= $block->escapeHtml($event->getDescription()) ?>
+                <?= /* @noEscape */ $block->getDescriptionHtml() ?>
             </div>
         <?php endif; ?>
     </div>
@@ -81,7 +86,7 @@ $registrationStatus = $block->getRegistrationStatus();
                 <?php endif; ?>
             <?php endif; ?>
         <?php else: ?>
-            <a href="<?= $block->escapeUrl($block->getUrl('customer/account/login')) ?>" 
+            <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" 
                class="action primary">
                 <?= $block->escapeHtml(__('Login to Register')) ?>
             </a>

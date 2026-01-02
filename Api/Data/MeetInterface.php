@@ -15,11 +15,13 @@ interface MeetInterface
     const NAME = 'name';
     const LOCATION_ID = 'location_id';
     const MEET_TYPE = 'meet_type';
+    const THEME_ID = 'theme_id';
     const START_DATE = 'start_date';
     const DURATION_MINUTES = 'duration_minutes';
     const MAX_SLOTS = 'max_slots';
     const DESCRIPTION = 'description';
     const RECURRENCE_TYPE = 'recurrence_type';
+    const END_DATE = 'end_date';
     const IS_ACTIVE = 'is_active';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -91,6 +93,21 @@ interface MeetInterface
      * @return $this
      */
     public function setMeetType($meetType);
+
+    /**
+     * Get theme ID
+     *
+     * @return int|null
+     */
+    public function getThemeId();
+
+    /**
+     * Set theme ID
+     *
+     * @param int|null $themeId
+     * @return $this
+     */
+    public function setThemeId($themeId);
 
     /**
      * Get start date
@@ -166,6 +183,21 @@ interface MeetInterface
      * @return $this
      */
     public function setRecurrenceType($recurrenceType);
+
+    /**
+     * Get end date
+     *
+     * @return string|null
+     */
+    public function getEndDate();
+
+    /**
+     * Set end date
+     *
+     * @param string|null $endDate
+     * @return $this
+     */
+    public function setEndDate($endDate);
 
     /**
      * Get is active

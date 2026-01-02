@@ -46,16 +46,37 @@
         </index>
     </table>
 
+    <table name="zaca_events_theme" resource="default" engine="innodb" comment="Zacatrus Events Themes">
+        <column xsi:type="int" name="theme_id" unsigned="true" nullable="false" identity="true" comment="Theme ID"/>
+        <column xsi:type="varchar" name="name" length="255" nullable="false" comment="Theme Name"/>
+        <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Is Active"/>
+        <column xsi:type="int" name="sort_order" unsigned="true" nullable="false" default="0" comment="Sort Order"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="theme_id"/>
+        </constraint>
+        <index referenceId="IDX_ZACA_EVENTS_THEME_IS_ACTIVE" indexType="btree">
+            <column name="is_active"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_THEME_SORT_ORDER" indexType="btree">
+            <column name="sort_order"/>
+        </index>
+    </table>
+
     <table name="zaca_events_meet" resource="default" engine="innodb" comment="Zacatrus Events Meets">
         <column xsi:type="int" name="meet_id" unsigned="true" nullable="false" identity="true" comment="Meet ID"/>
         <column xsi:type="varchar" name="name" length="255" nullable="false" comment="Meet Name"/>
         <column xsi:type="int" name="location_id" unsigned="true" nullable="false" comment="Location ID"/>
         <column xsi:type="varchar" name="meet_type" length="50" nullable="false" comment="Meet Type (casual, league, special)"/>
+        <column xsi:type="int" name="theme_id" unsigned="true" nullable="true" comment="Theme ID"/>
         <column xsi:type="datetime" name="start_date" nullable="false" comment="Start Date"/>
         <column xsi:type="int" name="duration_minutes" unsigned="true" nullable="false" comment="Duration in Minutes"/>
         <column xsi:type="int" name="max_slots" unsigned="true" nullable="false" comment="Maximum Slots"/>
         <column xsi:type="text" name="description" nullable="true" comment="Description"/>
         <column xsi:type="varchar" name="recurrence_type" length="20" nullable="false" default="none" comment="Recurrence Type (none, quincenal)"/>
+        <column xsi:type="datetime" name="end_date" nullable="true" comment="End Date (for recurring events)"/>
         <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Is Active"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
@@ -63,8 +84,12 @@
             <column name="meet_id"/>
         </constraint>
         <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_MEET_LOCATION_ID" table="zaca_events_meet" column="location_id" referenceTable="zaca_events_location" referenceColumn="location_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_MEET_THEME_ID" table="zaca_events_meet" column="theme_id" referenceTable="zaca_events_theme" referenceColumn="theme_id" onDelete="SET NULL"/>
         <index referenceId="IDX_ZACA_EVENTS_MEET_LOCATION_ID" indexType="btree">
             <column name="location_id"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_MEET_THEME_ID" indexType="btree">
+            <column name="theme_id"/>
         </index>
         <index referenceId="IDX_ZACA_EVENTS_MEET_START_DATE" indexType="btree">
             <column name="start_date"/>

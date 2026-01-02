@@ -59,6 +59,10 @@ define([
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
+                        // Update available slots if provided
+                        if (response.availableSlots !== undefined && response.maxSlots !== undefined) {
+                            self.updateAvailableSlots($card, response.availableSlots, response.maxSlots);
+                        }
                         // Update button to Unregister without reloading
                         self.updateButtonToUnregister($button, $card, meetId, response.status);
                     } else {
@@ -100,8 +104,12 @@ define([
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
+                        // Update available slots if provided
+                        if (response.availableSlots !== undefined && response.maxSlots !== undefined) {
+                            self.updateAvailableSlots($card, response.availableSlots, response.maxSlots);
+                        }
                         // Update button to Register without reloading
-                        self.updateButtonToRegister($button, $card, meetId);
+                        self.updateButtonToRegister($button, $card, meetId, response.availableSlots);
                     } else {
                         self.showMessage(response.message || $t('An error occurred.'), 'error', $card);
                         $card.removeClass('loading');
@@ -149,10 +157,14 @@ define([
         /**
          * Update button to Register after successful unregistration
          */
-        updateButtonToRegister: function ($button, $card, meetId) {
+        updateButtonToRegister: function ($button, $card, meetId, availableSlots) {
             var $actions = $card.find('.event-actions');
             var registerUrl = $button.data('url').replace('unregister', 'register');
-            var availableSlots = parseInt($card.find('.slots-count').text().split('/')[0].trim());
+            
+            // Get available slots from parameter or DOM
+            if (availableSlots === undefined) {
+                availableSlots = parseInt($card.find('.slots-count').text().split('/')[0].trim());
+            }
             
             // Remove registration status
             $actions.find('.registration-status').remove();
@@ -165,12 +177,29 @@ define([
             
             // Update button text based on available slots
             if (availableSlots > 0) {
-                $button.text($t('Register'));
+                $button.removeClass('waitlist-btn').text($t('Register'));
             } else {
                 $button.addClass('waitlist-btn').text($t('Join Waitlist'));
             }
             
             $card.removeClass('loading');
+        },
+
+        /**
+         * Update available slots display
+         */
+        updateAvailableSlots: function ($card, availableSlots, maxSlots) {
+            var $slotsCount = $card.find('.slots-count');
+            if ($slotsCount.length) {
+                $slotsCount.text(availableSlots + ' / ' + maxSlots);
+                // Update class based on availability
+                $slotsCount.removeClass('available full');
+                if (availableSlots > 0) {
+                    $slotsCount.addClass('available');
+                } else {
+                    $slotsCount.addClass('full');
+                }
+            }
         },
 
         /**

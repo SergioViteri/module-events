@@ -18,6 +18,7 @@
              resource="Zaca_Events::events"/>
         <add id="Zaca_Events::locations" title="Locations" module="Zaca_Events" sortOrder="15" parent="Zaca_Events::events" action="zaca_events/location" resource="Zaca_Events::locations"/>
         <add id="Zaca_Events::event_types" title="Event Types" module="Zaca_Events" sortOrder="17" parent="Zaca_Events::events" action="zaca_events/eventtype" resource="Zaca_Events::event_types"/>
+        <add id="Zaca_Events::themes" title="Themes" module="Zaca_Events" sortOrder="18" parent="Zaca_Events::events" action="zaca_events/theme" resource="Zaca_Events::themes"/>
         <add id="Zaca_Events::meets" title="Meets" module="Zaca_Events" sortOrder="20" parent="Zaca_Events::events" action="zaca_events/meet" resource="Zaca_Events::meets"/>
         <add id="Zaca_Events::participants" title="Participants" module="Zaca_Events" sortOrder="40" parent="Zaca_Events::events" action="zaca_events/participant" resource="Zaca_Events::participants"/>
     </menu>

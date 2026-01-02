@@ -16,13 +16,10 @@
             <div class="filter-group location-filter-group">
                 <label><?= $block->escapeHtml(__('Filter by Location')) ?></label>
                 <div class="location-filter-buttons">
-                    <button type="button" 
-                            class="location-filter-btn <?= !$block->getRequest()->getParam('location_id') ? 'active' : '' ?>" 
-                            data-location-id=""
-                            data-location-name="<?= $block->escapeHtml(__('All Locations')) ?>"
-                            data-location-address="">
-                        <?= $block->escapeHtml(__('All Locations')) ?>
-                    </button>
+                    <a href="<?= $block->escapeUrl($block->getUrl('events/index/listevents', ['_query' => array_filter(['meet_type' => $block->getRequest()->getParam('meet_type'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
+                       class="location-filter-link <?= !$block->getRequest()->getParam('location_id') ? 'active' : '' ?>">
+                        <?= $block->escapeHtml(__('Show all')) ?>
+                    </a>
                     <?php $locations = $block->getLocations(); ?>
                     <?php if (is_array($locations) || $locations instanceof \Traversable): ?>
                         <?php foreach ($locations as $location): ?>
@@ -63,12 +60,10 @@
             <div class="filter-group meet-type-filter-group">
                 <label><?= $block->escapeHtml(__('Meet Type')) ?></label>
                 <div class="meet-type-filter-buttons">
-                    <button type="button" 
-                            class="meet-type-filter-btn <?= !$block->getRequest()->getParam('meet_type') ? 'active' : '' ?>" 
-                            data-meet-type=""
-                            data-meet-type-name="<?= $block->escapeHtml(__('All Types')) ?>">
-                        <?= $block->escapeHtml(__('All Types')) ?>
-                    </button>
+                    <a href="<?= $block->escapeUrl($block->getUrl('events/index/listevents', ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
+                       class="meet-type-filter-link <?= !$block->getRequest()->getParam('meet_type') ? 'active' : '' ?>">
+                        <?= $block->escapeHtml(__('Show all')) ?>
+                    </a>
                     <?php foreach ($block->getEventTypes() as $value => $label): ?>
                         <?php $isActive = $block->getRequest()->getParam('meet_type') == $value; ?>
                         <button type="button" 
@@ -80,6 +75,29 @@
                     <?php endforeach; ?>
                 </div>
                 <input type="hidden" name="meet_type" id="meet-type-filter-input" value="<?= $block->escapeHtml($block->getRequest()->getParam('meet_type') ?: '') ?>">
+            </div>
+
+            <div class="filter-group theme-filter-group">
+                <label><?= $block->escapeHtml(__('Filter by Theme')) ?></label>
+                <div class="theme-filter-buttons">
+                    <a href="<?= $block->escapeUrl($block->getUrl('events/index/listevents', ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'meet_type' => $block->getRequest()->getParam('meet_type')])])) ?>" 
+                       class="theme-filter-link <?= !$block->getRequest()->getParam('theme_id') ? 'active' : '' ?>">
+                        <?= $block->escapeHtml(__('Show all')) ?>
+                    </a>
+                    <?php $themes = $block->getThemes(); ?>
+                    <?php if (is_array($themes) || $themes instanceof \Traversable): ?>
+                        <?php foreach ($themes as $theme): ?>
+                            <?php $isActive = $block->getRequest()->getParam('theme_id') == $theme->getThemeId(); ?>
+                            <button type="button" 
+                                    class="theme-filter-btn <?= $isActive ? 'active' : '' ?>" 
+                                    data-theme-id="<?= $block->escapeHtml($theme->getThemeId()) ?>"
+                                    data-theme-name="<?= $block->escapeHtml($theme->getName()) ?>">
+                                <?= $block->escapeHtml($theme->getName()) ?>
+                            </button>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <input type="hidden" name="theme_id" id="theme-filter-input" value="<?= $block->escapeHtml($block->getRequest()->getParam('theme_id') ?: '') ?>">
             </div>
         </form>
     </div>
@@ -245,6 +263,23 @@ require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady
         
         // Update hidden input
         $('#meet-type-filter-input').val(meetType);
+        
+        // Submit form
+        $('#events-filter-form').submit();
+    });
+    
+    // Theme filter buttons
+    $('.theme-filter-btn').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var themeId = $btn.data('theme-id');
+        
+        // Update active state
+        $('.theme-filter-btn').removeClass('active');
+        $btn.addClass('active');
+        
+        // Update hidden input
+        $('#theme-filter-input').val(themeId);
         
         // Submit form
         $('#events-filter-form').submit();

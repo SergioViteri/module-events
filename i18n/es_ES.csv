@@ -136,4 +136,8 @@
 "Location Code","Código de Ubicación"
 "Unique code for attendance validation. Alphanumeric characters only.","Código único para validación de asistencia. Solo caracteres alfanuméricos."
 "Attendance Count","Conteo de Asistencias"
+"Theme:","Tema:"
+"Filter by Theme","Filtrar por Tema"
+"All Themes","Todos los Temas"
+"Show all","Todos"
 

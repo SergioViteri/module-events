@@ -13,6 +13,9 @@
         <route id="zaca_events" frontName="zaca_events">
             <module name="Zaca_Events"/>
         </route>
+        <route id="zacatrus_events" frontName="zacatrus_events">
+            <module name="Zaca_Events"/>
+        </route>
     </router>
 </config>
 
