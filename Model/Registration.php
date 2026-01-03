@@ -122,6 +122,38 @@ class Registration extends AbstractModel implements RegistrationInterface
     /**
      * @inheritdoc
      */
+    public function getEmailRemindersDisabled()
+    {
+        return (bool) $this->getData(self::EMAIL_REMINDERS_DISABLED);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEmailRemindersDisabled($disabled)
+    {
+        return $this->setData(self::EMAIL_REMINDERS_DISABLED, $disabled ? 1 : 0);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUnsubscribeCode()
+    {
+        return $this->getData(self::UNSUBSCRIBE_CODE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUnsubscribeCode($code)
+    {
+        return $this->setData(self::UNSUBSCRIBE_CODE, $code);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCreatedAt()
     {
         return $this->getData(self::CREATED_AT);

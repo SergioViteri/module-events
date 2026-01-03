@@ -17,6 +17,8 @@ interface RegistrationInterface
     const STATUS = 'status';
     const PHONE_NUMBER = 'phone_number';
     const REGISTRATION_DATE = 'registration_date';
+    const EMAIL_REMINDERS_DISABLED = 'email_reminders_disabled';
+    const UNSUBSCRIBE_CODE = 'unsubscribe_code';
     const CREATED_AT = 'created_at';
 
     const STATUS_CONFIRMED = 'confirmed';
@@ -111,6 +113,36 @@ interface RegistrationInterface
      * @return $this
      */
     public function setRegistrationDate($registrationDate);
+
+    /**
+     * Get email reminders disabled
+     *
+     * @return bool
+     */
+    public function getEmailRemindersDisabled();
+
+    /**
+     * Set email reminders disabled
+     *
+     * @param bool $disabled
+     * @return $this
+     */
+    public function setEmailRemindersDisabled($disabled);
+
+    /**
+     * Get unsubscribe code
+     *
+     * @return string|null
+     */
+    public function getUnsubscribeCode();
+
+    /**
+     * Set unsubscribe code
+     *
+     * @param string|null $code
+     * @return $this
+     */
+    public function setUnsubscribeCode($code);
 
     /**
      * Get created at

@@ -47,5 +47,14 @@
             <argument name="collection" xsi:type="object" shared="false">Zaca\Events\Model\ResourceModel\Theme\Grid\Collection</argument>
         </arguments>
     </virtualType>
+    
+    <!-- Console Commands -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="events_send_reminders" xsi:type="object">Zaca\Events\Console\Command\SendRemindersCommand</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
 

@@ -14,5 +14,6 @@
     <template id="events_waitlist_promoted" label="Events: Waitlist Promoted to Confirmed" file="waitlist_promoted.html" type="html" module="Zaca_Events" area="frontend"/>
     <template id="events_confirmed_to_waitlist" label="Events: Confirmed to Waitlist" file="confirmed_to_waitlist.html" type="html" module="Zaca_Events" area="frontend"/>
     <template id="events_unregistration" label="Events: Unregistration" file="unregistration.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="events_reminder" label="Events: Reminder" file="reminder.html" type="html" module="Zaca_Events" area="frontend"/>
 </config>
 

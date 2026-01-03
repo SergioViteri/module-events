@@ -290,6 +290,47 @@ class Main extends Generic implements TabInterface
                 'options' => ['1' => __('Yes'), '0' => __('No')],
             ]
         );
+        
+        $fieldset->addField(
+            'reminder_days',
+            'text',
+            [
+                'name' => 'reminder_days',
+                'label' => __('Reminder Days'),
+                'title' => __('Reminder Days'),
+                'disabled' => $isElementDisabled,
+                'note' => __('Comma-separated days before event to send reminders (e.g., \'7,3,1\'). Leave empty to disable reminders.'),
+                'after_element_html' => '<script>
+                    require(["jquery"], function($) {
+                        var $input = $("#meet_reminder_days");
+                        $input.on("blur", function() {
+                            var value = $(this).val().trim();
+                            if (value === "") {
+                                return; // Empty is allowed
+                            }
+                            // Remove spaces and validate format
+                            var cleaned = value.replace(/\s+/g, "");
+                            var parts = cleaned.split(",");
+                            var valid = true;
+                            for (var i = 0; i < parts.length; i++) {
+                                var num = parseInt(parts[i], 10);
+                                if (isNaN(num) || num <= 0) {
+                                    valid = false;
+                                    break;
+                                }
+                            }
+                            if (!valid) {
+                                alert("' . __('Please enter only positive integers separated by commas (e.g., 7,3,1)') . '");
+                                $(this).focus();
+                            } else {
+                                // Update with cleaned value (no spaces)
+                                $(this).val(cleaned);
+                            }
+                        });
+                    });
+                </script>',
+            ]
+        );
 
         if (!$model->getId()) {
             $model->setData('is_active', '1');

@@ -79,6 +79,7 @@
         <column xsi:type="varchar" name="recurrence_type" length="20" nullable="false" default="none" comment="Recurrence Type (none, quincenal)"/>
         <column xsi:type="datetime" name="end_date" nullable="true" comment="End Date (for recurring events)"/>
         <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Is Active"/>
+        <column xsi:type="varchar" name="reminder_days" length="255" nullable="true" comment="Comma-separated reminder days before event (e.g., '7,3,1')"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -128,6 +129,8 @@
         <column xsi:type="varchar" name="phone_number" length="20" nullable="false" comment="Contact Phone Number"/>
         <column xsi:type="datetime" name="registration_date" nullable="false" comment="Registration Date"/>
         <column xsi:type="int" name="attendance_count" unsigned="true" nullable="false" default="0" comment="Attendance Count"/>
+        <column xsi:type="smallint" name="email_reminders_disabled" unsigned="true" nullable="false" default="0" comment="Email Reminders Disabled"/>
+        <column xsi:type="varchar" name="unsubscribe_code" length="64" nullable="true" comment="Unsubscribe Code"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="registration_id"/>
@@ -150,6 +153,9 @@
         <index referenceId="IDX_ZACA_EVENTS_REGISTRATION_PHONE_NUMBER" indexType="btree">
             <column name="phone_number"/>
         </index>
+        <constraint xsi:type="unique" referenceId="UNQ_ZACA_EVENTS_REGISTRATION_UNSUBSCRIBE_CODE">
+            <column name="unsubscribe_code"/>
+        </constraint>
     </table>
 
     <table name="zaca_events_location" resource="default" engine="innodb" comment="Zacatrus Events Locations">
@@ -224,6 +230,27 @@
         </index>
         <index referenceId="IDX_ZACA_EVENTS_ATTENDANCE_DATE" indexType="btree">
             <column name="attendance_date"/>
+        </index>
+    </table>
+
+    <table name="zaca_events_reminder_sent" resource="default" engine="innodb" comment="Zacatrus Events Reminder Sent Tracking">
+        <column xsi:type="int" name="reminder_sent_id" unsigned="true" nullable="false" identity="true" comment="Reminder Sent ID"/>
+        <column xsi:type="int" name="registration_id" unsigned="true" nullable="false" comment="Registration ID"/>
+        <column xsi:type="int" name="reminder_days" unsigned="true" nullable="false" comment="Number of days before event"/>
+        <column xsi:type="timestamp" name="sent_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Sent At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="reminder_sent_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_REMINDER_SENT_REGISTRATION_ID" table="zaca_events_reminder_sent" column="registration_id" referenceTable="zaca_events_registration" referenceColumn="registration_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="UNQ_ZACA_EVENTS_REMINDER_SENT_REGISTRATION_DAYS">
+            <column name="registration_id"/>
+            <column name="reminder_days"/>
+        </constraint>
+        <index referenceId="IDX_ZACA_EVENTS_REMINDER_SENT_REGISTRATION_ID" indexType="btree">
+            <column name="registration_id"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_REMINDER_SENT_REMINDER_DAYS" indexType="btree">
+            <column name="reminder_days"/>
         </index>
     </table>
 </schema>

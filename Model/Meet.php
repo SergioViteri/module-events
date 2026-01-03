@@ -234,6 +234,22 @@ class Meet extends AbstractModel implements MeetInterface
     /**
      * @inheritdoc
      */
+    public function getReminderDays()
+    {
+        return $this->getData(self::REMINDER_DAYS);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setReminderDays($reminderDays)
+    {
+        return $this->setData(self::REMINDER_DAYS, $reminderDays);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCreatedAt()
     {
         return $this->getData(self::CREATED_AT);

@@ -17,6 +17,7 @@ use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Helper\Calendar;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\State;
 use Magento\Framework\Translate\Inline\StateInterface;
 use Magento\Framework\Escaper;
 use Magento\Framework\Mail\Template\TransportBuilder;
@@ -84,6 +85,11 @@ class Email extends AbstractHelper
     protected $calendarHelper;
 
     /**
+     * @var State
+     */
+    protected $appState;
+
+    /**
      * @param Context $context
      * @param StateInterface $inlineTranslation
      * @param Escaper $escaper
@@ -95,6 +101,7 @@ class Email extends AbstractHelper
      * @param LocationFactory $locationFactory
      * @param UrlInterface $urlBuilder
      * @param Calendar $calendarHelper
+     * @param State $appState
      */
     public function __construct(
         Context $context,
@@ -107,7 +114,8 @@ class Email extends AbstractHelper
         QrCodeGenerator $qrCodeGenerator,
         LocationFactory $locationFactory,
         UrlInterface $urlBuilder,
-        Calendar $calendarHelper
+        Calendar $calendarHelper,
+        State $appState
     ) {
         parent::__construct($context);
         $this->inlineTranslation = $inlineTranslation;
@@ -121,6 +129,7 @@ class Email extends AbstractHelper
         $this->logger = $context->getLogger();
         $this->urlBuilder = $urlBuilder;
         $this->calendarHelper = $calendarHelper;
+        $this->appState = $appState;
     }
 
     /**
@@ -592,6 +601,123 @@ class Email extends AbstractHelper
         } catch (\Exception $e) {
             $this->inlineTranslation->resume();
             $this->logger->error('[Events Email] Error sending confirmed to waitlist email: ' . $e->getMessage());
+            $this->logger->error('[Events Email] Error class: ' . get_class($e));
+            $this->logger->error('[Events Email] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    /**
+     * Send reminder email
+     *
+     * @param RegistrationInterface $registration
+     * @param int $daysBefore
+     * @return bool
+     */
+    public function sendReminderEmail(RegistrationInterface $registration, int $daysBefore): bool
+    {
+        try {
+            $this->inlineTranslation->suspend();
+
+            // Set area code if not already set (required for URL generation in cron jobs)
+            try {
+                $this->appState->setAreaCode(\Magento\Framework\App\Area::AREA_FRONTEND);
+            } catch (\Exception $e) {
+                // Area code already set, ignore
+            }
+
+            // Get meet
+            $meet = $this->meetRepository->getById($registration->getMeetId());
+
+            // Get customer
+            $customer = $this->customerRepository->getById($registration->getCustomerId());
+            $customerEmail = $customer->getEmail();
+            $customerName = trim($customer->getFirstname() . ' ' . $customer->getLastname());
+            if (empty($customerName)) {
+                $customerName = $customerEmail;
+            }
+
+            // Generate unsubscribe code if not exists
+            $unsubscribeCode = $registration->getUnsubscribeCode();
+            if (empty($unsubscribeCode)) {
+                $unsubscribeCode = bin2hex(random_bytes(16));
+                $registration->setUnsubscribeCode($unsubscribeCode);
+                // Note: Caller must save the registration after this method returns
+            }
+
+            // Build unsubscribe URL
+            $unsubscribeUrl = $this->urlBuilder->getUrl(
+                'events/index/unsubscribe',
+                ['code' => $unsubscribeCode]
+            );
+
+            // Get location
+            $location = $this->locationFactory->create()->load($meet->getLocationId());
+            $locationName = $location->getName();
+            $locationAddress = $location->getAddress();
+
+            // Get store first to ensure locale is set correctly
+            $store = $this->storeManager->getStore();
+            
+            // Format date and time
+            $startDate = new \DateTime($meet->getStartDate());
+            $meetDate = $startDate->format('d/m/Y');
+            $meetTime = $startDate->format('H:i');
+
+            // Translate reminder message (using day(s) to handle both singular and plural)
+            $this->inlineTranslation->resume();
+            $reminderMessage = __('This is a reminder that you have an event coming up in %1 day(s).', $daysBefore)->render();
+            $this->inlineTranslation->suspend();
+
+            // Prepare template variables
+            $templateVars = [
+                'registration_id' => $registration->getRegistrationId(),
+                'customer_name' => $customerName,
+                'meet_name' => $meet->getName(),
+                'meet_date' => $meetDate,
+                'meet_time' => $meetTime,
+                'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
+                'meet_description' => $meet->getDescription() ?: '',
+                'days_before' => $daysBefore,
+                'reminder_message' => $reminderMessage,
+                'unsubscribe_url' => $unsubscribeUrl,
+            ];
+
+            // Get store and sender info
+            $store = $this->storeManager->getStore();
+            $sender = [
+                'name' => $this->escaper->escapeHtml($store->getStoreName()),
+                'email' => $store->getStoreEmail() ?: 'noreply@zacatrus.es',
+            ];
+
+            // Send email
+            $transport = $this->transportBuilder
+                ->setTemplateIdentifier('events_reminder')
+                ->setTemplateOptions(
+                    [
+                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+                        'store' => $store->getId(),
+                    ]
+                )
+                ->setTemplateVars($templateVars)
+                ->setFrom($sender)
+                ->addTo($customerEmail, $customerName)
+                ->getTransport();
+
+            $transport->sendMessage();
+            $this->inlineTranslation->resume();
+
+            $this->logger->info(
+                '[Events Email] Reminder email sent to ' . $customerEmail . 
+                ' for registration ID ' . $registration->getRegistrationId() . 
+                ' (' . $daysBefore . ' days before event)'
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->inlineTranslation->resume();
+            $this->logger->error('[Events Email] Error sending reminder email: ' . $e->getMessage());
             $this->logger->error('[Events Email] Error class: ' . get_class($e));
             $this->logger->error('[Events Email] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
             $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());

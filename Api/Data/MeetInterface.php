@@ -24,6 +24,7 @@ interface MeetInterface
     const RECURRENCE_TYPE = 'recurrence_type';
     const END_DATE = 'end_date';
     const IS_ACTIVE = 'is_active';
+    const REMINDER_DAYS = 'reminder_days';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -229,6 +230,21 @@ interface MeetInterface
      * @return $this
      */
     public function setIsActive($isActive);
+
+    /**
+     * Get reminder days
+     *
+     * @return string|null
+     */
+    public function getReminderDays();
+
+    /**
+     * Set reminder days
+     *
+     * @param string|null $reminderDays
+     * @return $this
+     */
+    public function setReminderDays($reminderDays);
 
     /**
      * Get created at

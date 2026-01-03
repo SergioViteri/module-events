@@ -1,0 +1,15 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ */
+?>
+<div class="events-unsubscribe">
+    <div class="message-wrapper">
+        <?= $block->getChildHtml('messages') ?>
+    </div>
+    <div class="unsubscribe-content">
+        <p><?= $block->escapeHtml(__('Thank you for managing your email preferences.')) ?></p>
+        <p><a href="<?= $block->escapeUrl($block->getUrl('events/')) ?>"><?= $block->escapeHtml(__('Back to Events')) ?></a></p>
+    </div>
+</div>
+

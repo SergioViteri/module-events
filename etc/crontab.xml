@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Zacatrus Events Cron Configuration
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="zaca_events_send_reminders" instance="Zaca\Events\Cron\SendReminders" method="execute">
+            <schedule>0 9 * * *</schedule>
+        </job>
+    </group>
+</config>
+
