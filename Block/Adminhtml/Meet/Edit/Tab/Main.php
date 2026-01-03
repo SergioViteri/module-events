@@ -239,6 +239,30 @@ class Main extends Generic implements TabInterface
         );
         
         $fieldset->addField(
+            'info_url_path',
+            'text',
+            [
+                'name' => 'info_url_path',
+                'label' => __('Additional Info Link'),
+                'title' => __('Additional Info Link'),
+                'disabled' => $isElementDisabled,
+                'note' => __('Enter relative path (e.g., \'eventos/torneo-2024\'). The full URL will be: http://zacatrus.es/[path]'),
+                'after_element_html' => '<div style="margin-top: 5px;"><strong>http://zacatrus.es/</strong><span id="meet_info_url_path_preview"></span></div><script>
+                    require(["jquery"], function($) {
+                        var $input = $("#meet_info_url_path");
+                        var $preview = $("#meet_info_url_path_preview");
+                        function updatePreview() {
+                            var value = $input.val();
+                            $preview.text(value || "");
+                        }
+                        $input.on("input change", updatePreview);
+                        updatePreview();
+                    });
+                </script>',
+            ]
+        );
+        
+        $fieldset->addField(
             'recurrence_type',
             'select',
             [

@@ -118,7 +118,7 @@
 "N/A","N/D"
 "Event:","Evento:"
 "Attendance Count:","Conteo de Asistencias:"
-"Enter Location Code","Ingresar Código de Ubicación"
+"Enter Location Code","Introducir Código de Ubicación"
 "Location Code:","Código de Ubicación:"
 "Validate Code","Validar Código"
 "Check Attendance","Verificar Asistencia"
@@ -162,4 +162,7 @@
 "Update","Actualizar"
 "Submit","Enviar"
 "Cancel","Cancelar"
+"Additional Info Link","Enlace de Información Adicional"
+"Event Details","Detalles del Evento"
+"Enter relative path (e.g., 'eventos/torneo-2024'). The full URL will be: http://zacatrus.es/[path]","introduce ruta relativa (ej., 'eventos/torneo-2024'). La URL completa será: http://zacatrus.es/[ruta]"
 

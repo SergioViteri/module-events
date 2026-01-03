@@ -170,6 +170,22 @@ class Meet extends AbstractModel implements MeetInterface
     /**
      * @inheritdoc
      */
+    public function getInfoUrlPath()
+    {
+        return $this->getData(self::INFO_URL_PATH);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setInfoUrlPath($infoUrlPath)
+    {
+        return $this->setData(self::INFO_URL_PATH, $infoUrlPath);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getRecurrenceType()
     {
         return $this->getData(self::RECURRENCE_TYPE);

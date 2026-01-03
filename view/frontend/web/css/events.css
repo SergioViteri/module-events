@@ -463,6 +463,18 @@
     color: #dc3545;
 }
 
+.event-info-link {
+    color: #007bff;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.event-info-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
 .event-description {
     margin-top: 1rem;
     padding-top: 1rem;

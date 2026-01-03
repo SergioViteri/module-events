@@ -21,6 +21,7 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Store\Model\StoreManagerInterface;
 
 class EventCard extends Template
 {
@@ -70,6 +71,11 @@ class EventCard extends Template
     protected $calendarHelper;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -79,6 +85,7 @@ class EventCard extends Template
      * @param ThemeRepositoryInterface $themeRepository
      * @param MeetRepositoryInterface $meetRepository
      * @param Calendar $calendarHelper
+     * @param StoreManagerInterface $storeManager
      * @param array $data
      */
     public function __construct(
@@ -91,6 +98,7 @@ class EventCard extends Template
         ThemeRepositoryInterface $themeRepository,
         MeetRepositoryInterface $meetRepository,
         Calendar $calendarHelper,
+        StoreManagerInterface $storeManager,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -102,6 +110,7 @@ class EventCard extends Template
         $this->themeRepository = $themeRepository;
         $this->meetRepository = $meetRepository;
         $this->calendarHelper = $calendarHelper;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -549,6 +558,54 @@ class EventCard extends Template
         }
 
         return false;
+    }
+
+    /**
+     * Get full info URL for a meet
+     *
+     * @param MeetInterface|null $meet
+     * @return string|null
+     */
+    public function getInfoUrl($meet = null)
+    {
+        if (!$meet) {
+            $meet = $this->event;
+        }
+        
+        if (!$meet) {
+            return null;
+        }
+
+        $path = $meet->getInfoUrlPath();
+        if (empty($path)) {
+            return null;
+        }
+
+        // Get store base URL and construct full URL
+        $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+        $path = ltrim($path, '/');
+        
+        return $baseUrl . $path;
+    }
+
+    /**
+     * Check if meet has info URL
+     *
+     * @param MeetInterface|null $meet
+     * @return bool
+     */
+    public function hasInfoUrl($meet = null)
+    {
+        if (!$meet) {
+            $meet = $this->event;
+        }
+        
+        if (!$meet) {
+            return false;
+        }
+
+        $path = $meet->getInfoUrlPath();
+        return !empty($path);
     }
 }
 

@@ -20,6 +20,7 @@ interface MeetInterface
     const DURATION_MINUTES = 'duration_minutes';
     const MAX_SLOTS = 'max_slots';
     const DESCRIPTION = 'description';
+    const INFO_URL_PATH = 'info_url_path';
     const RECURRENCE_TYPE = 'recurrence_type';
     const END_DATE = 'end_date';
     const IS_ACTIVE = 'is_active';
@@ -168,6 +169,21 @@ interface MeetInterface
      * @return $this
      */
     public function setDescription($description);
+
+    /**
+     * Get info URL path
+     *
+     * @return string|null
+     */
+    public function getInfoUrlPath();
+
+    /**
+     * Set info URL path
+     *
+     * @param string|null $infoUrlPath
+     * @return $this
+     */
+    public function setInfoUrlPath($infoUrlPath);
 
     /**
      * Get recurrence type

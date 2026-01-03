@@ -67,6 +67,16 @@ $registrationStatus = $block->getRegistrationStatus();
                 </span>
             </div>
 
+            <?php if ($block->hasInfoUrl($event)): ?>
+                <div class="event-detail">
+                    <a href="<?= $block->escapeUrl($block->getInfoUrl($event)) ?>" 
+                       target="_blank" 
+                       class="event-info-link">
+                        <?= $block->escapeHtml(__('Event Details')) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+
             <?php if ($event->getDescription()): ?>
                 <div class="event-description">
                     <strong><?= $block->escapeHtml(__('Description:')) ?></strong>
