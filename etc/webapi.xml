@@ -17,41 +17,6 @@
     </route>
 
     <!-- Admin API -->
-    <route url="/V1/zacatrus-events/stores" method="GET">
-        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="getList"/>
-        <resources>
-            <resource ref="Zaca_Events::stores"/>
-        </resources>
-    </route>
-
-    <route url="/V1/zacatrus-events/stores" method="POST">
-        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="save"/>
-        <resources>
-            <resource ref="Zaca_Events::stores"/>
-        </resources>
-    </route>
-
-    <route url="/V1/zacatrus-events/stores/:storeId" method="GET">
-        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="getById"/>
-        <resources>
-            <resource ref="Zaca_Events::stores"/>
-        </resources>
-    </route>
-
-    <route url="/V1/zacatrus-events/stores/:storeId" method="PUT">
-        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="save"/>
-        <resources>
-            <resource ref="Zaca_Events::stores"/>
-        </resources>
-    </route>
-
-    <route url="/V1/zacatrus-events/stores/:storeId" method="DELETE">
-        <service class="Zaca\Events\Api\StoreRepositoryInterface" method="deleteById"/>
-        <resources>
-            <resource ref="Zaca_Events::stores"/>
-        </resources>
-    </route>
-
     <route url="/V1/zacatrus-events/admin/leagues" method="GET">
         <service class="Zaca\Events\Api\LeagueRepositoryInterface" method="getList"/>
         <resources>

@@ -11,7 +11,6 @@ namespace Zaca\Events\Block;
 
 use Zaca\Events\Api\MeetRepositoryInterface;
 use Zaca\Events\Api\Data\MeetInterface;
-use Zaca\Events\Api\StoreRepositoryInterface;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
 use Zaca\Events\Api\ThemeRepositoryInterface;
@@ -32,11 +31,6 @@ class EventList extends Template
      * @var MeetRepositoryInterface
      */
     protected $meetRepository;
-
-    /**
-     * @var StoreRepositoryInterface
-     */
-    protected $storeRepository;
 
     /**
      * @var RegistrationRepositoryInterface
@@ -71,11 +65,6 @@ class EventList extends Template
     /**
      * @var array|null
      */
-    protected $stores = null;
-
-    /**
-     * @var array|null
-     */
     protected $locations = null;
 
     /**
@@ -106,7 +95,6 @@ class EventList extends Template
     /**
      * @param Context $context
      * @param MeetRepositoryInterface $meetRepository
-     * @param StoreRepositoryInterface $storeRepository
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
@@ -121,7 +109,6 @@ class EventList extends Template
     public function __construct(
         Context $context,
         MeetRepositoryInterface $meetRepository,
-        StoreRepositoryInterface $storeRepository,
         RegistrationRepositoryInterface $registrationRepository,
         Session $customerSession,
         SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
@@ -135,7 +122,6 @@ class EventList extends Template
     ) {
         parent::__construct($context, $data);
         $this->meetRepository = $meetRepository;
-        $this->storeRepository = $storeRepository;
         $this->registrationRepository = $registrationRepository;
         $this->customerSession = $customerSession;
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
@@ -239,28 +225,6 @@ class EventList extends Template
         }
 
         return $this->events;
-    }
-
-    /**
-     * Get stores
-     *
-     * @return \Zaca\Events\Api\Data\StoreInterface[]
-     */
-    public function getStores()
-    {
-        if ($this->stores === null) {
-            try {
-                $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-                $searchCriteriaBuilder->addFilter('is_active', 1);
-                $searchCriteria = $searchCriteriaBuilder->create();
-                $searchResults = $this->storeRepository->getList($searchCriteria);
-                $this->stores = $searchResults->getItems();
-            } catch (\Exception $e) {
-                $this->stores = [];
-            }
-        }
-
-        return $this->stores;
     }
 
     /**
