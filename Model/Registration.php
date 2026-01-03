@@ -90,6 +90,22 @@ class Registration extends AbstractModel implements RegistrationInterface
     /**
      * @inheritdoc
      */
+    public function getPhoneNumber()
+    {
+        return $this->getData(self::PHONE_NUMBER);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setPhoneNumber($phoneNumber)
+    {
+        return $this->setData(self::PHONE_NUMBER, $phoneNumber);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getRegistrationDate()
     {
         return $this->getData(self::REGISTRATION_DATE);

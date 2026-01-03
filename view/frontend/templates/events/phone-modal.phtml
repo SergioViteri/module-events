@@ -1,0 +1,45 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\EventCard $block
+ */
+?>
+<div id="phone-modal-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>" 
+     class="phone-modal" 
+     style="display: none;"
+     data-meet-id="<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>">
+    <form id="phone-form-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>" 
+          class="phone-form">
+        <fieldset class="fieldset">
+            <div class="field required">
+                <label class="label" for="phone-number-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>">
+                    <span><?= $block->escapeHtml(__('Phone Number')) ?></span>
+                </label>
+                <div class="control">
+                    <input type="tel" 
+                           id="phone-number-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>" 
+                           name="phoneNumber" 
+                           class="input-text" 
+                           data-validate="{required:true}"
+                           placeholder="<?= $block->escapeHtml(__('e.g., (628)443355 or +34628443356')) ?>"
+                           value="" />
+                    <div class="note">
+                        <?= $block->escapeHtml(__('Please enter a contact phone number (9-15 digits). Formatting like +, (, ) is allowed.')) ?>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button type="submit" class="action primary" id="phone-submit-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>">
+                    <span><?= $block->escapeHtml(__('Submit')) ?></span>
+                </button>
+            </div>
+            <div class="secondary">
+                <button type="button" class="action secondary" id="phone-cancel-<?= $block->escapeHtml($block->getRequest()->getParam('meetId', '')) ?>">
+                    <span><?= $block->escapeHtml(__('Cancel')) ?></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+

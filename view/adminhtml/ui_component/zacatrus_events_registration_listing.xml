@@ -93,6 +93,18 @@
                 <label translate="true">Customer ID</label>
             </settings>
         </column>
+        <column name="customer_email">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Email</label>
+            </settings>
+        </column>
+        <column name="phone_number">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Phone Number</label>
+            </settings>
+        </column>
         <column name="status" component="Magento_Ui/js/grid/columns/select">
             <settings>
                 <options>

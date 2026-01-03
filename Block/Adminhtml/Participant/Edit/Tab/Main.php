@@ -160,6 +160,18 @@ class Main extends Generic implements TabInterface
         );
         
         $fieldset->addField(
+            'phone_number',
+            'text',
+            [
+                'name' => 'phone_number',
+                'label' => __('Phone Number'),
+                'title' => __('Phone Number'),
+                'required' => true,
+                'note' => __('Enter phone number (9-15 digits). Formatting like +, (, ) is allowed.'),
+            ]
+        );
+        
+        $fieldset->addField(
             'registration_date',
             'date',
             [

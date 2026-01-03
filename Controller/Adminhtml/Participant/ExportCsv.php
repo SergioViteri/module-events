@@ -107,6 +107,8 @@ class ExportCsv extends Action
             $csv[] = [
                 'ID',
                 'Customer Name',
+                'Email',
+                'Phone Number',
                 'Meet Name',
                 'Meet ID',
                 'Customer ID',
@@ -120,6 +122,8 @@ class ExportCsv extends Action
                 $csv[] = [
                     $item->getRegistrationId(),
                     $item->getData('customer_name') ?: '',
+                    $item->getData('customer_email') ?: '',
+                    $item->getPhoneNumber() ?: '',
                     $item->getData('meet_name') ?: '',
                     $item->getMeetId(),
                     $item->getCustomerId(),

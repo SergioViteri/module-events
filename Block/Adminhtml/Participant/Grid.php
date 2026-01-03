@@ -84,13 +84,14 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             $collection = $this->_registrationFactory->create()->getCollection();
             $this->logger->info('[Participant Grid] Collection created, initial count: ' . $collection->getSize());
             
-            // Join with customer table to get customer name
+            // Join with customer table to get customer name and email
             $customerTable = $this->resourceConnection->getTableName('customer_entity');
             $collection->getSelect()->joinLeft(
                 ['customer' => $customerTable],
                 'main_table.customer_id = customer.entity_id',
                 [
-                    'customer_name' => new \Magento\Framework\DB\Sql\Expression("CONCAT(customer.firstname, ' ', customer.lastname)")
+                    'customer_name' => new \Magento\Framework\DB\Sql\Expression("CONCAT(customer.firstname, ' ', customer.lastname)"),
+                    'customer_email' => 'customer.email'
                 ]
             );
             
@@ -163,6 +164,24 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'index' => 'meet_name',
                 'type' => 'text',
                 'filter_condition_callback' => [$this, '_filterMeetName'],
+            ]
+        );
+
+        $this->addColumn(
+            'customer_email',
+            [
+                'header' => __('Email'),
+                'index' => 'customer_email',
+                'type' => 'text',
+            ]
+        );
+
+        $this->addColumn(
+            'phone_number',
+            [
+                'header' => __('Phone Number'),
+                'index' => 'phone_number',
+                'type' => 'text',
             ]
         );
 /*

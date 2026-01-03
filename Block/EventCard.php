@@ -504,5 +504,51 @@ class EventCard extends Template
         $status = $this->getRegistrationStatus();
         return $status === RegistrationInterface::STATUS_CONFIRMED;
     }
+
+    /**
+     * Get update phone URL
+     *
+     * @param int $meetId
+     * @return string
+     */
+    public function getUpdatePhoneUrl($meetId)
+    {
+        return $this->getUrl('events/index/updatephone', ['meetId' => $meetId]);
+    }
+
+    /**
+     * Check if current registration has phone number
+     *
+     * @return bool
+     */
+    public function hasPhoneNumber()
+    {
+        if (!$this->event || !$this->isCustomerRegistered()) {
+            return false;
+        }
+
+        $status = $this->getRegistrationStatus();
+        if (!$status) {
+            return false;
+        }
+
+        $customerId = $this->customerSession->getCustomerId();
+        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+        $collection = $this->registrationRepository->getList(
+            $searchCriteriaBuilder
+                ->addFilter('meet_id', $this->event->getMeetId())
+                ->addFilter('customer_id', $customerId)
+                ->create()
+        );
+
+        if ($collection->getTotalCount() > 0) {
+            $items = $collection->getItems();
+            $registration = reset($items);
+            $phoneNumber = $registration->getPhoneNumber();
+            return !empty($phoneNumber);
+        }
+
+        return false;
+    }
 }
 

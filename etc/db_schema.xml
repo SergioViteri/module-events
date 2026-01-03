@@ -124,6 +124,7 @@
         <column xsi:type="int" name="meet_id" unsigned="true" nullable="false" comment="Meet ID"/>
         <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
         <column xsi:type="varchar" name="status" length="20" nullable="false" default="confirmed" comment="Status (confirmed, waitlist)"/>
+        <column xsi:type="varchar" name="phone_number" length="20" nullable="false" comment="Contact Phone Number"/>
         <column xsi:type="datetime" name="registration_date" nullable="false" comment="Registration Date"/>
         <column xsi:type="int" name="attendance_count" unsigned="true" nullable="false" default="0" comment="Attendance Count"/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
@@ -144,6 +145,9 @@
         </index>
         <index referenceId="IDX_ZACA_EVENTS_REGISTRATION_STATUS" indexType="btree">
             <column name="status"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_REGISTRATION_PHONE_NUMBER" indexType="btree">
+            <column name="phone_number"/>
         </index>
     </table>
 

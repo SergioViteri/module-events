@@ -15,6 +15,7 @@ interface RegistrationInterface
     const MEET_ID = 'meet_id';
     const CUSTOMER_ID = 'customer_id';
     const STATUS = 'status';
+    const PHONE_NUMBER = 'phone_number';
     const REGISTRATION_DATE = 'registration_date';
     const CREATED_AT = 'created_at';
 
@@ -80,6 +81,21 @@ interface RegistrationInterface
      * @return $this
      */
     public function setStatus($status);
+
+    /**
+     * Get phone number
+     *
+     * @return string
+     */
+    public function getPhoneNumber();
+
+    /**
+     * Set phone number
+     *
+     * @param string $phoneNumber
+     * @return $this
+     */
+    public function setPhoneNumber($phoneNumber);
 
     /**
      * Get registration date

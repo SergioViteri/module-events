@@ -85,6 +85,14 @@ $registrationStatus = $block->getRegistrationStatus();
                             <?= $block->escapeHtml(__('Add to Google Calendar')) ?>
                         </a>
                     </div>
+                    <div class="update-phone-wrapper" style="margin-top: 8px;">
+                        <a href="#" 
+                           class="update-phone-link" 
+                           data-meet-id="<?= $block->escapeHtml($block->getEvent()->getMeetId()) ?>"
+                           data-url="<?= $block->escapeUrl($block->getUpdatePhoneUrl($block->getEvent()->getMeetId())) ?>">
+                            <?= $block->escapeHtml(__('Update Phone Number')) ?>
+                        </a>
+                    </div>
                 </div>
                 <?php endif; ?>
             <?php else: ?>

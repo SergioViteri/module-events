@@ -737,3 +737,86 @@
         font-size: 2.5rem;
     }
 }
+
+/* Phone Modal Styles */
+.phone-modal {
+    display: none;
+}
+
+.phone-modal .phone-form {
+    padding: 1rem;
+}
+
+.phone-modal .field {
+    margin-bottom: 1rem;
+}
+
+.phone-modal .field.required .label::after {
+    content: ' *';
+    color: #e02b27;
+}
+
+.phone-modal .control input[type="tel"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.phone-modal .note {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.phone-modal .actions-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+
+.phone-modal .actions-toolbar .primary,
+.phone-modal .actions-toolbar .secondary {
+    flex: 1;
+}
+
+.phone-modal .phone-error {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* Update Phone Link */
+.update-phone-wrapper {
+    margin-top: 8px;
+}
+
+.update-phone-link {
+    color: #007bff;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.update-phone-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.calendar-links {
+    margin-top: 8px;
+}
+
+.calendar-links a {
+    color: #007bff;
+    text-decoration: underline;
+    margin-right: 12px;
+}
+
+.calendar-links a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}

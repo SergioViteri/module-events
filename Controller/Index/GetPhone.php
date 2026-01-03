@@ -1,6 +1,6 @@
 <?php
 /**
- * Zacatrus Events Unregistration API Controller
+ * Zacatrus Events Get Phone Number Controller
  *
  * @category    Zacatrus
  * @package     Zacatrus_Events
@@ -10,15 +10,13 @@
 namespace Zaca\Events\Controller\Index;
 
 use Zaca\Events\Api\RegistrationRepositoryInterface;
-use Zaca\Events\Api\MeetRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 
-class Unregister extends Action
+class GetPhone extends Action
 {
     /**
      * @var RegistrationRepositoryInterface
@@ -36,11 +34,6 @@ class Unregister extends Action
     protected $resultJsonFactory;
 
     /**
-     * @var MeetRepositoryInterface
-     */
-    protected $meetRepository;
-
-    /**
      * @var SearchCriteriaBuilderFactory
      */
     protected $searchCriteriaBuilderFactory;
@@ -50,7 +43,6 @@ class Unregister extends Action
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
      * @param JsonFactory $resultJsonFactory
-     * @param MeetRepositoryInterface $meetRepository
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
      */
     public function __construct(
@@ -58,14 +50,12 @@ class Unregister extends Action
         RegistrationRepositoryInterface $registrationRepository,
         Session $customerSession,
         JsonFactory $resultJsonFactory,
-        MeetRepositoryInterface $meetRepository,
         SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
     ) {
         parent::__construct($context);
         $this->registrationRepository = $registrationRepository;
         $this->customerSession = $customerSession;
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->meetRepository = $meetRepository;
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
     }
 
@@ -81,52 +71,52 @@ class Unregister extends Action
         if (!$this->customerSession->isLoggedIn()) {
             return $result->setData([
                 'success' => false,
-                'message' => __('You must be logged in to unregister from meets.')
+                'phoneNumber' => null
             ]);
         }
 
+        $customerId = $this->customerSession->getCustomerId();
         $meetId = (int) $this->getRequest()->getParam('meetId');
-        if (!$meetId) {
-            return $result->setData([
-                'success' => false,
-                'message' => __('Meet ID is required.')
-            ]);
-        }
+        $excludeMeetId = (int) $this->getRequest()->getParam('excludeMeetId');
 
         try {
-            $customerId = $this->customerSession->getCustomerId();
-            $this->registrationRepository->unregisterCustomer($customerId, $meetId);
-            
-            // Calculate updated available slots
-            $meet = $this->meetRepository->getById($meetId);
-            $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-            $collection = $this->registrationRepository->getList(
-                $searchCriteriaBuilder
+            if ($meetId > 0) {
+                // Get phone number for specific meet
+                $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+                $searchCriteria = $searchCriteriaBuilder
                     ->addFilter('meet_id', $meetId)
-                    ->addFilter('status', 'confirmed')
-                    ->create()
-            );
-            $confirmed = $collection->getTotalCount();
-            $availableSlots = max(0, $meet->getMaxSlots() - $confirmed);
-            
-            return $result->setData([
-                'success' => true,
-                'message' => __('You have been successfully unregistered from this meet.'),
-                'status' => null, // No registration status after unregistering
-                'availableSlots' => $availableSlots,
-                'maxSlots' => $meet->getMaxSlots()
-            ]);
-        } catch (LocalizedException $e) {
-            return $result->setData([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
+                    ->addFilter('customer_id', $customerId)
+                    ->create();
+                
+                $registrations = $this->registrationRepository->getList($searchCriteria);
+                
+                if ($registrations->getTotalCount() > 0) {
+                    $items = $registrations->getItems();
+                    $registration = reset($items);
+                    $phoneNumber = $registration->getPhoneNumber();
+                    
+                    return $result->setData([
+                        'success' => true,
+                        'phoneNumber' => $phoneNumber ?: null
+                    ]);
+                }
+            } else {
+                // Get most recent phone number from other registrations
+                $phoneNumber = $this->registrationRepository->getMostRecentPhoneNumber($customerId, $excludeMeetId);
+                
+                return $result->setData([
+                    'success' => true,
+                    'phoneNumber' => $phoneNumber
+                ]);
+            }
         } catch (\Exception $e) {
-            return $result->setData([
-                'success' => false,
-                'message' => __('An error occurred while processing your unregistration.')
-            ]);
+            // Silent fail, return null
         }
+
+        return $result->setData([
+            'success' => true,
+            'phoneNumber' => null
+        ]);
     }
 }
 

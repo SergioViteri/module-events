@@ -68,10 +68,20 @@ interface RegistrationRepositoryInterface
      *
      * @param int $customerId
      * @param int $meetId
+     * @param string|null $phoneNumber
      * @return RegistrationInterface
      * @throws CouldNotSaveException
      */
-    public function registerCustomer(int $customerId, int $meetId): RegistrationInterface;
+    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null): RegistrationInterface;
+
+    /**
+     * Get most recent phone number from customer's registrations
+     *
+     * @param int $customerId
+     * @param int|null $excludeMeetId
+     * @return string|null
+     */
+    public function getMostRecentPhoneNumber(int $customerId, ?int $excludeMeetId = null): ?string;
 
     /**
      * Unregister customer from meet

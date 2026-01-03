@@ -186,7 +186,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function registerCustomer(int $customerId, int $meetId): RegistrationInterface
+    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null): RegistrationInterface
     {
         // Check if already registered
         $collection = $this->registrationCollectionFactory->create();
@@ -224,6 +224,11 @@ class RegistrationRepository implements RegistrationRepositoryInterface
             ->setCustomerId($customerId)
             ->setStatus($status)
             ->setRegistrationDate($now->format('Y-m-d H:i:s'));
+        
+        // Set phone number if provided
+        if ($phoneNumber !== null && $phoneNumber !== '') {
+            $registration->setPhoneNumber($phoneNumber);
+        }
 
         $savedRegistration = $this->save($registration);
 
@@ -307,6 +312,40 @@ class RegistrationRepository implements RegistrationRepositoryInterface
                 // Log error but don't fail promotion
                 $this->logger->error('[RegistrationRepository] Error sending waitlist promotion email: ' . $e->getMessage());
             }
+        }
+    }
+
+    /**
+     * Get most recent phone number from customer's registrations
+     *
+     * @param int $customerId
+     * @param int|null $excludeMeetId
+     * @return string|null
+     */
+    public function getMostRecentPhoneNumber(int $customerId, ?int $excludeMeetId = null): ?string
+    {
+        try {
+            $collection = $this->registrationCollectionFactory->create();
+            $collection->addFieldToFilter('customer_id', $customerId)
+                ->addFieldToFilter('phone_number', ['notnull' => true])
+                ->addFieldToFilter('phone_number', ['neq' => '']);
+            
+            if ($excludeMeetId !== null) {
+                $collection->addFieldToFilter('meet_id', ['neq' => $excludeMeetId]);
+            }
+            
+            $collection->setOrder('created_at', 'DESC')
+                ->setPageSize(1);
+            
+            if ($collection->getSize() > 0) {
+                $registration = $collection->getFirstItem();
+                return $registration->getPhoneNumber();
+            }
+            
+            return null;
+        } catch (\Exception $e) {
+            $this->logger->error('[RegistrationRepository] Error getting most recent phone number: ' . $e->getMessage());
+            return null;
         }
     }
 }
