@@ -8,7 +8,9 @@
 "var meet_location":"Meet Location",
 "var meet_description":"Meet Description",
 "var status":"Status",
-"var qr_code_image":"QR Code Image"
+"var qr_code_image":"QR Code Image",
+"var calendar_ical_url":"iCal Download URL",
+"var calendar_google_url":"Google Calendar URL"
 } @-->
 
 {{template config_path="design/email/header_template"}}
@@ -63,6 +65,17 @@
             <p><img src="{{var qr_code_image}}" alt="{{trans "Registration QR Code"}}" style="max-width: 300px; height: auto;" /></p>
         </td>
     </tr>
+    {{depend calendar_ical_url}}
+    <tr class="email-calendar">
+        <td>
+            <p><strong>{{trans "Add to Calendar:"}}</strong></p>
+            <p style="margin: 10px 0;">
+                <a href="{{var calendar_ical_url}}" style="display: inline-block; padding: 8px 16px; background-color: #1979c3; color: #ffffff; text-decoration: none; border-radius: 3px; margin-right: 10px;">{{trans "Download iCal file"}}</a>
+                <a href="{{var calendar_google_url}}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #4285f4; color: #ffffff; text-decoration: none; border-radius: 3px;">{{trans "Add to Google Calendar"}}</a>
+            </p>
+        </td>
+    </tr>
+    {{/depend}}
     <tr class="email-footer">
         <td>
             <p>{{trans "We look forward to seeing you at the event!"}}</p>

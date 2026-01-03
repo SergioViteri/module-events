@@ -15,6 +15,8 @@ use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
 use Zaca\Events\Api\ThemeRepositoryInterface;
+use Zaca\Events\Helper\Calendar;
+use Zaca\Events\Api\Data\RegistrationInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\View\Element\Template;
@@ -63,6 +65,11 @@ class EventCard extends Template
     protected $meetRepository;
 
     /**
+     * @var Calendar
+     */
+    protected $calendarHelper;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -71,6 +78,7 @@ class EventCard extends Template
      * @param EventTypeRepositoryInterface $eventTypeRepository
      * @param ThemeRepositoryInterface $themeRepository
      * @param MeetRepositoryInterface $meetRepository
+     * @param Calendar $calendarHelper
      * @param array $data
      */
     public function __construct(
@@ -82,6 +90,7 @@ class EventCard extends Template
         EventTypeRepositoryInterface $eventTypeRepository,
         ThemeRepositoryInterface $themeRepository,
         MeetRepositoryInterface $meetRepository,
+        Calendar $calendarHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -92,6 +101,7 @@ class EventCard extends Template
         $this->eventTypeRepository = $eventTypeRepository;
         $this->themeRepository = $themeRepository;
         $this->meetRepository = $meetRepository;
+        $this->calendarHelper = $calendarHelper;
     }
 
     /**
@@ -439,6 +449,60 @@ class EventCard extends Template
     public function getMeetRepository()
     {
         return $this->meetRepository;
+    }
+
+    /**
+     * Get iCal download URL for current event
+     *
+     * @return string
+     */
+    public function getCalendarIcalUrl()
+    {
+        if (!$this->event) {
+            return '';
+        }
+        return $this->calendarHelper->getIcalUrl($this->event->getMeetId());
+    }
+
+    /**
+     * Get Google Calendar URL for current event
+     *
+     * @return string
+     */
+    public function getCalendarGoogleUrl()
+    {
+        if (!$this->event) {
+            return '';
+        }
+
+        // Load location
+        $location = null;
+        try {
+            $location = $this->locationFactory->create()->load($this->event->getLocationId());
+            if (!$location->getId()) {
+                $location = null;
+            }
+        } catch (\Exception $e) {
+            $location = null;
+        }
+
+        return $this->calendarHelper->getGoogleCalendarUrl($this->event, $location);
+    }
+
+    /**
+     * Check if calendar links should be shown
+     * Only show for registered users with confirmed status
+     *
+     * @return bool
+     */
+    public function canShowCalendarLinks()
+    {
+        if (!$this->event || !$this->customerSession->isLoggedIn()) {
+            return false;
+        }
+
+        $status = $this->getRegistrationStatus();
+        return $status === RegistrationInterface::STATUS_CONFIRMED;
     }
 }
 

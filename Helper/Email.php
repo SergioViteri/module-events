@@ -14,6 +14,7 @@ use Zaca\Events\Api\Data\MeetInterface;
 use Zaca\Events\Api\MeetRepositoryInterface;
 use Zaca\Events\Service\QrCodeGenerator;
 use Zaca\Events\Model\LocationFactory;
+use Zaca\Events\Helper\Calendar;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Translate\Inline\StateInterface;
@@ -78,6 +79,11 @@ class Email extends AbstractHelper
     protected $urlBuilder;
 
     /**
+     * @var Calendar
+     */
+    protected $calendarHelper;
+
+    /**
      * @param Context $context
      * @param StateInterface $inlineTranslation
      * @param Escaper $escaper
@@ -88,6 +94,7 @@ class Email extends AbstractHelper
      * @param QrCodeGenerator $qrCodeGenerator
      * @param LocationFactory $locationFactory
      * @param UrlInterface $urlBuilder
+     * @param Calendar $calendarHelper
      */
     public function __construct(
         Context $context,
@@ -99,7 +106,8 @@ class Email extends AbstractHelper
         MeetRepositoryInterface $meetRepository,
         QrCodeGenerator $qrCodeGenerator,
         LocationFactory $locationFactory,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        Calendar $calendarHelper
     ) {
         parent::__construct($context);
         $this->inlineTranslation = $inlineTranslation;
@@ -112,6 +120,7 @@ class Email extends AbstractHelper
         $this->locationFactory = $locationFactory;
         $this->logger = $context->getLogger();
         $this->urlBuilder = $urlBuilder;
+        $this->calendarHelper = $calendarHelper;
     }
 
     /**
@@ -142,6 +151,7 @@ class Email extends AbstractHelper
             // Get location data
             $locationName = '';
             $locationAddress = '';
+            $location = null;
             try {
                 $location = $this->locationFactory->create()->load($meet->getLocationId());
                 if ($location && $location->getId()) {
@@ -157,9 +167,12 @@ class Email extends AbstractHelper
                         $addressParts[] = $location->getCity();
                     }
                     $locationAddress = implode(', ', $addressParts);
+                } else {
+                    $location = null;
                 }
             } catch (\Exception $e) {
                 $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+                $location = null;
             }
 
             // Generate QR code only for confirmed registrations
@@ -214,9 +227,12 @@ class Email extends AbstractHelper
                 'is_admin_initiated' => $isAdminInitiated
             ];
             
-            // Only add QR code for confirmed registrations
+            // Only add QR code and calendar links for confirmed registrations
             if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
                 $templateVars['qr_code_image'] = $qrCodeImage;
+                // Add calendar URLs
+                $templateVars['calendar_ical_url'] = $this->calendarHelper->getIcalUrl($meet->getMeetId());
+                $templateVars['calendar_google_url'] = $this->calendarHelper->getGoogleCalendarUrl($meet, $location);
             }
 
             // Get store and sender info
@@ -382,6 +398,7 @@ class Email extends AbstractHelper
             // Get location data
             $locationName = '';
             $locationAddress = '';
+            $location = null;
             try {
                 $location = $this->locationFactory->create()->load($meet->getLocationId());
                 if ($location && $location->getId()) {
@@ -397,9 +414,12 @@ class Email extends AbstractHelper
                         $addressParts[] = $location->getCity();
                     }
                     $locationAddress = implode(', ', $addressParts);
+                } else {
+                    $location = null;
                 }
             } catch (\Exception $e) {
                 $this->logger->warning('[Events Email] Could not load location: ' . $e->getMessage());
+                $location = null;
             }
 
             // Generate QR code (always for confirmed status)
@@ -436,6 +456,9 @@ class Email extends AbstractHelper
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'meet_description' => $meet->getDescription() ?: '',
                 'qr_code_image' => $qrCodeImage,
+                // Add calendar URLs
+                'calendar_ical_url' => $this->calendarHelper->getIcalUrl($meet->getMeetId()),
+                'calendar_google_url' => $this->calendarHelper->getGoogleCalendarUrl($meet, $location),
             ];
 
             // Get store and sender info

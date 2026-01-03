@@ -87,6 +87,22 @@ $registrationStatus = $block->getRegistrationStatus();
                             <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
                         <?php endif; ?>
                     </div>
+                    <?php if ($block->canShowCalendarLinks()): ?>
+                        <div class="calendar-links" style="margin: 15px 0;">
+                            <strong style="display: block; margin-bottom: 10px;"><?= $block->escapeHtml(__('Add to Calendar:')) ?></strong>
+                            <a href="<?= $block->escapeUrl($block->getCalendarIcalUrl()) ?>" 
+                               class="action secondary" 
+                               style="margin-right: 10px; display: inline-block; padding: 8px 16px; text-decoration: none;">
+                                <?= $block->escapeHtml(__('Download iCal')) ?>
+                            </a>
+                            <a href="<?= $block->escapeUrl($block->getCalendarGoogleUrl()) ?>" 
+                               target="_blank" 
+                               class="action secondary" 
+                               style="display: inline-block; padding: 8px 16px; text-decoration: none;">
+                                <?= $block->escapeHtml(__('Add to Google Calendar')) ?>
+                            </a>
+                        </div>
+                    <?php endif; ?>
                     <button type="button" 
                             class="action secondary unregister-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
