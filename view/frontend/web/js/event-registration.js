@@ -121,6 +121,7 @@ define([
                 return;
             }
 
+            //console.log('unregistering from meetId: ' + meetId + ' url: ' + url);
             $.ajax({
                 url: url,
                 type: 'POST',
@@ -158,7 +159,13 @@ define([
          */
         updateButtonToUnregister: function ($button, $card, meetId, status, calendarIcalUrl, calendarGoogleUrl) {
             var $actions = $card.find('.event-actions');
-            var unregisterUrl = $button.data('url').replace('register', 'unregister');
+            var currentUrl = $button.data('url') || '';
+            var unregisterUrl = currentUrl;
+            
+            // Only replace if URL contains 'register' and doesn't already contain 'unregister'
+            if (currentUrl.indexOf('register') !== -1 && currentUrl.indexOf('unregister') === -1) {
+                unregisterUrl = currentUrl.replace('register', 'unregister');
+            }
             
             // Remove registration status if exists
             $actions.find('.registration-status').remove();
@@ -360,7 +367,7 @@ define([
                         '</label>' +
                         '<div class="control">' +
                         '<input type="tel" id="phone-number-' + meetId + '" name="phoneNumber" class="input-text" ' +
-                        'placeholder="' + $t('e.g., (628)443355 or +34628443356') + '" value="' + (prefillPhone || '') + '" />' +
+                        'placeholder="' + $t('e.g. 618123456') + '" value="' + (prefillPhone || '') + '" />' +
                         '<div class="note">' + $t('Please enter a contact phone number (9-15 digits). Formatting like +, (, ) is allowed.') + '</div>' +
                         '</div>' +
                         '</div>' +
@@ -424,7 +431,7 @@ define([
                             '</label>' +
                             '<div class="control">' +
                             '<input type="tel" id="phone-number-update-' + meetId + '" name="phoneNumber" class="input-text" ' +
-                            'placeholder="' + $t('e.g., (628)443355 or +34628443356') + '" value="' + phoneToShow + '" />' +
+                            'placeholder="' + $t('e.g. 618123456') + '" value="' + phoneToShow + '" />' +
                             '<div class="note">' + $t('Please enter a contact phone number (9-15 digits). Formatting like +, (, ) is allowed.') + '</div>' +
                             '</div>' +
                             '</div>' +

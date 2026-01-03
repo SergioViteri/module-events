@@ -194,7 +194,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
             ->addFieldToFilter('customer_id', $customerId);
         
         if ($collection->getSize() > 0) {
-            throw new CouldNotSaveException(__('You are already registered for this meet.'));
+            return $collection->getFirstItem(); //throw new CouldNotSaveException(__('You are already registered for this meet.'));
         }
 
         // Get meet

@@ -17,6 +17,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
+use Psr\Log\LoggerInterface;
 
 class Unregister extends Action
 {
@@ -46,12 +47,18 @@ class Unregister extends Action
     protected $searchCriteriaBuilderFactory;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @param Context $context
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param Session $customerSession
      * @param JsonFactory $resultJsonFactory
      * @param MeetRepositoryInterface $meetRepository
      * @param SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Context $context,
@@ -59,7 +66,8 @@ class Unregister extends Action
         Session $customerSession,
         JsonFactory $resultJsonFactory,
         MeetRepositoryInterface $meetRepository,
-        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
+        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
+        LoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->registrationRepository = $registrationRepository;
@@ -67,6 +75,7 @@ class Unregister extends Action
         $this->resultJsonFactory = $resultJsonFactory;
         $this->meetRepository = $meetRepository;
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -122,6 +131,7 @@ class Unregister extends Action
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
+            $this->logger->error('[Unregister] Error unregistering customer: ' . $e->getMessage());
             return $result->setData([
                 'success' => false,
                 'message' => __('An error occurred while processing your unregistration.')
