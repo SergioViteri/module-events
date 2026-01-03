@@ -26,7 +26,6 @@
         <arguments>
             <argument name="collections" xsi:type="array">
                 <item name="zacatrus_events_store_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Store\Grid\Collection</item>
-                <item name="zacatrus_events_event_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Event\Grid\Collection</item>
                 <item name="zacatrus_events_league_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\League\Grid\Collection</item>
                 <item name="zacatrus_events_registration_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Registration\Grid\Collection</item>
                 <item name="zacatrus_events_theme_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Theme\Grid\Collection</item>
@@ -37,12 +36,6 @@
     <virtualType name="zacatrus_events_store_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
         <arguments>
             <argument name="collection" xsi:type="object" shared="false">Zaca\Events\Model\ResourceModel\Store\Grid\Collection</argument>
-        </arguments>
-    </virtualType>
-    
-    <virtualType name="zacatrus_events_event_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
-        <arguments>
-            <argument name="collection" xsi:type="object" shared="false">Zaca\Events\Model\ResourceModel\Event\Grid\Collection</argument>
         </arguments>
     </virtualType>
     

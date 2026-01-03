@@ -9,10 +9,5 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
-    <extension_attributes for="Zaca\Events\Api\Data\EventInterface">
-        <attribute code="available_slots" type="int"/>
-        <attribute code="confirmed_registrations" type="int"/>
-        <attribute code="waitlist_count" type="int"/>
-    </extension_attributes>
 </config>
 

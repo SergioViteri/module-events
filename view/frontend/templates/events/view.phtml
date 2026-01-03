@@ -77,9 +77,9 @@ $registrationStatus = $block->getRegistrationStatus();
             <?php endif; ?>
         </div>
 
-        <div class="event-actions">
-            <?php if ($block->isCustomerLoggedIn()): ?>
-                <?php if ($isRegistered): ?>
+        <?php if ($block->isCustomerLoggedIn()): ?>
+            <?php if ($isRegistered): ?>
+                <div class="event-actions">
                     <div class="registration-status">
                         <?php if ($registrationStatus === 'waitlist'): ?>
                             <span class="status-waitlist"><?= $block->escapeHtml(__('You are on the waitlist')) ?></span>
@@ -87,52 +87,54 @@ $registrationStatus = $block->getRegistrationStatus();
                             <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
                         <?php endif; ?>
                     </div>
-                    <?php if ($block->canShowCalendarLinks()): ?>
-                        <div class="calendar-links" style="margin: 15px 0;">
-                            <strong style="display: block; margin-bottom: 10px;"><?= $block->escapeHtml(__('Add to Calendar:')) ?></strong>
-                            <a href="<?= $block->escapeUrl($block->getCalendarIcalUrl()) ?>" 
-                               class="action secondary" 
-                               style="margin-right: 10px; display: inline-block; padding: 8px 16px; text-decoration: none;">
-                                <?= $block->escapeHtml(__('Download iCal')) ?>
-                            </a>
-                            <a href="<?= $block->escapeUrl($block->getCalendarGoogleUrl()) ?>" 
-                               target="_blank" 
-                               class="action secondary" 
-                               style="display: inline-block; padding: 8px 16px; text-decoration: none;">
-                                <?= $block->escapeHtml(__('Add to Google Calendar')) ?>
-                            </a>
-                        </div>
-                    <?php endif; ?>
                     <button type="button" 
                             class="action secondary unregister-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
                             data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Unregister')) ?>
                     </button>
-                <?php else: ?>
-                    <?php if (!$isRegistered && $availableSlots > 0): ?>
-                        <button type="button" 
-                                class="action primary register-btn" 
-                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                                data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
-                            <?= $block->escapeHtml(__('Register')) ?>
-                        </button>
-                    <?php elseif (!$isRegistered && $availableSlots <= 0): ?>
-                        <button type="button" 
-                                class="action primary register-btn waitlist-btn" 
-                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                                data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
-                            <?= $block->escapeHtml(__('Join Waitlist')) ?>
-                        </button>
-                    <?php endif; ?>
+                </div>
+                <?php if ($block->canShowCalendarLinks()): ?>
+                <div>
+                    <div class="calendar-links" style="margin-top: 8px;">
+                        <a href="<?= $block->escapeUrl($block->getCalendarIcalUrl()) ?>" 
+                           style="margin-right: 12px;">
+                            <?= $block->escapeHtml(__('iCal')) ?>
+                        </a>
+                        <a href="<?= $block->escapeUrl($block->getCalendarGoogleUrl()) ?>" 
+                           target="_blank">
+                            <?= $block->escapeHtml(__('Add to Google Calendar')) ?>
+                        </a>
+                    </div>
+                </div>
                 <?php endif; ?>
             <?php else: ?>
-                <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" 
-                   class="action primary">
-                    <?= $block->escapeHtml(__('Login to Register')) ?>
-                </a>
+                <div class="event-actions">
+                <?php if (!$isRegistered && $availableSlots > 0): ?>
+                    <button type="button" 
+                            class="action primary register-btn" 
+                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                        <?= $block->escapeHtml(__('Register')) ?>
+                    </button>
+                <?php elseif (!$isRegistered && $availableSlots <= 0): ?>
+                    <button type="button" 
+                            class="action primary register-btn waitlist-btn" 
+                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                        <?= $block->escapeHtml(__('Join Waitlist')) ?>
+                    </button>
+                <?php endif; ?>
+                </div>
             <?php endif; ?>
-        </div>
+        <?php else: ?>
+            <div class="event-actions">
+            <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" 
+               class="action primary">
+                <?= $block->escapeHtml(__('Login to Register')) ?>
+            </a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
