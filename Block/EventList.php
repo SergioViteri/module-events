@@ -24,6 +24,8 @@ use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class EventList extends Template
 {
@@ -88,6 +90,16 @@ class EventList extends Template
     protected $themeRepository;
 
     /**
+     * @var TimezoneInterface
+     */
+    protected $timezone;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * @var array|null
      */
     protected $themes = null;
@@ -104,6 +116,8 @@ class EventList extends Template
      * @param ScopeConfigInterface $scopeConfig
      * @param EventTypeRepositoryInterface $eventTypeRepository
      * @param ThemeRepositoryInterface $themeRepository
+     * @param TimezoneInterface $timezone
+     * @param StoreManagerInterface $storeManager
      * @param array $data
      */
     public function __construct(
@@ -118,6 +132,8 @@ class EventList extends Template
         ScopeConfigInterface $scopeConfig,
         EventTypeRepositoryInterface $eventTypeRepository,
         ThemeRepositoryInterface $themeRepository,
+        TimezoneInterface $timezone,
+        StoreManagerInterface $storeManager,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -131,6 +147,8 @@ class EventList extends Template
         $this->scopeConfig = $scopeConfig;
         $this->eventTypeRepository = $eventTypeRepository;
         $this->themeRepository = $themeRepository;
+        $this->timezone = $timezone;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -384,8 +402,18 @@ class EventList extends Template
             return null;
         }
 
-        $startDate = new \DateTime($event->getStartDate());
-        $now = new \DateTime();
+        // Convert UTC dates to store timezone for calculations
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        $startDate = new \DateTime($event->getStartDate(), new \DateTimeZone('UTC'));
+        $startDate->setTimezone($timezoneObj);
+        
+        $now = new \DateTime('now', $timezoneObj);
 
         // Calculate next occurrence
         $nextDate = clone $startDate;
@@ -404,6 +432,8 @@ class EventList extends Template
             return null;
         }
 
+        // Convert back to UTC for storage/formatting
+        $nextDate->setTimezone(new \DateTimeZone('UTC'));
         return $nextDate->format('Y-m-d H:i:s');
     }
 

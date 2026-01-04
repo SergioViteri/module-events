@@ -15,6 +15,8 @@ use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Check extends Template
 {
@@ -29,20 +31,36 @@ class Check extends Template
     protected $messageManager;
 
     /**
+     * @var TimezoneInterface
+     */
+    protected $timezone;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
      * @param Context $context
      * @param Registry $registry
      * @param ManagerInterface $messageManager
+     * @param TimezoneInterface $timezone
+     * @param StoreManagerInterface $storeManager
      * @param array $data
      */
     public function __construct(
         Context $context,
         Registry $registry,
         ManagerInterface $messageManager,
+        TimezoneInterface $timezone,
+        StoreManagerInterface $storeManager,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->registry = $registry;
         $this->messageManager = $messageManager;
+        $this->timezone = $timezone;
+        $this->storeManager = $storeManager;
     }
 
     /**
@@ -112,12 +130,24 @@ class Check extends Template
     /**
      * Format date and time
      *
-     * @param string $date
+     * @param string $date UTC date string
      * @return string
      */
     public function formatDateTime($date)
     {
-        return date('d/m/Y H:i', strtotime($date));
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($date, new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        return $dateObj->format('d/m/Y H:i');
     }
 
     /**

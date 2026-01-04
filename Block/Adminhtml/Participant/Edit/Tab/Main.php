@@ -184,6 +184,23 @@ class Main extends Generic implements TabInterface
             ]
         );
         
+        $fieldset->addField(
+            'email_reminders_disabled',
+            'select',
+            [
+                'name' => 'email_reminders_disabled',
+                'label' => __('Disable Email Reminders'),
+                'title' => __('Disable Email Reminders'),
+                'required' => false,
+                'disabled' => $isElementDisabled,
+                'options' => [
+                    '0' => __('No'),
+                    '1' => __('Yes'),
+                ],
+                'note' => __('If enabled, this participant will not receive reminder emails for this event.'),
+            ]
+        );
+        
         if ($model) {
             $form->addValues($model->getData());
         }

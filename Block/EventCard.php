@@ -22,6 +22,7 @@ use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class EventCard extends Template
 {
@@ -76,6 +77,11 @@ class EventCard extends Template
     protected $storeManager;
 
     /**
+     * @var TimezoneInterface
+     */
+    protected $timezone;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -86,6 +92,7 @@ class EventCard extends Template
      * @param MeetRepositoryInterface $meetRepository
      * @param Calendar $calendarHelper
      * @param StoreManagerInterface $storeManager
+     * @param TimezoneInterface $timezone
      * @param array $data
      */
     public function __construct(
@@ -99,6 +106,7 @@ class EventCard extends Template
         MeetRepositoryInterface $meetRepository,
         Calendar $calendarHelper,
         StoreManagerInterface $storeManager,
+        TimezoneInterface $timezone,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -111,6 +119,7 @@ class EventCard extends Template
         $this->meetRepository = $meetRepository;
         $this->calendarHelper = $calendarHelper;
         $this->storeManager = $storeManager;
+        $this->timezone = $timezone;
     }
 
     /**
@@ -161,12 +170,24 @@ class EventCard extends Template
     /**
      * Format event date
      *
-     * @param string $date
+     * @param string $date UTC date string
      * @return string
      */
     public function formatEventDate($date)
     {
-        return date('d/m/Y H:i', strtotime($date));
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($date, new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        return $dateObj->format('d/m/Y H:i');
     }
 
     /**
@@ -350,8 +371,18 @@ class EventCard extends Template
             return null;
         }
 
-        $startDate = new \DateTime($this->event->getStartDate());
-        $now = new \DateTime();
+        // Convert UTC dates to store timezone for calculations
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        $startDate = new \DateTime($this->event->getStartDate(), new \DateTimeZone('UTC'));
+        $startDate->setTimezone($timezoneObj);
+        
+        $now = new \DateTime('now', $timezoneObj);
         $recurrenceType = $this->event->getRecurrenceType();
 
         // Calculate next occurrence
@@ -371,6 +402,8 @@ class EventCard extends Template
             return null;
         }
 
+        // Convert back to UTC for storage/formatting
+        $nextDate->setTimezone(new \DateTimeZone('UTC'));
         return $nextDate->format('Y-m-d H:i:s');
     }
 

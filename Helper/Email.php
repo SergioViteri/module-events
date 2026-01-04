@@ -25,6 +25,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Psr\Log\LoggerInterface;
 
 class Email extends AbstractHelper
@@ -90,6 +91,11 @@ class Email extends AbstractHelper
     protected $appState;
 
     /**
+     * @var TimezoneInterface
+     */
+    protected $timezone;
+
+    /**
      * @param Context $context
      * @param StateInterface $inlineTranslation
      * @param Escaper $escaper
@@ -102,6 +108,7 @@ class Email extends AbstractHelper
      * @param UrlInterface $urlBuilder
      * @param Calendar $calendarHelper
      * @param State $appState
+     * @param TimezoneInterface $timezone
      */
     public function __construct(
         Context $context,
@@ -115,7 +122,8 @@ class Email extends AbstractHelper
         LocationFactory $locationFactory,
         UrlInterface $urlBuilder,
         Calendar $calendarHelper,
-        State $appState
+        State $appState,
+        TimezoneInterface $timezone
     ) {
         parent::__construct($context);
         $this->inlineTranslation = $inlineTranslation;
@@ -130,6 +138,7 @@ class Email extends AbstractHelper
         $this->urlBuilder = $urlBuilder;
         $this->calendarHelper = $calendarHelper;
         $this->appState = $appState;
+        $this->timezone = $timezone;
     }
 
     /**
@@ -152,8 +161,9 @@ class Email extends AbstractHelper
             // Get meet data
             $meet = $this->meetRepository->getById($registration->getMeetId());
 
-            // Format date and time
-            $startDate = new \DateTime($meet->getStartDate());
+            // Format date and time - convert from UTC to store timezone
+            $store = $this->storeManager->getStore();
+            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
@@ -304,8 +314,9 @@ class Email extends AbstractHelper
         try {
             $this->inlineTranslation->suspend();
 
-            // Format date and time
-            $startDate = new \DateTime($meet->getStartDate());
+            // Format date and time - convert from UTC to store timezone
+            $store = $this->storeManager->getStore();
+            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
@@ -399,8 +410,9 @@ class Email extends AbstractHelper
             // Get meet data
             $meet = $this->meetRepository->getById($registration->getMeetId());
 
-            // Format date and time
-            $startDate = new \DateTime($meet->getStartDate());
+            // Format date and time - convert from UTC to store timezone
+            $store = $this->storeManager->getStore();
+            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
@@ -529,8 +541,9 @@ class Email extends AbstractHelper
             // Get meet data
             $meet = $this->meetRepository->getById($registration->getMeetId());
 
-            // Format date and time
-            $startDate = new \DateTime($meet->getStartDate());
+            // Format date and time - convert from UTC to store timezone
+            $store = $this->storeManager->getStore();
+            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
@@ -660,8 +673,9 @@ class Email extends AbstractHelper
             // Get store first to ensure locale is set correctly
             $store = $this->storeManager->getStore();
             
-            // Format date and time
-            $startDate = new \DateTime($meet->getStartDate());
+            // Format date and time - convert from UTC to store timezone
+            $store = $this->storeManager->getStore();
+            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 

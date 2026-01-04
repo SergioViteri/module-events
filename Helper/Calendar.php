@@ -101,10 +101,14 @@ class Calendar extends AbstractHelper
             if ($nextOccurrence) {
                 $startDate = $nextOccurrence;
             } else {
-                $startDate = new \DateTime($meet->getStartDate(), $timezoneObj);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
             }
         } else {
-            $startDate = new \DateTime($meet->getStartDate(), $timezoneObj);
+            // Parse UTC date and convert to store timezone
+            $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $startDate->setTimezone($timezoneObj);
         }
         
         // Format dates for Google Calendar using local timezone
@@ -175,7 +179,10 @@ class Calendar extends AbstractHelper
             return null;
         }
 
-        $startDate = new \DateTime($meet->getStartDate(), $timezoneObj);
+        // Parse UTC date and convert to store timezone
+        $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+        $startDate->setTimezone($timezoneObj);
+        
         $now = new \DateTime('now', $timezoneObj);
 
         // Calculate next occurrence
@@ -223,10 +230,14 @@ class Calendar extends AbstractHelper
             if ($nextOccurrence) {
                 $startDate = $nextOccurrence;
             } else {
-                $startDate = new \DateTime($meet->getStartDate(), $timezoneObj);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
             }
         } else {
-            $startDate = new \DateTime($meet->getStartDate(), $timezoneObj);
+            // Parse UTC date and convert to store timezone
+            $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $startDate->setTimezone($timezoneObj);
         }
         
         $startFormatted = $startDate->format('Ymd\THis');
@@ -305,7 +316,9 @@ class Calendar extends AbstractHelper
             
             // Add UNTIL if end_date is set (format: YYYYMMDDTHHmmss)
             if ($meet->getEndDate() && $rrule) {
-                $untilDate = new \DateTime($meet->getEndDate(), $timezoneObj);
+                // Parse UTC date and convert to store timezone
+                $untilDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $untilDate->setTimezone($timezoneObj);
                 // For UNTIL in RRULE, we need to use the same format as DTSTART (local time with TZID)
                 $untilFormatted = $untilDate->format('Ymd\THis');
                 $rrule .= ';UNTIL=' . $untilFormatted;

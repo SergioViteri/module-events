@@ -15,6 +15,7 @@ use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollec
 use Zaca\Events\Api\EventTypeRepositoryInterface;
 use Zaca\Events\Api\ThemeRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class Main extends Generic implements TabInterface
 {
@@ -51,6 +52,11 @@ class Main extends Generic implements TabInterface
     protected $searchCriteriaBuilderFactory;
 
     /**
+     * @var TimezoneInterface
+     */
+    protected $timezone;
+
+    /**
      * @param \Magento\Backend\Block\Template\Context $context
      * @param \Magento\Framework\Registry             $registry
      * @param \Magento\Framework\Data\FormFactory     $formFactory
@@ -59,6 +65,7 @@ class Main extends Generic implements TabInterface
      * @param EventTypeRepositoryInterface           $eventTypeRepository
      * @param ThemeRepositoryInterface               $themeRepository
      * @param SearchCriteriaBuilderFactory           $searchCriteriaBuilderFactory
+     * @param TimezoneInterface                      $timezone
      * @param array                                   $data
      */
     public function __construct(
@@ -70,6 +77,7 @@ class Main extends Generic implements TabInterface
         EventTypeRepositoryInterface $eventTypeRepository,
         ThemeRepositoryInterface $themeRepository,
         SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory,
+        TimezoneInterface $timezone,
         array $data = []
     ) {
         $this->_adminSession = $adminSession;
@@ -77,6 +85,7 @@ class Main extends Generic implements TabInterface
         $this->eventTypeRepository = $eventTypeRepository;
         $this->themeRepository = $themeRepository;
         $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
+        $this->timezone = $timezone;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -337,7 +346,19 @@ class Main extends Generic implements TabInterface
             $model->setData('recurrence_type', 'none');
         }
         
-        $form->addValues($model->getData());
+        // Convert dates from UTC (database) to admin timezone for display in form
+        // This matches what the grid does with 'type' => 'datetime'
+        $data = $model->getData();
+        if (isset($data['start_date']) && !empty($data['start_date'])) {
+            // Convert UTC to admin timezone for display
+            $data['start_date'] = $this->timezone->date($data['start_date'])->format('Y-m-d H:i:s');
+        }
+        if (isset($data['end_date']) && !empty($data['end_date'])) {
+            // Convert UTC to admin timezone for display
+            $data['end_date'] = $this->timezone->date($data['end_date'])->format('Y-m-d H:i:s');
+        }
+        
+        $form->addValues($data);
         $this->setForm($form);
         return parent::_prepareForm();
     }
