@@ -167,6 +167,14 @@ class Email extends AbstractHelper
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
+            // Format end date if recurring event has end_date (date only, no time)
+            $meetEndDate = null;
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            if ($isRecurring && $meet->getEndDate()) {
+                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                $meetEndDate = $endDate->format('d/m/Y');
+            }
+
             // Get location data
             $locationName = '';
             $locationAddress = '';
@@ -245,6 +253,11 @@ class Email extends AbstractHelper
                     : __('Waitlist')->render(),
                 'is_admin_initiated' => $isAdminInitiated
             ];
+
+            // Add end date variable if available
+            if ($meetEndDate !== null) {
+                $templateVars['meet_end_date'] = $meetEndDate;
+            }
             
             // Only add QR code and calendar links for confirmed registrations
             if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
@@ -320,6 +333,14 @@ class Email extends AbstractHelper
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
+            // Format end date if recurring event has end_date (date only, no time)
+            $meetEndDate = null;
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            if ($isRecurring && $meet->getEndDate()) {
+                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                $meetEndDate = $endDate->format('d/m/Y');
+            }
+
             // Get location data
             $locationName = '';
             $locationAddress = '';
@@ -352,6 +373,11 @@ class Email extends AbstractHelper
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'is_admin_initiated' => $isAdminInitiated
             ];
+
+            // Add end date variable if available
+            if ($meetEndDate !== null) {
+                $templateVars['meet_end_date'] = $meetEndDate;
+            }
 
             // Get store and sender info
             $store = $this->storeManager->getStore();
@@ -416,6 +442,14 @@ class Email extends AbstractHelper
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
+            // Format end date if recurring event has end_date (date only, no time)
+            $meetEndDate = null;
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            if ($isRecurring && $meet->getEndDate()) {
+                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                $meetEndDate = $endDate->format('d/m/Y');
+            }
+
             // Get location data
             $locationName = '';
             $locationAddress = '';
@@ -477,10 +511,16 @@ class Email extends AbstractHelper
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'meet_description' => $meet->getDescription() ?: '',
                 'qr_code_image' => $qrCodeImage,
-                // Add calendar URLs
-                'calendar_ical_url' => $this->calendarHelper->getIcalUrl($meet->getMeetId()),
-                'calendar_google_url' => $this->calendarHelper->getGoogleCalendarUrl($meet, $location),
             ];
+
+            // Add end date variable if available
+            if ($meetEndDate !== null) {
+                $templateVars['meet_end_date'] = $meetEndDate;
+            }
+
+            // Add calendar URLs
+            $templateVars['calendar_ical_url'] = $this->calendarHelper->getIcalUrl($meet->getMeetId());
+            $templateVars['calendar_google_url'] = $this->calendarHelper->getGoogleCalendarUrl($meet, $location);
 
             // Get store and sender info
             $store = $this->storeManager->getStore();
@@ -547,6 +587,14 @@ class Email extends AbstractHelper
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
+            // Format end date if recurring event has end_date (date only, no time)
+            $meetEndDate = null;
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            if ($isRecurring && $meet->getEndDate()) {
+                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                $meetEndDate = $endDate->format('d/m/Y');
+            }
+
             // Get location data
             $locationName = '';
             $locationAddress = '';
@@ -580,6 +628,11 @@ class Email extends AbstractHelper
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'meet_description' => $meet->getDescription() ?: '',
             ];
+
+            // Add end date variable if available
+            if ($meetEndDate !== null) {
+                $templateVars['meet_end_date'] = $meetEndDate;
+            }
 
             // Get store and sender info
             $store = $this->storeManager->getStore();
@@ -679,6 +732,14 @@ class Email extends AbstractHelper
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
+            // Format end date if recurring event has end_date (date only, no time)
+            $meetEndDate = null;
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            if ($isRecurring && $meet->getEndDate()) {
+                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                $meetEndDate = $endDate->format('d/m/Y');
+            }
+
             // Translate reminder message (using day(s) to handle both singular and plural)
             $this->inlineTranslation->resume();
             $reminderMessage = __('This is a reminder that you have an event coming up in %1 day(s).', $daysBefore)->render();
@@ -697,6 +758,11 @@ class Email extends AbstractHelper
                 'reminder_message' => $reminderMessage,
                 'unsubscribe_url' => $unsubscribeUrl,
             ];
+
+            // Add end date variable if available
+            if ($meetEndDate !== null) {
+                $templateVars['meet_end_date'] = $meetEndDate;
+            }
 
             // Get store and sender info
             $store = $this->storeManager->getStore();

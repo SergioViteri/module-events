@@ -454,6 +454,48 @@ class EventCard extends Template
     }
 
     /**
+     * Check if event has an end date to display
+     *
+     * @return bool
+     */
+    public function hasEndDate()
+    {
+        if (!$this->event) {
+            return false;
+        }
+
+        // Only show end date for recurring events that have an end_date set
+        return $this->isRecurring() && !empty($this->event->getEndDate());
+    }
+
+    /**
+     * Get formatted end date for recurring events (date only, no time)
+     *
+     * @return string|null
+     */
+    public function getFormattedEventEndDate()
+    {
+        if (!$this->hasEndDate()) {
+            return null;
+        }
+
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($this->event->getEndDate(), new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        // Return only date part (no time)
+        return $dateObj->format('d/m/Y');
+    }
+
+    /**
      * Get theme name for the event
      *
      * @return string|null

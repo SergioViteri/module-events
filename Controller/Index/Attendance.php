@@ -200,15 +200,27 @@ class Attendance extends Action
                           (int) $sessionLocationId === (int) $meetLocationId;
 
         // If location ID is in session and matches, automatically validate and record attendance
-        if ($sessionLocationId && (int) $sessionLocationId === (int) $meetLocationId) {
+        // But skip if we just validated in POST request (to avoid duplicate error messages)
+        $alreadyValidated = $this->session->getData('zaca_events_attendance_validated');
+        if ($sessionLocationId && (int) $sessionLocationId === (int) $meetLocationId && !$alreadyValidated) {
             try {
-                $this->validateAndRecordAttendance($registration, $meet, $sessionLocationId);
+                $updatedRegistration = $this->validateAndRecordAttendance($registration, $meet, $sessionLocationId);
+                // Use updated registration if available
+                if ($updatedRegistration) {
+                    $registration = $updatedRegistration;
+                }
             } catch (\Exception $e) {
                 $this->logger->error('[Attendance] Error during automatic validation: ' . $e->getMessage());
                 $this->logger->error('[Attendance] Stack trace: ' . $e->getTraceAsString());
                 // Don't redirect, just show error message
                 $this->messageManager->addError(__('An error occurred while validating attendance: %1', $e->getMessage()));
             }
+        }
+        
+        // If attendance was validated in POST, reload registration to get updated count
+        if ($alreadyValidated) {
+            $registration = $this->registrationRepository->getById($registration->getRegistrationId());
+            $this->session->unsetData('zaca_events_attendance_validated');
         }
 
         // Pass data to template via registry
@@ -256,8 +268,18 @@ class Attendance extends Action
         
         // Only validate and record if session location matches meet location
         if ($sessionLocationId && (int) $sessionLocationId === (int) $meetLocationId) {
-            $this->validateAndRecordAttendance($registration, $meet, $sessionLocationId);
+            $updatedRegistration = $this->validateAndRecordAttendance($registration, $meet, $sessionLocationId);
+            // Use updated registration if available
+            if ($updatedRegistration) {
+                $registration = $updatedRegistration;
+            }
         }
+
+        // Set flag to prevent duplicate validation in GET request after redirect
+        if (!$this->session->isSessionExists()) {
+            $this->session->start();
+        }
+        $this->session->setData('zaca_events_attendance_validated', true);
 
         $resultRedirect = $this->resultRedirectFactory->create();
         return $resultRedirect->setPath('events/index/attendance', ['registrationId' => $registration->getRegistrationId()]);
@@ -269,7 +291,7 @@ class Attendance extends Action
      * @param \Zaca\Events\Api\Data\RegistrationInterface $registration
      * @param \Zaca\Events\Api\Data\MeetInterface $meet
      * @param int $locationId
-     * @return void
+     * @return \Zaca\Events\Api\Data\RegistrationInterface|null Returns updated registration or null on failure
      */
     protected function validateAndRecordAttendance($registration, $meet, $locationId)
     {
@@ -295,8 +317,11 @@ class Attendance extends Action
         // Record attendance
         if ($this->attendanceValidator->recordAttendance($registration->getRegistrationId(), $locationId)) {
             $this->messageManager->addSuccess(__('Attendance recorded successfully!'));
+            // Return updated registration to caller
+            return $this->registrationRepository->getById($registration->getRegistrationId());
         } else {
             $this->messageManager->addError(__('Failed to record attendance. Please try again.'));
+            return null;
         }
     }
 }

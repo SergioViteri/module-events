@@ -5,6 +5,7 @@
 "var meet_name":"Meet Name",
 "var meet_date":"Meet Date",
 "var meet_time":"Meet Time",
+"var meet_end_date":"Meet End Date",
 "var meet_location":"Meet Location",
 "var meet_description":"Meet Description",
 "var status":"Status",
@@ -43,6 +44,12 @@
                     <td><strong>{{trans "Time:"}}</strong></td>
                     <td>{{var meet_time}}</td>
                 </tr>
+                {{depend meet_end_date}}
+                <tr>
+                    <td><strong>{{trans "End Date:"}}</strong></td>
+                    <td>{{var meet_end_date}}</td>
+                </tr>
+                {{/depend}}
                 <tr>
                     <td><strong>{{trans "Location:"}}</strong></td>
                     <td>{{var meet_location}}</td>

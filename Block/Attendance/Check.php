@@ -166,4 +166,126 @@ class Check extends Template
         }
         return '';
     }
+
+    /**
+     * Check if event is recurring
+     *
+     * @return bool
+     */
+    public function isRecurring()
+    {
+        $meet = $this->getMeet();
+        if (!$meet) {
+            return false;
+        }
+
+        return $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+    }
+
+    /**
+     * Check if event has an end date to display
+     *
+     * @return bool
+     */
+    public function hasEndDate()
+    {
+        $meet = $this->getMeet();
+        if (!$meet) {
+            return false;
+        }
+
+        // Only show end date for recurring events that have an end_date set
+        return $this->isRecurring() && !empty($meet->getEndDate());
+    }
+
+    /**
+     * Format event date display (handles recurring events)
+     *
+     * @return string
+     */
+    public function getFormattedEventDate()
+    {
+        $meet = $this->getMeet();
+        if (!$meet) {
+            return '';
+        }
+
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+
+        if ($this->isRecurring()) {
+            // For recurring events, calculate next occurrence
+            $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $startDate->setTimezone($timezoneObj);
+            
+            $now = new \DateTime('now', $timezoneObj);
+            $recurrenceType = $meet->getRecurrenceType();
+
+            // Calculate next occurrence
+            $nextDate = clone $startDate;
+
+            if ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+                // Biweekly (every 15 days)
+                while ($nextDate <= $now) {
+                    $nextDate->modify('+15 days');
+                }
+            } elseif ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+                // Weekly (every 7 days)
+                while ($nextDate <= $now) {
+                    $nextDate->modify('+7 days');
+                }
+            }
+
+            $periodicity = '';
+            if ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+                $periodicity = __('Biweekly');
+            } elseif ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+                $periodicity = __('Weekly');
+            }
+
+            if ($periodicity) {
+                return $nextDate->format('d/m/Y H:i') . ' (' . $periodicity->render() . ')';
+            }
+        }
+
+        // For non-recurring events, just format the start date
+        $dateObj = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        return $dateObj->format('d/m/Y H:i');
+    }
+
+    /**
+     * Get formatted end date for recurring events (date only, no time)
+     *
+     * @return string|null
+     */
+    public function getFormattedEventEndDate()
+    {
+        if (!$this->hasEndDate()) {
+            return null;
+        }
+
+        $meet = $this->getMeet();
+        
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        // Return only date part (no time)
+        return $dateObj->format('d/m/Y');
+    }
 }
