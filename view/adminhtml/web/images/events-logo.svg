@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <!-- Gaming event logo: Clock representing scheduled events -->
+    
+    <!-- Clock face (outer circle) - extends to edges -->
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.95"/>
+    
+    <!-- Clock face (inner circle for depth) -->
+    <circle cx="50" cy="50" r="42" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.7"/>
+    
+    <!-- Hour markers (12, 3, 6, 9) -->
+    <line x1="50" y1="6" x2="50" y2="12" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+    <line x1="88" y1="50" x2="94" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+    <line x1="50" y1="88" x2="50" y2="94" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+    <line x1="6" y1="50" x2="12" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+    
+    <!-- Hour hand (pointing to 3) -->
+    <line x1="50" y1="50" x2="65" y2="50" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity="0.95"/>
+    
+    <!-- Minute hand (pointing to 12) -->
+    <line x1="50" y1="50" x2="50" y2="30" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.95"/>
+    
+    <!-- Center dot -->
+    <circle cx="50" cy="50" r="3.5" fill="#ffffff" opacity="0.95"/>
+    
+    <!-- List items (bullet points) to the right of the clock -->
+    <circle cx="75" cy="30" r="2" fill="#ffffff" opacity="0.9"/>
+    <line x1="79" y1="30" x2="90" y2="30" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+    
+    <circle cx="75" cy="45" r="2" fill="#ffffff" opacity="0.9"/>
+    <line x1="79" y1="45" x2="90" y2="45" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+    
+    <circle cx="75" cy="60" r="2" fill="#ffffff" opacity="0.9"/>
+    <line x1="79" y1="60" x2="90" y2="60" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+    
+    <circle cx="75" cy="75" r="2" fill="#ffffff" opacity="0.9"/>
+    <line x1="79" y1="75" x2="88" y2="75" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+</svg>
+

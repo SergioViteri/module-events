@@ -1,0 +1,32 @@
+/**
+ * Custom styling for Events menu item
+ */
+
+/* Ensure the link is properly set up for centering */
+#menu-zaca-events-events > a,
+.admin_menu .level-0#menu-zaca-events-events > a {
+    text-align: center;
+}
+
+/* Style the Events menu item with custom logo - override the default font icon */
+#menu-zaca-events-events > a::before,
+.admin_menu .level-0#menu-zaca-events-events > a::before {
+    content: '' !important;
+    display: block;
+    width: 2.2rem;
+    height: 2.2rem;
+    margin: 0 auto 0.3rem auto;
+    background-image: url('../images/events-logo.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    font-size: 0 !important;
+    opacity: 0.9;
+}
+
+/* Hover state */
+#menu-zaca-events-events > a:hover::before,
+.admin_menu .level-0#menu-zaca-events-events > a:hover::before {
+    opacity: 1;
+}
+

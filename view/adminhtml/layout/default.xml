@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Admin layout configuration to include custom menu CSS
+ *
+ * @category    Zacatrus
+ * @package     Zaca_Events
+ * @author      Zacatrus
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Zaca_Events::css/menu.css"/>
+    </head>
+</page>
+
