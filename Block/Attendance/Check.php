@@ -288,4 +288,90 @@ class Check extends Template
         // Return only date part (no time)
         return $dateObj->format('d/m/Y');
     }
+
+    /**
+     * Get day of the week for recurring events (based on start date)
+     *
+     * @return string|null
+     */
+    public function getRecurringDayOfWeek()
+    {
+        if (!$this->isRecurring()) {
+            return null;
+        }
+
+        $meet = $this->getMeet();
+        
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        // Get day of week name (localized)
+        $dayNumber = (int) $dateObj->format('w'); // 0 = Sunday, 6 = Saturday
+        $days = [
+            0 => __('Sunday'),
+            1 => __('Monday'),
+            2 => __('Tuesday'),
+            3 => __('Wednesday'),
+            4 => __('Thursday'),
+            5 => __('Friday'),
+            6 => __('Saturday')
+        ];
+        
+        return $days[$dayNumber] ?? null;
+    }
+
+    /**
+     * Get next occurrence date for recurring events (formatted)
+     *
+     * @return string|null
+     */
+    public function getNextOccurrenceDate()
+    {
+        if (!$this->isRecurring()) {
+            return null;
+        }
+
+        $meet = $this->getMeet();
+        
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+
+        // For recurring events, calculate next occurrence
+        $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+        $startDate->setTimezone($timezoneObj);
+        
+        $now = new \DateTime('now', $timezoneObj);
+        $recurrenceType = $meet->getRecurrenceType();
+
+        // Calculate next occurrence
+        $nextDate = clone $startDate;
+
+        if ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            // Biweekly (every 15 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+15 days');
+            }
+        } elseif ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            // Weekly (every 7 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+7 days');
+            }
+        }
+
+        return $nextDate->format('d/m/Y H:i');
+    }
 }

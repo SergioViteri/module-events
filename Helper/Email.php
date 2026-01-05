@@ -163,13 +163,31 @@ class Email extends AbstractHelper
 
             // Format date and time - convert from UTC to store timezone
             $store = $this->storeManager->getStore();
-            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
-            $meetDate = $startDate->format('d/m/Y');
-            $meetTime = $startDate->format('H:i');
+            
+            // Set store context (required for translations in cron jobs)
+            $this->storeManager->setCurrentStore($store->getId());
+            
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            
+            // Resume translation for recurring event date formatting (needed for translations)
+            $this->inlineTranslation->resume();
+            
+            // For recurring events, use formatted date string (day of week - next occurrence (periodicity))
+            $formattedRecurringDate = $this->getFormattedRecurringEventDate($meet, $store->getId());
+            if ($formattedRecurringDate) {
+                $meetDate = $formattedRecurringDate;
+                $meetTime = ''; // Empty for recurring events since date includes time
+            } else {
+                // For non-recurring events, use separate date and time
+                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                $meetDate = $startDate->format('d/m/Y');
+                $meetTime = $startDate->format('H:i');
+            }
+            
+            $this->inlineTranslation->suspend();
 
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
-            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             if ($isRecurring && $meet->getEndDate()) {
                 $endDate = $this->timezone->date($meet->getEndDate(), null, false);
                 $meetEndDate = $endDate->format('d/m/Y');
@@ -329,13 +347,31 @@ class Email extends AbstractHelper
 
             // Format date and time - convert from UTC to store timezone
             $store = $this->storeManager->getStore();
-            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
-            $meetDate = $startDate->format('d/m/Y');
-            $meetTime = $startDate->format('H:i');
+            
+            // Set store context (required for translations in cron jobs)
+            $this->storeManager->setCurrentStore($store->getId());
+            
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            
+            // Resume translation for recurring event date formatting (needed for translations)
+            $this->inlineTranslation->resume();
+            
+            // For recurring events, use formatted date string (day of week - next occurrence (periodicity))
+            $formattedRecurringDate = $this->getFormattedRecurringEventDate($meet, $store->getId());
+            if ($formattedRecurringDate) {
+                $meetDate = $formattedRecurringDate;
+                $meetTime = ''; // Empty for recurring events since date includes time
+            } else {
+                // For non-recurring events, use separate date and time
+                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                $meetDate = $startDate->format('d/m/Y');
+                $meetTime = $startDate->format('H:i');
+            }
+            
+            $this->inlineTranslation->suspend();
 
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
-            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             if ($isRecurring && $meet->getEndDate()) {
                 $endDate = $this->timezone->date($meet->getEndDate(), null, false);
                 $meetEndDate = $endDate->format('d/m/Y');
@@ -583,13 +619,31 @@ class Email extends AbstractHelper
 
             // Format date and time - convert from UTC to store timezone
             $store = $this->storeManager->getStore();
-            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
-            $meetDate = $startDate->format('d/m/Y');
-            $meetTime = $startDate->format('H:i');
+            
+            // Set store context (required for translations in cron jobs)
+            $this->storeManager->setCurrentStore($store->getId());
+            
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            
+            // Resume translation for recurring event date formatting (needed for translations)
+            $this->inlineTranslation->resume();
+            
+            // For recurring events, use formatted date string (day of week - next occurrence (periodicity))
+            $formattedRecurringDate = $this->getFormattedRecurringEventDate($meet, $store->getId());
+            if ($formattedRecurringDate) {
+                $meetDate = $formattedRecurringDate;
+                $meetTime = ''; // Empty for recurring events since date includes time
+            } else {
+                // For non-recurring events, use separate date and time
+                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                $meetDate = $startDate->format('d/m/Y');
+                $meetTime = $startDate->format('H:i');
+            }
+            
+            $this->inlineTranslation->suspend();
 
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
-            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             if ($isRecurring && $meet->getEndDate()) {
                 $endDate = $this->timezone->date($meet->getEndDate(), null, false);
                 $meetEndDate = $endDate->format('d/m/Y');
@@ -723,26 +777,54 @@ class Email extends AbstractHelper
             $locationName = $location->getName();
             $locationAddress = $location->getAddress();
 
-            // Get store first to ensure locale is set correctly
-            $store = $this->storeManager->getStore();
+            // Get store from customer's website to ensure correct locale
+            try {
+                $websiteId = $customer->getWebsiteId();
+                $store = $this->storeManager->getStore();
+                // Try to get store from website
+                if ($websiteId) {
+                    $website = $this->storeManager->getWebsite($websiteId);
+                    $storeIds = $website->getStoreIds();
+                    if (!empty($storeIds)) {
+                        $store = $this->storeManager->getStore(reset($storeIds));
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fallback to default store
+                $store = $this->storeManager->getStore();
+            }
+            
+            // Set store context (required for translations in cron jobs)
+            $this->storeManager->setCurrentStore($store->getId());
+            
+            // Resume translation before formatting dates (needed for recurring events with translations)
+            $this->inlineTranslation->resume();
             
             // Format date and time - convert from UTC to store timezone
-            $store = $this->storeManager->getStore();
-            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
-            $meetDate = $startDate->format('d/m/Y');
-            $meetTime = $startDate->format('H:i');
+            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+            
+            // For recurring events, use formatted date string (day of week - next occurrence (periodicity))
+            $formattedRecurringDate = $this->getFormattedRecurringEventDate($meet, $store->getId());
+            if ($formattedRecurringDate) {
+                $meetDate = $formattedRecurringDate;
+                $meetTime = ''; // Empty for recurring events since date includes time
+            } else {
+                // For non-recurring events, use separate date and time
+                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                $meetDate = $startDate->format('d/m/Y');
+                $meetTime = $startDate->format('H:i');
+            }
 
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
-            $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             if ($isRecurring && $meet->getEndDate()) {
                 $endDate = $this->timezone->date($meet->getEndDate(), null, false);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 
             // Translate reminder message (using day(s) to handle both singular and plural)
-            $this->inlineTranslation->resume();
             $reminderMessage = __('This is a reminder that you have an event coming up in %1 day(s).', $daysBefore)->render();
+            
             $this->inlineTranslation->suspend();
 
             // Prepare template variables
@@ -803,6 +885,132 @@ class Email extends AbstractHelper
             $this->logger->error('[Events Email] Stack trace: ' . $e->getTraceAsString());
             return false;
         }
+    }
+
+    /**
+     * Get formatted date string for recurring events (day of week - next occurrence (periodicity))
+     *
+     * @param MeetInterface $meet
+     * @param int|null $storeId Store ID for translations
+     * @return string|null
+     */
+    protected function getFormattedRecurringEventDate(MeetInterface $meet, ?int $storeId = null): ?string
+    {
+        $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
+        if (!$isRecurring) {
+            return null;
+        }
+
+        // Convert UTC date to store timezone (use current store that was set by caller)
+        $store = $this->storeManager->getStore(); // This should return the current store set by setCurrentStore()
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+
+        // Get day of week from start date
+        $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+        $startDate->setTimezone($timezoneObj);
+        
+        $dayNumber = (int) $startDate->format('w'); // 0 = Sunday, 6 = Saturday
+
+        // Calculate next occurrence
+        $now = new \DateTime('now', $timezoneObj);
+        $recurrenceType = $meet->getRecurrenceType();
+        $nextDate = clone $startDate;
+
+        if ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            // Biweekly (every 15 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+15 days');
+            }
+        } elseif ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            // Weekly (every 7 days)
+            while ($nextDate <= $now) {
+                $nextDate->modify('+7 days');
+            }
+        } else {
+            return null;
+        }
+
+        // Format next occurrence date
+        $formattedNextDate = $nextDate->format('d/m/Y H:i');
+
+        // Get day of week using PHP's IntlDateFormatter for proper locale support
+        $dayOfWeekText = null;
+        if ($storeId !== null) {
+            try {
+                $store = $this->storeManager->getStore($storeId);
+                $locale = $store->getConfig(\Magento\Directory\Helper\Data::XML_PATH_DEFAULT_LOCALE);
+                
+                // Use IntlDateFormatter to get localized day name
+                if (class_exists('IntlDateFormatter')) {
+                    $formatter = new \IntlDateFormatter(
+                        $locale,
+                        \IntlDateFormatter::NONE,
+                        \IntlDateFormatter::NONE,
+                        $timezoneObj,
+                        \IntlDateFormatter::GREGORIAN,
+                        'EEEE' // Full day name
+                    );
+                    $dayOfWeekText = $formatter->format($startDate);
+                } else {
+                    // Fallback to English if Intl extension not available
+                    $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    $dayOfWeekText = $days[$dayNumber] ?? null;
+                }
+            } catch (\Exception $e) {
+                // Fallback to English
+                $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                $dayOfWeekText = $days[$dayNumber] ?? null;
+            }
+        } else {
+            // Fallback to English
+            $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            $dayOfWeekText = $days[$dayNumber] ?? null;
+        }
+        
+        if (!$dayOfWeekText) {
+            return null;
+        }
+
+        // Get periodicity label - use store context for translations
+        $originalStore = null;
+        if ($storeId !== null) {
+            try {
+                $originalStore = $this->storeManager->getStore()->getId();
+                $this->storeManager->setCurrentStore($storeId);
+            } catch (\Exception $e) {
+                // Ignore if store setting fails
+            }
+        }
+        
+        if ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            $periodicity = __('Biweekly');
+        } elseif ($recurrenceType === \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            $periodicity = __('Weekly');
+        } else {
+            $periodicity = null;
+        }
+
+        // Render periodicity translation
+        $periodicityText = $periodicity ? $periodicity->render() : '';
+        
+        // Restore original store if we changed it
+        if ($originalStore !== null) {
+            try {
+                $this->storeManager->setCurrentStore($originalStore);
+            } catch (\Exception $e) {
+                // Ignore
+            }
+        }
+
+        if ($periodicityText) {
+            return $dayOfWeekText . ' - ' . $formattedNextDate . ' (' . $periodicityText . ')';
+        }
+
+        return $dayOfWeekText . ' - ' . $formattedNextDate;
     }
 }
 

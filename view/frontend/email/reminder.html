@@ -35,14 +35,10 @@
                     <td><strong>{{trans "Date:"}}</strong></td>
                     <td>{{var meet_date}}</td>
                 </tr>
+                {{depend meet_time}}
                 <tr>
                     <td><strong>{{trans "Time:"}}</strong></td>
                     <td>{{var meet_time}}</td>
-                </tr>
-                {{depend meet_end_date}}
-                <tr>
-                    <td><strong>{{trans "End Date:"}}</strong></td>
-                    <td>{{var meet_end_date}}</td>
                 </tr>
                 {{/depend}}
                 <tr>

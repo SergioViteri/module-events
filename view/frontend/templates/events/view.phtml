@@ -51,16 +51,23 @@ $registrationStatus = $block->getRegistrationStatus();
             </div>
 
             <div class="event-detail">
-                <strong><?= $block->escapeHtml($block->hasEndDate() ? __('Start Date:') : __('Date:')) ?></strong>
-                <span><?= $block->escapeHtml($block->getFormattedEventDate()) ?></span>
+                <strong><?= $block->escapeHtml( __('Date:')) ?></strong>
+                <span>
+                    <?php if ($block->isRecurring()): ?>
+                        <?php $dayOfWeek = $block->getRecurringDayOfWeek(); ?>
+                        <?php $nextDate = $block->getFormattedNextOccurrenceDate(); ?>
+                        <?php $periodicity = $block->getPeriodicityLabel(); ?>
+                        <?php if ($dayOfWeek && $nextDate): ?>
+                            <?= $block->escapeHtml($dayOfWeek) ?> - <?= $block->escapeHtml($nextDate) ?><?php if ($periodicity): ?> (<?= $block->escapeHtml($periodicity) ?>)<?php endif; ?>
+                        <?php else: ?>
+                            <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
+                    <?php endif; ?>
+                </span>
             </div>
 
-            <?php if ($block->hasEndDate()): ?>
-            <div class="event-detail">
-                <strong><?= $block->escapeHtml(__('End Date:')) ?></strong>
-                <span><?= $block->escapeHtml($block->getFormattedEventEndDate()) ?></span>
-            </div>
-            <?php endif; ?>
 
             <div class="event-detail">
                 <strong><?= $block->escapeHtml(__('Duration:')) ?></strong>

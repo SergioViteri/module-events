@@ -33,15 +33,21 @@ width: unset;
                     <td><?= $block->escapeHtml($meet->getName()) ?></td>
                 </tr>
                 <tr>
-                    <td><strong><?= $block->escapeHtml($block->hasEndDate() ? __('Start Date:') : __('Date:')) ?></strong></td>
-                    <td><?= $block->escapeHtml($block->getFormattedEventDate()) ?></td>
+                    <td><strong><?= $block->escapeHtml(__('Date:')  )?></strong></td>
+                    <td>
+                        <?php if ($block->isRecurring()): ?>
+                            <?php $dayOfWeek = $block->getRecurringDayOfWeek(); ?>
+                            <?php $nextDate = $block->getNextOccurrenceDate(); ?>
+                            <?php if ($dayOfWeek && $nextDate): ?>
+                                <?= $block->escapeHtml($dayOfWeek) ?> - <?= $block->escapeHtml($nextDate) ?>
+                            <?php else: ?>
+                                <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
+                        <?php endif; ?>
+                    </td>
                 </tr>
-                <?php if ($block->hasEndDate()): ?>
-                <tr>
-                    <td><strong><?= $block->escapeHtml(__('End Date:')) ?></strong></td>
-                    <td><?= $block->escapeHtml($block->getFormattedEventEndDate()) ?></td>
-                </tr>
-                <?php endif; ?>
                 <tr>
                     <td><strong><?= $block->escapeHtml(__('Attendance Count:')) ?></strong></td>
                     <td><?= $block->escapeHtml($registration->getAttendanceCount()) ?></td>

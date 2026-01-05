@@ -496,6 +496,64 @@ class EventCard extends Template
     }
 
     /**
+     * Get day of the week for recurring events (based on start date)
+     *
+     * @return string|null
+     */
+    public function getRecurringDayOfWeek()
+    {
+        if (!$this->isRecurring() || !$this->event) {
+            return null;
+        }
+
+        // Convert UTC date to store timezone for display
+        $store = $this->storeManager->getStore();
+        $timezone = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezone);
+        
+        // Parse UTC date and convert to store timezone
+        $dateObj = new \DateTime($this->event->getStartDate(), new \DateTimeZone('UTC'));
+        $dateObj->setTimezone($timezoneObj);
+        
+        // Get day of week name (localized)
+        $dayNumber = (int) $dateObj->format('w'); // 0 = Sunday, 6 = Saturday
+        $days = [
+            0 => __('Sunday'),
+            1 => __('Monday'),
+            2 => __('Tuesday'),
+            3 => __('Wednesday'),
+            4 => __('Thursday'),
+            5 => __('Friday'),
+            6 => __('Saturday')
+        ];
+        
+        return $days[$dayNumber] ?? null;
+    }
+
+    /**
+     * Get formatted next occurrence date for recurring events
+     *
+     * @return string|null
+     */
+    public function getFormattedNextOccurrenceDate()
+    {
+        if (!$this->isRecurring() || !$this->event) {
+            return null;
+        }
+
+        $nextDate = $this->getNextOccurrenceDate();
+        if (!$nextDate) {
+            return null;
+        }
+
+        // getNextOccurrenceDate returns UTC date string, format it
+        return $this->formatEventDate($nextDate);
+    }
+
+    /**
      * Get theme name for the event
      *
      * @return string|null
