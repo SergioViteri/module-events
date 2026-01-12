@@ -167,6 +167,13 @@ class Email extends AbstractHelper
             // Set store context (required for translations in cron jobs)
             $this->storeManager->setCurrentStore($store->getId());
             
+            // Get store timezone
+            $timezone = $this->timezone->getConfigTimezone(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $store->getCode()
+            );
+            $timezoneObj = new \DateTimeZone($timezone);
+            
             $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             
             // Resume translation for recurring event date formatting (needed for translations)
@@ -179,7 +186,9 @@ class Email extends AbstractHelper
                 $meetTime = ''; // Empty for recurring events since date includes time
             } else {
                 // For non-recurring events, use separate date and time
-                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
                 $meetDate = $startDate->format('d/m/Y');
                 $meetTime = $startDate->format('H:i');
             }
@@ -189,7 +198,9 @@ class Email extends AbstractHelper
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
             if ($isRecurring && $meet->getEndDate()) {
-                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $endDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $endDate->setTimezone($timezoneObj);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 
@@ -220,33 +231,24 @@ class Email extends AbstractHelper
                 $location = null;
             }
 
-            // Generate QR code only for confirmed registrations
-            $qrCodeImage = '';
+            // Generate QR code URL for confirmed registrations
+            $qrCodeUrl = '';
             if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
-                $this->logger->info('[Events Email] Generating QR code for registration ID: ' . $registration->getRegistrationId());
+                $this->logger->info('[Events Email] Generating QR code URL for registration ID: ' . $registration->getRegistrationId());
                 try {
-                    // Generate attendance URL
-                    $attendanceUrl = $this->urlBuilder->getUrl(
-                        'events/index/attendance',
+                    // Generate QR code image URL (served by controller)
+                    $qrCodeUrl = $this->urlBuilder->getUrl(
+                        'events/index/qrcode',
                         ['registrationId' => $registration->getRegistrationId()],
                         ['_secure' => true]
                     );
-                    $qrCodeImage = $this->qrCodeGenerator->generateQrCodeImage(
-                        $attendanceUrl,
-                        300
-                    );
-                    if (empty($qrCodeImage)) {
-                        $this->logger->warning('[Events Email] QR code generation returned empty string');
-                        $qrCodeImage = ''; // Use empty string if QR code generation fails
-                    } else {
-                        $this->logger->info('[Events Email] QR code generated successfully, length: ' . strlen($qrCodeImage));
-                    }
+                    $this->logger->info('[Events Email] QR code URL generated: ' . $qrCodeUrl);
                 } catch (\Exception $e) {
-                    $this->logger->error('[Events Email] Exception during QR code generation: ' . $e->getMessage());
+                    $this->logger->error('[Events Email] Exception during QR code URL generation: ' . $e->getMessage());
                     $this->logger->error('[Events Email] QR code exception class: ' . get_class($e));
                     $this->logger->error('[Events Email] QR code exception file: ' . $e->getFile() . ' Line: ' . $e->getLine());
                     $this->logger->error('[Events Email] QR code stack trace: ' . $e->getTraceAsString());
-                    $qrCodeImage = ''; // Use empty string if QR code generation fails
+                    $qrCodeUrl = ''; // Use empty string if QR code URL generation fails
                 }
             } else {
                 $this->logger->info('[Events Email] Skipping QR code generation for waitlist registration');
@@ -279,7 +281,7 @@ class Email extends AbstractHelper
             
             // Only add QR code and calendar links for confirmed registrations
             if ($registration->getStatus() === RegistrationInterface::STATUS_CONFIRMED) {
-                $templateVars['qr_code_image'] = $qrCodeImage;
+                $templateVars['qr_code_url'] = $qrCodeUrl;
                 // Add calendar URLs
                 $templateVars['calendar_ical_url'] = $this->calendarHelper->getIcalUrl($meet->getMeetId());
                 $templateVars['calendar_google_url'] = $this->calendarHelper->getGoogleCalendarUrl($meet, $location);
@@ -351,6 +353,13 @@ class Email extends AbstractHelper
             // Set store context (required for translations in cron jobs)
             $this->storeManager->setCurrentStore($store->getId());
             
+            // Get store timezone
+            $timezone = $this->timezone->getConfigTimezone(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $store->getCode()
+            );
+            $timezoneObj = new \DateTimeZone($timezone);
+            
             $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             
             // Resume translation for recurring event date formatting (needed for translations)
@@ -363,7 +372,9 @@ class Email extends AbstractHelper
                 $meetTime = ''; // Empty for recurring events since date includes time
             } else {
                 // For non-recurring events, use separate date and time
-                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
                 $meetDate = $startDate->format('d/m/Y');
                 $meetTime = $startDate->format('H:i');
             }
@@ -373,7 +384,9 @@ class Email extends AbstractHelper
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
             if ($isRecurring && $meet->getEndDate()) {
-                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $endDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $endDate->setTimezone($timezoneObj);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 
@@ -474,7 +487,20 @@ class Email extends AbstractHelper
 
             // Format date and time - convert from UTC to store timezone
             $store = $this->storeManager->getStore();
-            $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+            
+            // Set store context (required for timezone conversion)
+            $this->storeManager->setCurrentStore($store->getId());
+            
+            // Get store timezone
+            $timezone = $this->timezone->getConfigTimezone(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $store->getCode()
+            );
+            $timezoneObj = new \DateTimeZone($timezone);
+            
+            // Parse UTC date and convert to store timezone
+            $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $startDate->setTimezone($timezoneObj);
             $meetDate = $startDate->format('d/m/Y');
             $meetTime = $startDate->format('H:i');
 
@@ -482,7 +508,9 @@ class Email extends AbstractHelper
             $meetEndDate = null;
             $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             if ($isRecurring && $meet->getEndDate()) {
-                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $endDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $endDate->setTimezone($timezoneObj);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 
@@ -513,28 +541,20 @@ class Email extends AbstractHelper
                 $location = null;
             }
 
-            // Generate QR code (always for confirmed status)
-            $this->logger->info('[Events Email] Generating QR code for promoted registration ID: ' . $registration->getRegistrationId());
+            // Generate QR code URL (always for confirmed status)
+            $qrCodeUrl = '';
+            $this->logger->info('[Events Email] Generating QR code URL for promoted registration ID: ' . $registration->getRegistrationId());
             try {
-                // Generate attendance URL
-                $attendanceUrl = $this->urlBuilder->getUrl(
-                    'events/index/attendance',
+                // Generate QR code image URL (served by controller)
+                $qrCodeUrl = $this->urlBuilder->getUrl(
+                    'events/index/qrcode',
                     ['registrationId' => $registration->getRegistrationId()],
                     ['_secure' => true]
                 );
-                $qrCodeImage = $this->qrCodeGenerator->generateQrCodeImage(
-                    $attendanceUrl,
-                    300
-                );
-                if (empty($qrCodeImage)) {
-                    $this->logger->warning('[Events Email] QR code generation returned empty string');
-                    $qrCodeImage = '';
-                } else {
-                    $this->logger->info('[Events Email] QR code generated successfully, length: ' . strlen($qrCodeImage));
-                }
+                $this->logger->info('[Events Email] QR code URL generated: ' . $qrCodeUrl);
             } catch (\Exception $e) {
-                $this->logger->error('[Events Email] Exception during QR code generation: ' . $e->getMessage());
-                $qrCodeImage = '';
+                $this->logger->error('[Events Email] Exception during QR code URL generation: ' . $e->getMessage());
+                $qrCodeUrl = '';
             }
 
             // Prepare template variables
@@ -546,7 +566,7 @@ class Email extends AbstractHelper
                 'meet_time' => $meetTime,
                 'meet_location' => $locationName . ($locationAddress ? ' - ' . $locationAddress : ''),
                 'meet_description' => $meet->getDescription() ?: '',
-                'qr_code_image' => $qrCodeImage,
+                'qr_code_url' => $qrCodeUrl,
             ];
 
             // Add end date variable if available
@@ -623,6 +643,13 @@ class Email extends AbstractHelper
             // Set store context (required for translations in cron jobs)
             $this->storeManager->setCurrentStore($store->getId());
             
+            // Get store timezone
+            $timezone = $this->timezone->getConfigTimezone(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $store->getCode()
+            );
+            $timezoneObj = new \DateTimeZone($timezone);
+            
             $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             
             // Resume translation for recurring event date formatting (needed for translations)
@@ -635,7 +662,9 @@ class Email extends AbstractHelper
                 $meetTime = ''; // Empty for recurring events since date includes time
             } else {
                 // For non-recurring events, use separate date and time
-                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
                 $meetDate = $startDate->format('d/m/Y');
                 $meetTime = $startDate->format('H:i');
             }
@@ -645,7 +674,9 @@ class Email extends AbstractHelper
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
             if ($isRecurring && $meet->getEndDate()) {
-                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $endDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $endDate->setTimezone($timezoneObj);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 
@@ -801,6 +832,13 @@ class Email extends AbstractHelper
             $this->inlineTranslation->resume();
             
             // Format date and time - convert from UTC to store timezone
+            // Get store timezone
+            $timezone = $this->timezone->getConfigTimezone(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $store->getCode()
+            );
+            $timezoneObj = new \DateTimeZone($timezone);
+            
             $isRecurring = $meet->getRecurrenceType() !== \Zaca\Events\Api\Data\MeetInterface::RECURRENCE_TYPE_NONE;
             
             // For recurring events, use formatted date string (day of week - next occurrence (periodicity))
@@ -810,7 +848,9 @@ class Email extends AbstractHelper
                 $meetTime = ''; // Empty for recurring events since date includes time
             } else {
                 // For non-recurring events, use separate date and time
-                $startDate = $this->timezone->date($meet->getStartDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $startDate = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+                $startDate->setTimezone($timezoneObj);
                 $meetDate = $startDate->format('d/m/Y');
                 $meetTime = $startDate->format('H:i');
             }
@@ -818,7 +858,9 @@ class Email extends AbstractHelper
             // Format end date if recurring event has end_date (date only, no time)
             $meetEndDate = null;
             if ($isRecurring && $meet->getEndDate()) {
-                $endDate = $this->timezone->date($meet->getEndDate(), null, false);
+                // Parse UTC date and convert to store timezone
+                $endDate = new \DateTime($meet->getEndDate(), new \DateTimeZone('UTC'));
+                $endDate->setTimezone($timezoneObj);
                 $meetEndDate = $endDate->format('d/m/Y');
             }
 

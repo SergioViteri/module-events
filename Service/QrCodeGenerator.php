@@ -65,6 +65,40 @@ class QrCodeGenerator
     }
 
     /**
+     * Generate QR code image as binary PNG data
+     *
+     * @param string $data Data to encode in QR code
+     * @param int $size QR code size in pixels
+     * @return string Binary PNG data
+     */
+    public function generateQrCodeBinary(string $data, int $size = 300): string
+    {
+        try {
+            $writer = new PngWriter();
+            
+            $result = $writer->write(
+                \Endroid\QrCode\QrCode::create($data)
+                    ->setEncoding(new Encoding('UTF-8'))
+                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
+                    ->setSize($size)
+                    ->setMargin(10)
+            );
+
+            // Get the binary string
+            $binary = $result->getString();
+            
+            return $binary;
+        } catch (\Throwable $e) {
+            $this->logger->error('[QR Code Generator] Error generating QR code binary: ' . $e->getMessage());
+            $this->logger->error('[QR Code Generator] Error class: ' . get_class($e));
+            $this->logger->error('[QR Code Generator] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->logger->error('[QR Code Generator] Stack trace: ' . $e->getTraceAsString());
+            // Return empty string on error
+            return '';
+        }
+    }
+
+    /**
      * Generate QR code and save to file
      *
      * @param string $data Data to encode in QR code

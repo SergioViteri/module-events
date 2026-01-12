@@ -9,7 +9,7 @@
 "var meet_location":"Meet Location",
 "var meet_description":"Meet Description",
 "var status":"Status",
-"var qr_code_image":"QR Code Image",
+"var qr_code_url":"QR Code Image URL",
 "var calendar_ical_url":"iCal Download URL",
 "var calendar_google_url":"Google Calendar URL"
 } @-->
@@ -65,7 +65,7 @@
     <tr class="email-qrcode">
         <td>
             <p><strong>{{trans "Please bring this QR code to the event:"}}</strong></p>
-            <p><img src="{{var qr_code_image}}" alt="{{trans "Registration QR Code"}}" style="max-width: 300px; height: auto;" /></p>
+            <p><img src="{{var qr_code_url}}" alt="{{trans "Registration QR Code"}}" style="max-width: 300px; height: auto;" /></p>
         </td>
     </tr>
     {{depend calendar_ical_url}}
