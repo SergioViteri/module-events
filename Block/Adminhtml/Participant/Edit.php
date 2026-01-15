@@ -71,9 +71,8 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
         $model = $this->_coreRegistry->registry('zaca_events_participant');
         if ($model && $model->getId()) {
             return __("Edit Participant #%1", $model->getId());
-        } else {
-            return __('New Participant');
         }
+        return __('Edit Participant');
     }
 
     /**

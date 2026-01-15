@@ -37,6 +37,12 @@ class Participant extends \Magento\Backend\Block\Widget\Grid\Container
             )
         );
         
+        // Call parent to set up the grid
+        parent::_prepareLayout();
+        
+        // Remove the "Add New" button
+        $this->buttonList->remove('add');
+        
         // Add export button
         $this->addButton(
             'export',
@@ -47,7 +53,7 @@ class Participant extends \Magento\Backend\Block\Widget\Grid\Container
             ]
         );
         
-        return parent::_prepareLayout();
+        return $this;
     }
 }
 

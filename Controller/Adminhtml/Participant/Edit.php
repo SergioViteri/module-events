@@ -84,15 +84,21 @@ class Edit extends \Magento\Backend\App\Action
     public function execute()
     {
         $id = $this->getRequest()->getParam('registration_id');
+        
+        // Prevent creating new participants - require an existing ID
+        if (!$id) {
+            $this->messageManager->addError(__('Cannot create new participants. Please select an existing participant to edit.'));
+            $resultRedirect = $this->resultRedirectFactory->create();
+            return $resultRedirect->setPath('*/*/');
+        }
+        
         $model = $this->registrationFactory->create();
-
-        if ($id) {
-            $model->load($id);
-            if (!$model->getId()) {
-                $this->messageManager->addError(__('This participant no longer exists.'));
-                $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setPath('*/*/');
-            }
+        $model->load($id);
+        
+        if (!$model->getId()) {
+            $this->messageManager->addError(__('This participant no longer exists.'));
+            $resultRedirect = $this->resultRedirectFactory->create();
+            return $resultRedirect->setPath('*/*/');
         }
         $data = $this->adminSession->getFormData(true);
         if (!empty($data)) {
@@ -102,12 +108,12 @@ class Edit extends \Magento\Backend\App\Action
 
         $resultPage = $this->_initAction();
         $resultPage->addBreadcrumb(
-            $id ? __('Edit Participant') : __('New Participant'),
-            $id ? __('Edit Participant') : __('New Participant')
+            __('Edit Participant'),
+            __('Edit Participant')
         );
         $resultPage->getConfig()->getTitle()->prepend(__('Participants'));
         $resultPage->getConfig()->getTitle()->prepend(
-            $model->getId() ? __('Participant #%1', $model->getId()) : __('New Participant')
+            __('Participant #%1', $model->getId())
         );
 
         return $resultPage;
