@@ -9,7 +9,7 @@
     </div>
     <div class="unsubscribe-content">
         <p><?= $block->escapeHtml(__('Thank you for managing your email preferences.')) ?></p>
-        <p><a href="<?= $block->escapeUrl($block->getUrl('events/')) ?>"><?= $block->escapeHtml(__('Back to Events')) ?></a></p>
+        <p><a href="<?= $block->escapeUrl($block->getUrl($block->getRoutePath())) ?>"><?= $block->escapeHtml(__('Back to Events')) ?></a></p>
     </div>
 </div>
 

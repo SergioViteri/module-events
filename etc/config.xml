@@ -5,6 +5,7 @@ xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
         <zaca_events>
             <general>
                 <enabled>0</enabled>
+                <route_path>events</route_path>
             </general>
         </zaca_events>
     </default>

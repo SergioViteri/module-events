@@ -19,6 +19,7 @@ use Zaca\Events\Model\LocationFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class Calendar extends Action
 {
@@ -48,12 +49,18 @@ class Calendar extends Action
     protected $resultRawFactory;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param ScopeConfigInterface $scopeConfig
      * @param MeetRepositoryInterface $meetRepository
      * @param CalendarHelper $calendarHelper
      * @param LocationFactory $locationFactory
      * @param RawFactory $resultRawFactory
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
@@ -61,7 +68,8 @@ class Calendar extends Action
         MeetRepositoryInterface $meetRepository,
         CalendarHelper $calendarHelper,
         LocationFactory $locationFactory,
-        RawFactory $resultRawFactory
+        RawFactory $resultRawFactory,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->scopeConfig = $scopeConfig;
@@ -69,6 +77,7 @@ class Calendar extends Action
         $this->calendarHelper = $calendarHelper;
         $this->locationFactory = $locationFactory;
         $this->resultRawFactory = $resultRawFactory;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -86,14 +95,14 @@ class Calendar extends Action
 
         if (!$isEnabled) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         $meetId = (int) $this->getRequest()->getParam('id');
         
         if (!$meetId) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         try {
@@ -101,7 +110,7 @@ class Calendar extends Action
             
             if (!$meet->getIsActive()) {
                 $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setPath('events');
+                return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
             }
 
             // Load location
@@ -132,10 +141,10 @@ class Calendar extends Action
             return $result;
         } catch (NoSuchEntityException $e) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         } catch (\Exception $e) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
     }
 }

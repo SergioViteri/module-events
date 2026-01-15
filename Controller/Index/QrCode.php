@@ -20,6 +20,7 @@ use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\UrlInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class QrCode extends Action
 {
@@ -54,6 +55,11 @@ class QrCode extends Action
     protected $urlBuilder;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param ScopeConfigInterface $scopeConfig
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -61,6 +67,7 @@ class QrCode extends Action
      * @param RawFactory $resultRawFactory
      * @param LoggerInterface $logger
      * @param UrlInterface $urlBuilder
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
@@ -69,7 +76,8 @@ class QrCode extends Action
         QrCodeGenerator $qrCodeGenerator,
         RawFactory $resultRawFactory,
         LoggerInterface $logger,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->scopeConfig = $scopeConfig;
@@ -78,6 +86,7 @@ class QrCode extends Action
         $this->resultRawFactory = $resultRawFactory;
         $this->logger = $logger;
         $this->urlBuilder = $urlBuilder;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -95,14 +104,14 @@ class QrCode extends Action
 
         if (!$isEnabled) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         $registrationId = (int) $this->getRequest()->getParam('registrationId');
         
         if (!$registrationId) {
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         try {
@@ -113,8 +122,9 @@ class QrCode extends Action
             }
 
             // Generate attendance URL
+            $routePath = $this->eventsHelper->getRoutePath();
             $attendanceUrl = $this->urlBuilder->getUrl(
-                'events/index/attendance',
+                $routePath . '/index/attendance',
                 ['registrationId' => $registration->getRegistrationId()],
                 ['_secure' => true]
             );
@@ -125,7 +135,7 @@ class QrCode extends Action
             if (empty($qrCodeBinary)) {
                 $this->logger->error('[QR Code Controller] Failed to generate QR code for registration ID: ' . $registrationId);
                 $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setPath('events');
+                return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
             }
 
             // Return PNG image
@@ -140,11 +150,11 @@ class QrCode extends Action
         } catch (NoSuchEntityException $e) {
             $this->logger->error('[QR Code Controller] Registration not found: ' . $registrationId);
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         } catch (\Exception $e) {
             $this->logger->error('[QR Code Controller] Error generating QR code: ' . $e->getMessage());
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
     }
 }

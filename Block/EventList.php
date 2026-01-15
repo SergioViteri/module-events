@@ -26,6 +26,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class EventList extends Template
 {
@@ -105,6 +106,11 @@ class EventList extends Template
     protected $themes = null;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param MeetRepositoryInterface $meetRepository
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -118,6 +124,7 @@ class EventList extends Template
      * @param ThemeRepositoryInterface $themeRepository
      * @param TimezoneInterface $timezone
      * @param StoreManagerInterface $storeManager
+     * @param EventsHelper $eventsHelper
      * @param array $data
      */
     public function __construct(
@@ -134,6 +141,7 @@ class EventList extends Template
         ThemeRepositoryInterface $themeRepository,
         TimezoneInterface $timezone,
         StoreManagerInterface $storeManager,
+        EventsHelper $eventsHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -149,6 +157,7 @@ class EventList extends Template
         $this->themeRepository = $themeRepository;
         $this->timezone = $timezone;
         $this->storeManager = $storeManager;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -448,6 +457,16 @@ class EventList extends Template
             'zaca_events/general/enabled',
             ScopeInterface::SCOPE_STORE
         );
+    }
+
+    /**
+     * Get route path for events
+     *
+     * @return string
+     */
+    public function getRoutePath()
+    {
+        return $this->eventsHelper->getRoutePath();
     }
 }
 

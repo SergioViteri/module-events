@@ -16,6 +16,7 @@ use Zaca\Events\Api\RegistrationRepositoryInterface;
 use Zaca\Events\Api\EventTypeRepositoryInterface;
 use Zaca\Events\Api\ThemeRepositoryInterface;
 use Zaca\Events\Helper\Calendar;
+use Zaca\Events\Helper\Data as EventsHelper;
 use Zaca\Events\Api\Data\RegistrationInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\SearchCriteriaBuilderFactory;
@@ -82,6 +83,11 @@ class EventCard extends Template
     protected $timezone;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param LocationFactory $locationFactory
      * @param RegistrationRepositoryInterface $registrationRepository
@@ -93,6 +99,7 @@ class EventCard extends Template
      * @param Calendar $calendarHelper
      * @param StoreManagerInterface $storeManager
      * @param TimezoneInterface $timezone
+     * @param EventsHelper $eventsHelper
      * @param array $data
      */
     public function __construct(
@@ -107,6 +114,7 @@ class EventCard extends Template
         Calendar $calendarHelper,
         StoreManagerInterface $storeManager,
         TimezoneInterface $timezone,
+        EventsHelper $eventsHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -120,6 +128,7 @@ class EventCard extends Template
         $this->calendarHelper = $calendarHelper;
         $this->storeManager = $storeManager;
         $this->timezone = $timezone;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -307,7 +316,8 @@ class EventCard extends Template
      */
     public function getRegisterUrl($meetId)
     {
-        return $this->getUrl('events/index/register', ['_query' => ['meetId' => $meetId]]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $this->getUrl($routePath . '/index/register', ['_query' => ['meetId' => $meetId]]);
     }
 
     /**
@@ -318,7 +328,8 @@ class EventCard extends Template
      */
     public function getUnregisterUrl($meetId)
     {
-        return $this->getUrl('events/index/unregister', ['_query' => ['meetId' => $meetId]]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $this->getUrl($routePath . '/index/unregister', ['_query' => ['meetId' => $meetId]]);
     }
 
     /**
@@ -580,7 +591,8 @@ class EventCard extends Template
      */
     public function getEventViewUrl($meetId)
     {
-        return $this->getUrl('events/index/view', ['id' => $meetId]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $this->getUrl($routePath . '/index/view', ['id' => $meetId]);
     }
 
     /**
@@ -655,7 +667,18 @@ class EventCard extends Template
      */
     public function getUpdatePhoneUrl($meetId)
     {
-        return $this->getUrl('events/index/updatephone', ['meetId' => $meetId]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $this->getUrl($routePath . '/index/updatephone', ['meetId' => $meetId]);
+    }
+
+    /**
+     * Get route path for events
+     *
+     * @return string
+     */
+    public function getRoutePath()
+    {
+        return $this->eventsHelper->getRoutePath();
     }
 
     /**

@@ -17,6 +17,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\Escaper;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class Calendar extends AbstractHelper
 {
@@ -41,24 +42,32 @@ class Calendar extends AbstractHelper
     protected $timezone;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param UrlInterface $urlBuilder
      * @param Escaper $escaper
      * @param StoreManagerInterface $storeManager
      * @param TimezoneInterface $timezone
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
         UrlInterface $urlBuilder,
         Escaper $escaper,
         StoreManagerInterface $storeManager,
-        TimezoneInterface $timezone
+        TimezoneInterface $timezone,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->urlBuilder = $urlBuilder;
         $this->escaper = $escaper;
         $this->storeManager = $storeManager;
         $this->timezone = $timezone;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -69,8 +78,9 @@ class Calendar extends AbstractHelper
      */
     public function getIcalUrl($meetId)
     {
+        $routePath = $this->eventsHelper->getRoutePath();
         return $this->urlBuilder->getUrl(
-            'events/index/calendar',
+            $routePath . '/index/calendar',
             ['id' => $meetId],
             ['_secure' => true]
         );

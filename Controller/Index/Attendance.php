@@ -20,6 +20,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class Attendance extends Action
 {
@@ -64,6 +65,11 @@ class Attendance extends Action
     protected $customerRepository;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param RegistrationRepositoryInterface $registrationRepository
      * @param MeetRepositoryInterface $meetRepository
@@ -73,6 +79,7 @@ class Attendance extends Action
      * @param LoggerInterface $logger
      * @param Registry $registry
      * @param CustomerRepositoryInterface $customerRepository
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
@@ -83,7 +90,8 @@ class Attendance extends Action
         SessionManager $session,
         LoggerInterface $logger,
         Registry $registry,
-        CustomerRepositoryInterface $customerRepository
+        CustomerRepositoryInterface $customerRepository,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->registrationRepository = $registrationRepository;
@@ -94,6 +102,7 @@ class Attendance extends Action
         $this->logger = $logger;
         $this->registry = $registry;
         $this->customerRepository = $customerRepository;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -108,7 +117,7 @@ class Attendance extends Action
         if (!$registrationId) {
             $this->messageManager->addError(__('Invalid registration ID.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         try {
@@ -154,14 +163,14 @@ class Attendance extends Action
             $this->logger->error('[Attendance] NoSuchEntityException: ' . $e->getMessage());
             $this->messageManager->addError(__('Registration or meet not found.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         } catch (\Exception $e) {
             $this->logger->error('[Attendance] Exception: ' . $e->getMessage());
             $this->logger->error('[Attendance] File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             $this->logger->error('[Attendance] Stack trace: ' . $e->getTraceAsString());
             $this->messageManager->addError(__('An error occurred while processing attendance: %1', $e->getMessage()));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
     }
 
@@ -282,7 +291,8 @@ class Attendance extends Action
         $this->session->setData('zaca_events_attendance_validated', true);
 
         $resultRedirect = $this->resultRedirectFactory->create();
-        return $resultRedirect->setPath('events/index/attendance', ['registrationId' => $registration->getRegistrationId()]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $resultRedirect->setPath($routePath . '/index/attendance', ['registrationId' => $registration->getRegistrationId()]);
     }
 
     /**

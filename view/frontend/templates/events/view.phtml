@@ -27,7 +27,7 @@ $registrationStatus = $block->getRegistrationStatus();
 ?>
 <div class="event-view-page">
     <div class="event-back-link">
-        <a href="<?= $block->escapeUrl($block->getUrl('events')) ?>" class="back-link">
+        <a href="<?= $block->escapeUrl($block->getUrl($block->getRoutePath())) ?>" class="back-link">
             ← <?= $block->escapeHtml(__('Back to Events')) ?>
         </a>
     </div>

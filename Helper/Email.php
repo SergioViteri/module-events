@@ -15,6 +15,7 @@ use Zaca\Events\Api\MeetRepositoryInterface;
 use Zaca\Events\Service\QrCodeGenerator;
 use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Helper\Calendar;
+use Zaca\Events\Helper\Data as EventsHelper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\State;
@@ -96,6 +97,11 @@ class Email extends AbstractHelper
     protected $timezone;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param StateInterface $inlineTranslation
      * @param Escaper $escaper
@@ -109,6 +115,7 @@ class Email extends AbstractHelper
      * @param Calendar $calendarHelper
      * @param State $appState
      * @param TimezoneInterface $timezone
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
@@ -123,7 +130,8 @@ class Email extends AbstractHelper
         UrlInterface $urlBuilder,
         Calendar $calendarHelper,
         State $appState,
-        TimezoneInterface $timezone
+        TimezoneInterface $timezone,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->inlineTranslation = $inlineTranslation;
@@ -139,6 +147,7 @@ class Email extends AbstractHelper
         $this->calendarHelper = $calendarHelper;
         $this->appState = $appState;
         $this->timezone = $timezone;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -237,8 +246,9 @@ class Email extends AbstractHelper
                 $this->logger->info('[Events Email] Generating QR code URL for registration ID: ' . $registration->getRegistrationId());
                 try {
                     // Generate QR code image URL (served by controller)
+                    $routePath = $this->eventsHelper->getRoutePath();
                     $qrCodeUrl = $this->urlBuilder->getUrl(
-                        'events/index/qrcode',
+                        $routePath . '/index/qrcode',
                         ['registrationId' => $registration->getRegistrationId()],
                         ['_secure' => true]
                     );

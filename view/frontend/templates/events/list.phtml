@@ -12,11 +12,11 @@
 <?php else: ?>
 <div class="zacatrus-events-list">
     <div class="events-filters">
-        <form method="get" action="<?= $block->escapeUrl($block->getUrl('events')) ?>" id="events-filter-form">
+        <form method="get" action="<?= $block->escapeUrl($block->getUrl($block->getRoutePath())) ?>" id="events-filter-form">
             <div class="filter-group location-filter-group">
                 <label><?= $block->escapeHtml(__('Filter by Location')) ?></label>
                 <div class="location-filter-buttons">
-                    <a href="<?= $block->escapeUrl($block->getUrl('events', ['_query' => array_filter(['meet_type' => $block->getRequest()->getParam('meet_type'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
+                    <a href="<?= $block->escapeUrl($block->getUrl($block->getRoutePath(), ['_query' => array_filter(['meet_type' => $block->getRequest()->getParam('meet_type'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
                        class="location-filter-link <?= !$block->getRequest()->getParam('location_id') ? 'active' : '' ?>">
                         <?= $block->escapeHtml(__('Show all')) ?>
                     </a>
@@ -60,7 +60,7 @@
             <div class="filter-group meet-type-filter-group">
                 <label><?= $block->escapeHtml(__('Meet Type')) ?></label>
                 <div class="meet-type-filter-buttons">
-                    <a href="<?= $block->escapeUrl($block->getUrl('events', ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
+                    <a href="<?= $block->escapeUrl($block->getUrl($block->getRoutePath(), ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'theme_id' => $block->getRequest()->getParam('theme_id')])])) ?>" 
                        class="meet-type-filter-link <?= !$block->getRequest()->getParam('meet_type') ? 'active' : '' ?>">
                         <?= $block->escapeHtml(__('Show all')) ?>
                     </a>
@@ -80,7 +80,7 @@
             <div class="filter-group theme-filter-group">
                 <label><?= $block->escapeHtml(__('Filter by Theme')) ?></label>
                 <div class="theme-filter-buttons">
-                    <a href="<?= $block->escapeUrl($block->getUrl('events', ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'meet_type' => $block->getRequest()->getParam('meet_type')])])) ?>" 
+                    <a href="<?= $block->escapeUrl($block->getUrl($block->getRoutePath(), ['_query' => array_filter(['location_id' => $block->getRequest()->getParam('location_id'), 'meet_type' => $block->getRequest()->getParam('meet_type')])])) ?>" 
                        class="theme-filter-link <?= !$block->getRequest()->getParam('theme_id') ? 'active' : '' ?>">
                         <?= $block->escapeHtml(__('Show all')) ?>
                     </a>

@@ -17,6 +17,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class Check extends Template
 {
@@ -41,11 +42,17 @@ class Check extends Template
     protected $storeManager;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param Registry $registry
      * @param ManagerInterface $messageManager
      * @param TimezoneInterface $timezone
      * @param StoreManagerInterface $storeManager
+     * @param EventsHelper $eventsHelper
      * @param array $data
      */
     public function __construct(
@@ -54,6 +61,7 @@ class Check extends Template
         ManagerInterface $messageManager,
         TimezoneInterface $timezone,
         StoreManagerInterface $storeManager,
+        EventsHelper $eventsHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -61,6 +69,7 @@ class Check extends Template
         $this->messageManager = $messageManager;
         $this->timezone = $timezone;
         $this->storeManager = $storeManager;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -124,7 +133,8 @@ class Check extends Template
         if (!$registration) {
             return '';
         }
-        return $this->getUrl('events/index/attendance', ['registrationId' => $registration->getRegistrationId()]);
+        $routePath = $this->eventsHelper->getRoutePath();
+        return $this->getUrl($routePath . '/index/attendance', ['registrationId' => $registration->getRegistrationId()]);
     }
 
     /**

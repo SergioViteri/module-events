@@ -56,5 +56,10 @@
             </argument>
         </arguments>
     </type>
+    
+    <!-- Router Plugin for Dynamic Route Path -->
+    <type name="Magento\Framework\App\Router\Base">
+        <plugin name="zaca_events_router" type="Zaca\Events\Plugin\Router\Base" sortOrder="10"/>
+    </type>
 </config>
 

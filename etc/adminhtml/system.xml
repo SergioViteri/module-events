@@ -17,6 +17,11 @@
                     <comment>Enable or disable the Events module functionality</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="route_path" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Events Route Path</label>
+                    <comment>URL path for events pages (e.g., 'events', 'eventos', 'meetings'). Default: 'events'. Only alphanumeric characters, hyphens, and underscores are allowed.</comment>
+                    <validate>validate-alphanum-with-dashes</validate>
+                </field>
             </group>
         </section>
     </system>

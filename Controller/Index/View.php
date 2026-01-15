@@ -16,6 +16,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Zaca\Events\Api\MeetRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class View extends Action
 {
@@ -35,21 +36,29 @@ class View extends Action
     protected $meetRepository;
 
     /**
+     * @var EventsHelper
+     */
+    protected $eventsHelper;
+
+    /**
      * @param Context $context
      * @param PageFactory $resultPageFactory
      * @param ScopeConfigInterface $scopeConfig
      * @param MeetRepositoryInterface $meetRepository
+     * @param EventsHelper $eventsHelper
      */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
         ScopeConfigInterface $scopeConfig,
-        MeetRepositoryInterface $meetRepository
+        MeetRepositoryInterface $meetRepository,
+        EventsHelper $eventsHelper
     ) {
         parent::__construct($context);
         $this->resultPageFactory = $resultPageFactory;
         $this->scopeConfig = $scopeConfig;
         $this->meetRepository = $meetRepository;
+        $this->eventsHelper = $eventsHelper;
     }
 
     /**
@@ -68,7 +77,7 @@ class View extends Action
         if (!$isEnabled) {
             // Module is disabled, redirect to events list
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         $meetId = (int) $this->getRequest()->getParam('id');
@@ -76,7 +85,7 @@ class View extends Action
         if (!$meetId) {
             $this->messageManager->addError(__('Event not found.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
 
         try {
@@ -85,7 +94,7 @@ class View extends Action
             if (!$meet->getIsActive()) {
                 $this->messageManager->addError(__('This event is not available.'));
                 $resultRedirect = $this->resultRedirectFactory->create();
-                return $resultRedirect->setPath('events');
+                return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
             }
 
             $resultPage = $this->resultPageFactory->create();
@@ -100,11 +109,11 @@ class View extends Action
         } catch (NoSuchEntityException $e) {
             $this->messageManager->addError(__('Event not found.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         } catch (\Exception $e) {
             $this->messageManager->addError(__('An error occurred while loading the event.'));
             $resultRedirect = $this->resultRedirectFactory->create();
-            return $resultRedirect->setPath('events');
+            return $resultRedirect->setPath($this->eventsHelper->getRoutePath());
         }
     }
 }
