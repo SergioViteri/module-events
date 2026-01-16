@@ -13,6 +13,7 @@ use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
 use Zaca\Events\Model\ResourceModel\Meet\CollectionFactory as MeetCollectionFactory;
 use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory as CustomerCollectionFactory;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Zaca\Events\Model\RegistrationFactory;
 
 class Main extends Generic implements TabInterface
@@ -40,6 +41,11 @@ class Main extends Generic implements TabInterface
     protected $customerCollectionFactory;
 
     /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
      * @var RegistrationFactory
      */
     protected $registrationFactory;
@@ -51,6 +57,7 @@ class Main extends Generic implements TabInterface
      * @param \Magento\Backend\Model\Auth\Session     $adminSession
      * @param MeetCollectionFactory                  $meetCollectionFactory
      * @param CustomerCollectionFactory               $customerCollectionFactory
+     * @param CustomerRepositoryInterface            $customerRepository
      * @param RegistrationFactory                      $registrationFactory
      * @param array                                   $data
      */
@@ -61,12 +68,14 @@ class Main extends Generic implements TabInterface
         \Magento\Backend\Model\Auth\Session $adminSession,
         MeetCollectionFactory $meetCollectionFactory,
         CustomerCollectionFactory $customerCollectionFactory,
+        CustomerRepositoryInterface $customerRepository,
         RegistrationFactory $registrationFactory,
         array $data = []
     ) {
         $this->_adminSession = $adminSession;
         $this->meetCollectionFactory = $meetCollectionFactory;
         $this->customerCollectionFactory = $customerCollectionFactory;
+        $this->customerRepository = $customerRepository;
         $this->registrationFactory = $registrationFactory;
         parent::__construct($context, $registry, $formFactory, $data);
     }
@@ -110,12 +119,11 @@ class Main extends Generic implements TabInterface
             ]
         );
         
-        try {
-            $customers = $this->customerCollectionFactory->create();
-            $customers->addAttributeToSelect(['firstname', 'lastname', 'email']);
-            $customers->setPageSize(500); // Limit to prevent memory issues
-            $customerOptions = ['' => __('-- Please Select --')];
-            foreach ($customers as $customer) {
+        // Display customer name as read-only (customer cannot be changed)
+        $customerName = '';
+        if ($model && $model->getId() && $model->getCustomerId()) {
+            try {
+                $customer = $this->customerRepository->getById($model->getCustomerId());
                 $firstname = $customer->getFirstname() ?: '';
                 $lastname = $customer->getLastname() ?: '';
                 $name = trim($firstname . ' ' . $lastname);
@@ -123,23 +131,31 @@ class Main extends Generic implements TabInterface
                     $name = $customer->getEmail() ?: __('Customer #%1', $customer->getId());
                 }
                 $email = $customer->getEmail() ?: '';
-                $customerOptions[$customer->getId()] = $name . ($email ? ' (' . $email . ')' : '');
+                $customerName = $name . ($email ? ' (' . $email . ')' : '');
+            } catch (\Exception $e) {
+                // If customer cannot be loaded (e.g., was deleted), show fallback
+                $customerName = __('Customer #%1 (not found)', $model->getCustomerId());
             }
-        } catch (\Exception $e) {
-            // If customer loading fails, just show an empty option
-            $customerOptions = ['' => __('-- Please Select --')];
+        }
+        
+        // Add hidden field to preserve customer_id in form submission
+        if ($model && $model->getCustomerId()) {
+            $fieldset->addField(
+                'customer_id',
+                'hidden',
+                [
+                    'name' => 'customer_id',
+                ]
+            );
         }
         
         $fieldset->addField(
-            'customer_id',
-            'select',
+            'customer_name',
+            'note',
             [
-                'name' => 'customer_id',
                 'label' => __('Customer'),
                 'title' => __('Customer'),
-                'required' => true,
-                'disabled' => $isElementDisabled,
-                'options' => $customerOptions,
+                'text' => $customerName ?: __('N/A'),
             ]
         );
         

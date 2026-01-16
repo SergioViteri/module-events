@@ -76,16 +76,23 @@ class Save extends Action
         $data = $this->getRequest()->getPostValue();
         $resultRedirect = $this->resultRedirectFactory->create();
 
+        // Prevent creating new participants - require an existing ID
+        $id = $this->getRequest()->getParam('registration_id');
+        if (!$id) {
+            $this->messageManager->addError(__('Cannot create new participants. Please select an existing participant to edit.'));
+            return $resultRedirect->setPath('*/*/');
+        }
+
         if ($data) {
             $model = $this->registrationFactory->create();
-            $id = $this->getRequest()->getParam('registration_id');
-            $isNew = !$id;
-            $oldStatus = null;
-
-            if ($id) {
-                $model->load($id);
-                $oldStatus = $model->getStatus(); // Store old status before updating
+            $model->load($id);
+            
+            if (!$model->getId()) {
+                $this->messageManager->addError(__('This participant no longer exists.'));
+                return $resultRedirect->setPath('*/*/');
             }
+            
+            $oldStatus = $model->getStatus(); // Store old status before updating
 
             $model->setData($data);
             $newStatus = $model->getStatus();
@@ -93,15 +100,8 @@ class Save extends Action
             try {
                 $model->save();
                 
-                // Send registration email if this is a new registration
-                if ($isNew) {
-                    try {
-                        $this->emailHelper->sendRegistrationEmail($model, true);
-                    } catch (\Exception $e) {
-                        // Log error but don't fail save
-                        $this->logger->error('[Participant Save] Error sending registration email: ' . $e->getMessage());
-                    }
-                } elseif ($oldStatus === \Zaca\Events\Api\Data\RegistrationInterface::STATUS_WAITLIST 
+                // Send emails when status changes
+                if ($oldStatus === \Zaca\Events\Api\Data\RegistrationInterface::STATUS_WAITLIST 
                     && $newStatus === \Zaca\Events\Api\Data\RegistrationInterface::STATUS_CONFIRMED) {
                     // Send promotion email when status changes from waitlist to confirmed
                     try {
