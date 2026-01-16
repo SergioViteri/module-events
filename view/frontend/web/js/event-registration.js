@@ -247,9 +247,36 @@ define([
          * Update available slots display
          */
         updateAvailableSlots: function ($card, availableSlots, maxSlots) {
+            var $slotsDetail = $card.find('.event-detail').has('.slots-count');
             var $slotsCount = $card.find('.slots-count');
+            
             if ($slotsCount.length) {
-                $slotsCount.text(availableSlots + ' / ' + maxSlots);
+                var displayMode = $slotsCount.data('display-mode') || 'available_total';
+                
+                // Hide entire section if mode is 'none'
+                if (displayMode === 'none') {
+                    if ($slotsDetail.length) {
+                        $slotsDetail.hide();
+                    }
+                    return;
+                }
+                
+                // Show section if it was hidden
+                if ($slotsDetail.length) {
+                    $slotsDetail.show();
+                }
+                
+                // Format display based on mode
+                var displayText;
+                if (displayMode === 'available') {
+                    displayText = availableSlots.toString();
+                } else {
+                    // default: 'available_total'
+                    displayText = availableSlots + ' / ' + maxSlots;
+                }
+                
+                $slotsCount.text(displayText);
+                
                 // Update class based on availability
                 $slotsCount.removeClass('available full');
                 if (availableSlots > 0) {

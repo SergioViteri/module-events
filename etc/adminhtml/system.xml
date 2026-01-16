@@ -22,6 +22,11 @@
                     <comment>URL path for events pages (e.g., 'events', 'eventos', 'meetings'). Default: 'events'. Only alphanumeric characters, hyphens, and underscores are allowed.</comment>
                     <validate>validate-alphanum-with-dashes</validate>
                 </field>
+                <field id="slots_display_mode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Slots Display Mode</label>
+                    <comment>Select how available slots are displayed on event cards and detail pages.</comment>
+                    <source_model>Zaca\Events\Model\Config\Source\SlotsDisplayMode</source_model>
+                </field>
             </group>
         </section>
     </system>

@@ -74,12 +74,14 @@ $registrationStatus = $block->getRegistrationStatus();
                 <span><?= $block->escapeHtml($event->getDurationMinutes()) ?> <?= $block->escapeHtml(__('minutes')) ?></span>
             </div>
 
+            <?php if ($block->getSlotsDisplayMode() !== 'none'): ?>
             <div class="event-detail">
                 <strong><?= $block->escapeHtml(__('Available Slots:')) ?></strong>
-                <span class="slots-count <?= $availableSlots > 0 ? 'available' : 'full' ?>">
-                    <?= $block->escapeHtml($availableSlots) ?> / <?= $block->escapeHtml($event->getMaxSlots()) ?>
+                <span class="slots-count <?= $availableSlots > 0 ? 'available' : 'full' ?>" data-display-mode="<?= $block->escapeHtmlAttr($block->getSlotsDisplayMode()) ?>">
+                    <?= $block->escapeHtml($block->formatSlotsDisplay($availableSlots, $event->getMaxSlots())) ?>
                 </span>
             </div>
+            <?php endif; ?>
 
             <?php if ($block->hasInfoUrl($event)): ?>
                 <div class="event-detail">
