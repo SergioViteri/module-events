@@ -248,6 +248,36 @@ class EventCard extends Template
     }
 
     /**
+     * Get slots display mode
+     *
+     * @return string
+     */
+    public function getSlotsDisplayMode(): string
+    {
+        return $this->eventsHelper->getSlotsDisplayMode();
+    }
+
+    /**
+     * Format slots display based on configured mode
+     *
+     * @param int $availableSlots
+     * @param int $maxSlots
+     * @return string
+     */
+    public function formatSlotsDisplay(int $availableSlots, int $maxSlots): string
+    {
+        $mode = $this->getSlotsDisplayMode();
+        
+        switch ($mode) {
+            case 'available':
+                return (string) $availableSlots;
+            case 'available_total':
+            default:
+                return $availableSlots . ' / ' . $maxSlots;
+        }
+    }
+
+    /**
      * Check if customer is registered
      *
      * @return bool

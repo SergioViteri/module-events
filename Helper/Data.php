@@ -44,4 +44,25 @@ class Data extends AbstractHelper
         
         return $path;
     }
+
+    /**
+     * Get configured slots display mode
+     *
+     * @param int|null $storeId Store ID (null for current store)
+     * @return string Display mode (default: 'available_total')
+     */
+    public function getSlotsDisplayMode(?int $storeId = null): string
+    {
+        $mode = $this->scopeConfig->getValue(
+            'zaca_events/general/slots_display_mode',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        
+        if (empty($mode)) {
+            return 'available_total';
+        }
+        
+        return $mode;
+    }
 }

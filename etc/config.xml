@@ -6,6 +6,7 @@ xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
             <general>
                 <enabled>0</enabled>
                 <route_path>events</route_path>
+                <slots_display_mode>available_total</slots_display_mode>
             </general>
         </zaca_events>
     </default>
