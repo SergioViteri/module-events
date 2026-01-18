@@ -173,7 +173,15 @@ $registrationStatus = $block->getRegistrationStatus();
 <script>
 require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady, registrationHandler, $) {
     // Initialize registration handlers
-    registrationHandler.init();
+    try {
+        if (registrationHandler && typeof registrationHandler.init === 'function') {
+            registrationHandler.init();
+        } else {
+            console.error('zacatrusEventsRegistration module not properly loaded');
+        }
+    } catch (e) {
+        console.error('Error initializing registration handler:', e);
+    }
 });
 </script>
 

@@ -12,6 +12,19 @@ define([
     'mage/translate',
     'mage/validation'
 ], function ($, modal, $t) {
+    // Check if modal is properly loaded
+    if (typeof modal !== 'function') {
+        console.error('Magento modal module not properly loaded');
+        // Return a fallback object
+        return {
+            init: function() {
+                console.error('Modal not available');
+            },
+            show: function() {},
+            hide: function() {},
+            showError: function() {}
+        };
+    }
     'use strict';
 
     return {
