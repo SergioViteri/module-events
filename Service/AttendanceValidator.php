@@ -278,5 +278,58 @@ class AttendanceValidator
             return false;
         }
     }
+
+    /**
+     * Remove attendance and decrement count
+     *
+     * @param int $registrationId
+     * @return bool
+     */
+    public function removeAttendance(int $registrationId): bool
+    {
+        try {
+            // Load registration
+            $registration = $this->registrationFactory->create();
+            $this->registrationResource->load($registration, $registrationId);
+            
+            if (!$registration->getId()) {
+                $this->logger->error('[Attendance Validator] Registration not found: ' . $registrationId);
+                return false;
+            }
+
+            // Find the most recent attendance record
+            $collection = $this->attendanceCollectionFactory->create();
+            $collection->addFieldToFilter('registration_id', $registrationId)
+                ->setOrder('attendance_date', 'DESC')
+                ->setOrder('created_at', 'DESC')
+                ->setPageSize(1);
+
+            if ($collection->getSize() === 0) {
+                $this->logger->warning('[Attendance Validator] No attendance records found for registration ID: ' . $registrationId);
+                return false;
+            }
+
+            // Delete the most recent attendance record
+            $attendance = $collection->getFirstItem();
+            $attendance->delete();
+
+            // Decrement attendance count (but not below 0)
+            $currentCount = $registration->getAttendanceCount();
+            $newCount = max(0, $currentCount - 1);
+            $registration->setAttendanceCount($newCount);
+            $this->registrationResource->save($registration);
+
+            $this->logger->info(
+                '[Attendance Validator] Attendance removed for registration ID: ' . $registrationId . 
+                ', Old count: ' . $currentCount . 
+                ', New count: ' . $newCount
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error('[Attendance Validator] Error removing attendance: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
 

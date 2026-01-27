@@ -60,7 +60,7 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
             -100
         );
 
-        // Add Confirm Attendance button (only show if registration exists)
+        // Add Confirm Attendance and Remove Attendance buttons (only show if registration exists)
         $model = $this->_coreRegistry->registry('zaca_events_participant');
         if ($model && $model->getId()) {
             $this->buttonList->add(
@@ -71,6 +71,16 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
                     'onclick' => "setLocation('" . $this->getUrl('*/*/confirmAttendance', ['registration_id' => $model->getId()]) . "')",
                 ],
                 -110
+            );
+            
+            $this->buttonList->add(
+                'remove_attendance',
+                [
+                    'label' => __('Remove Attendance'),
+                    'class' => 'remove-attendance',
+                    'onclick' => "setLocation('" . $this->getUrl('*/*/removeAttendance', ['registration_id' => $model->getId()]) . "')",
+                ],
+                -111
             );
         }
     }

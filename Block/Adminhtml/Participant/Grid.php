@@ -263,6 +263,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             ]
         );
 
+        $this->getMassactionBlock()->addItem(
+            'remove_attendance',
+            [
+                'label' => __('Remove Attendance'),
+                'url' => $this->getUrl('zaca_events/participant/massRemoveAttendance'),
+                'confirm' => __('Are you sure you want to remove attendance for selected participant(s)?'),
+            ]
+        );
+
         return $this;
     }
 
