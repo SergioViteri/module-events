@@ -78,11 +78,8 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected function _prepareCollection()
     {
-        $this->logger->info('[Participant Grid] _prepareCollection() called');
-        
         try {
             $collection = $this->_registrationFactory->create()->getCollection();
-            $this->logger->info('[Participant Grid] Collection created, initial count: ' . $collection->getSize());
             
             // Join with customer table to get customer name and email
             $customerTable = $this->resourceConnection->getTableName('customer_entity');
@@ -104,28 +101,11 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
             );
             
             $this->setCollection($collection);
-            
-            // Log filter data before parent call
-            $filterData = $this->getFilterData();
-            if ($filterData) {
-                $this->logger->info('[Participant Grid] Filter data before parent::_prepareCollection(): ' . json_encode($filterData->getData()));
-            }
-            
-            $this->logger->info('[Participant Grid] Calling parent::_prepareCollection()');
             parent::_prepareCollection();
-            
-            $this->logger->info('[Participant Grid] After parent::_prepareCollection(), collection count: ' . $collection->getSize());
-            
-            // Log the SQL query
-            $select = $collection->getSelect();
-            if ($select) {
-                $this->logger->info('[Participant Grid] SQL Query: ' . $select->__toString());
-            }
             
             return $this;
         } catch (\Exception $e) {
             $this->logger->error('[Participant Grid] Error in _prepareCollection(): ' . $e->getMessage());
-            $this->logger->error('[Participant Grid] Stack trace: ' . $e->getTraceAsString());
             throw $e;
         }
     }
@@ -271,6 +251,15 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
                 'label' => __('Delete'),
                 'url' => $this->getUrl('zaca_events/participant/massDelete'),
                 'confirm' => __('Are you sure?'),
+            ]
+        );
+
+        $this->getMassactionBlock()->addItem(
+            'confirm_attendance',
+            [
+                'label' => __('Confirm Attendance'),
+                'url' => $this->getUrl('zaca_events/participant/massConfirmAttendance'),
+                'confirm' => __('Are you sure you want to confirm attendance for selected participant(s)?'),
             ]
         );
 

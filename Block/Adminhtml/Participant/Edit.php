@@ -59,6 +59,20 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
             ],
             -100
         );
+
+        // Add Confirm Attendance button (only show if registration exists)
+        $model = $this->_coreRegistry->registry('zaca_events_participant');
+        if ($model && $model->getId()) {
+            $this->buttonList->add(
+                'confirm_attendance',
+                [
+                    'label' => __('Confirm Attendance'),
+                    'class' => 'confirm-attendance',
+                    'onclick' => "setLocation('" . $this->getUrl('*/*/confirmAttendance', ['registration_id' => $model->getId()]) . "')",
+                ],
+                -110
+            );
+        }
     }
 
     /**
