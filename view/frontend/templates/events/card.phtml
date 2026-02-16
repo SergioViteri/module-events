@@ -123,14 +123,14 @@ $registrationStatus = $block->getRegistrationStatus();
                 <?php endif; ?>
             <?php else: ?>
                 <div class="event-actions">
-                <?php if (!$isRegistered && $availableSlots > 0): ?>
+                <?php if ($block->canRegisterForEvent() && !$isRegistered && $availableSlots > 0): ?>
                     <button type="button" 
                             class="action primary register-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
                             data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Register')) ?>
                     </button>
-                <?php elseif (!$isRegistered && $availableSlots <= 0): ?>
+                <?php elseif ($block->canRegisterForEvent() && !$isRegistered && $availableSlots <= 0): ?>
                     <button type="button" 
                             class="action primary register-btn waitlist-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"

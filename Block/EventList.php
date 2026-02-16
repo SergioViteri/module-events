@@ -202,44 +202,48 @@ class EventList extends Template
                 $searchResults = $this->meetRepository->getList($searchCriteria);
                 $allEvents = $searchResults->getItems();
                 
-                // Date filtering: 
-                // - For non-recurring events: filter by start_date >= now
-                // - For recurring events: allow past start dates, filter by end_date if exists
-                $now = new \DateTime();
-                $nowStr = $now->format('Y-m-d H:i:s');
+                // Event stays in the list until occurrence end (start + duration). After that it is hidden.
+                // - Non-recurring: include while now < start_date + duration_minutes
+                // - Recurring: include while now < next_occurrence + duration_minutes (and next occurrence <= end_date if set)
+                $store = $this->storeManager->getStore();
+                $timezoneCode = $this->timezone->getConfigTimezone(ScopeInterface::SCOPE_STORE, $store->getCode());
+                $timezoneObj = new \DateTimeZone($timezoneCode);
+                $now = new \DateTime('now', $timezoneObj);
                 
                 $filteredEvents = [];
                 foreach ($allEvents as $event) {
                     $recurrenceType = $event->getRecurrenceType();
+                    $durationMinutes = (int) $event->getDurationMinutes();
                     
                     if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_NONE) {
-                        // Non-recurring: must have future start date
-                        if ($event->getStartDate() >= $nowStr) {
+                        $start = new \DateTime($event->getStartDate(), new \DateTimeZone('UTC'));
+                        $start->setTimezone($timezoneObj);
+                        $occurrenceEnd = clone $start;
+                        $occurrenceEnd->modify('+' . $durationMinutes . ' minutes');
+                        if ($now < $occurrenceEnd) {
                             $filteredEvents[] = $event;
                         }
                     } else {
-                        // Recurring: allow past start dates, but check if next occurrence is before or equal to end_date
                         $nextOccurrence = $this->getNextOccurrenceDate($event);
                         
                         if ($nextOccurrence === null) {
-                            // Could not calculate next occurrence, skip
                             continue;
                         }
                         
                         $endDate = $event->getEndDate();
-                        if ($endDate === null) {
-                            // No end date set, include event
-                            $filteredEvents[] = $event;
-                        } else {
-                            // Compare full datetime (including time) - only include if next occurrence is before or equal to end date
-                            $nextOccurrenceDateTime = new \DateTime($nextOccurrence);
-                            $endDateTime = new \DateTime($endDate);
-                            
-                            if ($nextOccurrenceDateTime <= $endDateTime) {
-                                // Next occurrence is before or equal to end date/time, include event
-                                $filteredEvents[] = $event;
+                        if ($endDate !== null) {
+                            $endDateTime = new \DateTime($endDate, new \DateTimeZone('UTC'));
+                            $nextOccurrenceDateTime = new \DateTime($nextOccurrence, new \DateTimeZone('UTC'));
+                            if ($nextOccurrenceDateTime > $endDateTime) {
+                                continue;
                             }
-                            // If next occurrence is after end date/time, don't include
+                        }
+                        
+                        $occurrenceEnd = new \DateTime($nextOccurrence, new \DateTimeZone('UTC'));
+                        $occurrenceEnd->setTimezone($timezoneObj);
+                        $occurrenceEnd->modify('+' . $durationMinutes . ' minutes');
+                        if ($now < $occurrenceEnd) {
+                            $filteredEvents[] = $event;
                         }
                     }
                 }
