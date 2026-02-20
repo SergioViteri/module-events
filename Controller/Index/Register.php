@@ -115,10 +115,11 @@ class Register extends Action
             ]);
         }
 
-        // Get meetId and phoneNumber from POST data (sent by AJAX)
+        // Get meetId, phoneNumber and attendeeCount from POST data (sent by AJAX)
         $postData = $this->getRequest()->getPostValue();
         $meetId = isset($postData['meetId']) ? (int) $postData['meetId'] : 0;
         $phoneNumber = isset($postData['phoneNumber']) ? trim($postData['phoneNumber']) : '';
+        $attendeeCount = isset($postData['attendeeCount']) ? (int) $postData['attendeeCount'] : null;
         
         // Fallback to getParam if not in POST
         if (!$meetId) {
@@ -131,6 +132,11 @@ class Register extends Action
                 'success' => false,
                 'message' => __('Meet ID is required.')
             ]);
+        }
+
+        // Validate attendeeCount against meet's max (done after we have meetId; repository will re-validate and clamp)
+        if ($attendeeCount !== null && ($attendeeCount < 1 || $attendeeCount > 10)) {
+            $attendeeCount = 1;
         }
 
         // Validate phone number format (9-15 digits, allows +, (, ), spaces, and dashes)
@@ -159,18 +165,11 @@ class Register extends Action
 
         try {
             $customerId = $this->customerSession->getCustomerId();
-            $registration = $this->registrationRepository->registerCustomer($customerId, $meetId, $phoneNumber);
+            $registration = $this->registrationRepository->registerCustomer($customerId, $meetId, $phoneNumber, $attendeeCount);
             
             // Calculate updated available slots
             $meet = $this->meetRepository->getById($meetId);
-            $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-            $collection = $this->registrationRepository->getList(
-                $searchCriteriaBuilder
-                    ->addFilter('meet_id', $meetId)
-                    ->addFilter('status', 'confirmed')
-                    ->create()
-            );
-            $confirmed = $collection->getTotalCount();
+            $confirmed = $this->registrationRepository->getConfirmedAttendeeCountForMeet($meetId);
             $availableSlots = max(0, $meet->getMaxSlots() - $confirmed);
             
             $message = $registration->getStatus() === 'waitlist' 

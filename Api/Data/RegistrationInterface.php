@@ -17,6 +17,7 @@ interface RegistrationInterface
     const STATUS = 'status';
     const PHONE_NUMBER = 'phone_number';
     const REGISTRATION_DATE = 'registration_date';
+    const ATTENDEE_COUNT = 'attendee_count';
     const EMAIL_REMINDERS_DISABLED = 'email_reminders_disabled';
     const UNSUBSCRIBE_CODE = 'unsubscribe_code';
     const CREATED_AT = 'created_at';
@@ -113,6 +114,21 @@ interface RegistrationInterface
      * @return $this
      */
     public function setRegistrationDate($registrationDate);
+
+    /**
+     * Get attendee count (number of people for this registration)
+     *
+     * @return int
+     */
+    public function getAttendeeCount();
+
+    /**
+     * Set attendee count
+     *
+     * @param int $attendeeCount
+     * @return $this
+     */
+    public function setAttendeeCount($attendeeCount);
 
     /**
      * Get email reminders disabled

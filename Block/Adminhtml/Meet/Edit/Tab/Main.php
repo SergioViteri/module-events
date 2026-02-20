@@ -235,6 +235,19 @@ class Main extends Generic implements TabInterface
                 'disabled' => $isElementDisabled,
             ]
         );
+
+        $fieldset->addField(
+            'max_attendees_per_registration',
+            'text',
+            [
+                'name' => 'max_attendees_per_registration',
+                'label' => __('Max Attendees per Subscriber'),
+                'title' => __('Max Attendees per Subscriber'),
+                'required' => true,
+                'disabled' => $isElementDisabled,
+                'note' => __('Maximum number of people a customer can register in one subscription for this event (1 to 10).'),
+            ]
+        );
         
         $fieldset->addField(
             'description',
@@ -244,6 +257,18 @@ class Main extends Generic implements TabInterface
                 'label' => __('Description'),
                 'title' => __('Description'),
                 'disabled' => $isElementDisabled,
+            ]
+        );
+
+        $fieldset->addField(
+            'registration_conditions',
+            'textarea',
+            [
+                'name' => 'registration_conditions',
+                'label' => __('Registration conditions'),
+                'title' => __('Registration conditions'),
+                'disabled' => $isElementDisabled,
+                'note' => __('Optional. If filled, subscribers must accept these conditions before registering. Shown as a link next to a checkbox in the registration form. HTML is allowed.'),
             ]
         );
         

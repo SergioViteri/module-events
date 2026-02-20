@@ -64,15 +64,24 @@ interface RegistrationRepositoryInterface
     public function deleteById(int $registrationId): bool;
 
     /**
+     * Get total confirmed attendee count (sum of attendee_count) for a meet
+     *
+     * @param int $meetId
+     * @return int
+     */
+    public function getConfirmedAttendeeCountForMeet(int $meetId): int;
+
+    /**
      * Register customer to meet
      *
      * @param int $customerId
      * @param int $meetId
      * @param string|null $phoneNumber
+     * @param int|null $attendeeCount
      * @return RegistrationInterface
      * @throws CouldNotSaveException
      */
-    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null): RegistrationInterface;
+    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null, ?int $attendeeCount = null): RegistrationInterface;
 
     /**
      * Get most recent phone number from customer's registrations

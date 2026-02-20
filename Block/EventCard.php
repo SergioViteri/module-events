@@ -235,16 +235,36 @@ class EventCard extends Template
             return 0;
         }
 
-        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-        $collection = $this->registrationRepository->getList(
-            $searchCriteriaBuilder
-                ->addFilter('meet_id', $this->event->getMeetId())
-                ->addFilter('status', 'confirmed')
-                ->create()
-        );
-
-        $confirmed = $collection->getTotalCount();
+        $confirmed = $this->registrationRepository->getConfirmedAttendeeCountForMeet($this->event->getMeetId());
         return max(0, $this->event->getMaxSlots() - $confirmed);
+    }
+
+    /**
+     * Get max attendees per registration for the current event (for frontend "number of people" selector)
+     *
+     * @return int
+     */
+    public function getMaxAttendeesPerRegistration(): int
+    {
+        if (!$this->event) {
+            return 1;
+        }
+        $max = (int) $this->event->getMaxAttendeesPerRegistration();
+        return $max >= 1 ? $max : 1;
+    }
+
+    /**
+     * Get registration conditions text for the current event (plain text for display in modal)
+     *
+     * @return string
+     */
+    public function getRegistrationConditions(): string
+    {
+        if (!$this->event) {
+            return '';
+        }
+        $value = $this->event->getRegistrationConditions();
+        return $value !== null ? trim((string) $value) : '';
     }
 
     /**

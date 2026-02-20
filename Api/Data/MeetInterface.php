@@ -19,7 +19,9 @@ interface MeetInterface
     const START_DATE = 'start_date';
     const DURATION_MINUTES = 'duration_minutes';
     const MAX_SLOTS = 'max_slots';
+    const MAX_ATTENDEES_PER_REGISTRATION = 'max_attendees_per_registration';
     const DESCRIPTION = 'description';
+    const REGISTRATION_CONDITIONS = 'registration_conditions';
     const INFO_URL_PATH = 'info_url_path';
     const RECURRENCE_TYPE = 'recurrence_type';
     const END_DATE = 'end_date';
@@ -157,6 +159,21 @@ interface MeetInterface
     public function setMaxSlots($maxSlots);
 
     /**
+     * Get max attendees per registration (max people one customer can register per subscription)
+     *
+     * @return int
+     */
+    public function getMaxAttendeesPerRegistration();
+
+    /**
+     * Set max attendees per registration
+     *
+     * @param int $maxAttendeesPerRegistration
+     * @return $this
+     */
+    public function setMaxAttendeesPerRegistration($maxAttendeesPerRegistration);
+
+    /**
      * Get description
      *
      * @return string|null
@@ -170,6 +187,21 @@ interface MeetInterface
      * @return $this
      */
     public function setDescription($description);
+
+    /**
+     * Get registration conditions (if set, user must accept before subscribing)
+     *
+     * @return string|null
+     */
+    public function getRegistrationConditions();
+
+    /**
+     * Set registration conditions
+     *
+     * @param string|null $registrationConditions
+     * @return $this
+     */
+    public function setRegistrationConditions($registrationConditions);
 
     /**
      * Get info URL path

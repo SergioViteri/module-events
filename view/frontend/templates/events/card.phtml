@@ -12,6 +12,9 @@ $isRegistered = $block->isCustomerRegistered();
 $registrationStatus = $block->getRegistrationStatus();
 ?>
 <div class="event-card" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
+    <?php if ($block->getRegistrationConditions() !== ''): ?>
+    <div class="registration-conditions" data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>" style="display:none"><?= /* @noEscape */ $block->getRegistrationConditions() ?></div>
+    <?php endif; ?>
     <div class="event-header">
         <div class="event-name-wrapper">
             <h3 class="event-name">
@@ -127,6 +130,7 @@ $registrationStatus = $block->getRegistrationStatus();
                     <button type="button" 
                             class="action primary register-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
                             data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Register')) ?>
                     </button>
@@ -134,6 +138,7 @@ $registrationStatus = $block->getRegistrationStatus();
                     <button type="button" 
                             class="action primary register-btn waitlist-btn" 
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                            data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
                             data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Join Waitlist')) ?>
                     </button>

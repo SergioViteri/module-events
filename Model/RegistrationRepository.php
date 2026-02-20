@@ -166,9 +166,17 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         try {
             $meetId = $registration->getMeetId();
             $this->resource->delete($registration);
-            
-            // Check if we need to promote someone from waitlist
-            $this->promoteFromWaitlist($meetId);
+
+            $meet = $this->meetRepository->getById($meetId);
+            $maxSlots = (int) $meet->getMaxSlots();
+
+            // Promote from waitlist until confirmed slots are filled or waitlist is empty
+            while ($this->getConfirmedAttendeeCountForMeet($meetId) < $maxSlots) {
+                $promoted = $this->promoteOneFromWaitlist($meetId);
+                if (!$promoted) {
+                    break;
+                }
+            }
         } catch (\Exception $exception) {
             throw new CouldNotDeleteException(__('Could not delete the registration: %1', $exception->getMessage()));
         }
@@ -186,7 +194,15 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null): RegistrationInterface
+    public function getConfirmedAttendeeCountForMeet(int $meetId): int
+    {
+        return $this->resource->getConfirmedAttendeeSum($meetId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerCustomer(int $customerId, int $meetId, ?string $phoneNumber = null, ?int $attendeeCount = null): RegistrationInterface
     {
         // Check if already registered
         $collection = $this->registrationCollectionFactory->create();
@@ -194,7 +210,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
             ->addFieldToFilter('customer_id', $customerId);
         
         if ($collection->getSize() > 0) {
-            return $collection->getFirstItem(); //throw new CouldNotSaveException(__('You are already registered for this meet.'));
+            return $collection->getFirstItem();
         }
 
         // Get meet
@@ -204,17 +220,22 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         if (!$meet->getIsActive()) {
             throw new LocalizedException(__('This meet is not active.'));
         }
+
+        $maxPerRegistration = (int) $meet->getMaxAttendeesPerRegistration();
+        if ($maxPerRegistration < 1) {
+            $maxPerRegistration = 1;
+        }
+        $attendeeCount = $attendeeCount !== null ? (int) $attendeeCount : 1;
+        if ($attendeeCount < 1 || $attendeeCount > $maxPerRegistration) {
+            $attendeeCount = max(1, min($attendeeCount, $maxPerRegistration));
+        }
         
         $now = new \DateTime();
-        $startDate = new \DateTime($meet->getStartDate());
 
-        // Check available slots
-        $confirmedRegistrations = $this->registrationCollectionFactory->create();
-        $confirmedRegistrations->addFieldToFilter('meet_id', $meetId)
-            ->addFieldToFilter('status', RegistrationInterface::STATUS_CONFIRMED);
-        
+        // Check available slots (sum of attendee_count for confirmed registrations)
+        $confirmedSum = $this->getConfirmedAttendeeCountForMeet($meetId);
         $status = RegistrationInterface::STATUS_CONFIRMED;
-        if ($confirmedRegistrations->getSize() >= $meet->getMaxSlots()) {
+        if ($confirmedSum + $attendeeCount > $meet->getMaxSlots()) {
             $status = RegistrationInterface::STATUS_WAITLIST;
         }
 
@@ -223,7 +244,8 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         $registration->setMeetId($meetId)
             ->setCustomerId($customerId)
             ->setStatus($status)
-            ->setRegistrationDate($now->format('Y-m-d H:i:s'));
+            ->setRegistrationDate($now->format('Y-m-d H:i:s'))
+            ->setAttendeeCount($attendeeCount);
         
         // Set phone number if provided
         if ($phoneNumber !== null && $phoneNumber !== '') {
@@ -287,12 +309,12 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     }
 
     /**
-     * Promote first waitlist registration to confirmed when a slot becomes available
+     * Promote one waitlist registration to confirmed. Called in a loop after delete until slots are filled.
      *
      * @param int $meetId
-     * @return void
+     * @return bool true if someone was promoted, false if waitlist empty
      */
-    protected function promoteFromWaitlist(int $meetId): void
+    protected function promoteOneFromWaitlist(int $meetId): bool
     {
         $waitlistCollection = $this->registrationCollectionFactory->create();
         $waitlistCollection->addFieldToFilter('meet_id', $meetId)
@@ -300,19 +322,21 @@ class RegistrationRepository implements RegistrationRepositoryInterface
             ->setOrder('created_at', 'ASC')
             ->setPageSize(1);
 
-        if ($waitlistCollection->getSize() > 0) {
-            $waitlistRegistration = $waitlistCollection->getFirstItem();
-            $waitlistRegistration->setStatus(RegistrationInterface::STATUS_CONFIRMED);
-            $promotedRegistration = $this->save($waitlistRegistration);
-            
-            // Send promotion email
-            try {
-                $this->emailHelper->sendWaitlistPromotionEmail($promotedRegistration);
-            } catch (\Exception $e) {
-                // Log error but don't fail promotion
-                $this->logger->error('[RegistrationRepository] Error sending waitlist promotion email: ' . $e->getMessage());
-            }
+        if ($waitlistCollection->getSize() === 0) {
+            return false;
         }
+
+        $waitlistRegistration = $waitlistCollection->getFirstItem();
+        $waitlistRegistration->setStatus(RegistrationInterface::STATUS_CONFIRMED);
+        $this->save($waitlistRegistration);
+
+        try {
+            $this->emailHelper->sendWaitlistPromotionEmail($waitlistRegistration);
+        } catch (\Exception $e) {
+            $this->logger->error('[RegistrationRepository] Error sending waitlist promotion email: ' . $e->getMessage());
+        }
+
+        return true;
     }
 
     /**

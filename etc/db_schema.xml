@@ -74,7 +74,9 @@
         <column xsi:type="datetime" name="start_date" nullable="false" comment="Start Date"/>
         <column xsi:type="int" name="duration_minutes" unsigned="true" nullable="false" comment="Duration in Minutes"/>
         <column xsi:type="int" name="max_slots" unsigned="true" nullable="false" comment="Maximum Slots"/>
+        <column xsi:type="smallint" name="max_attendees_per_registration" unsigned="true" nullable="false" default="1" comment="Max attendees per subscriber (1 to e.g. 10)"/>
         <column xsi:type="text" name="description" nullable="true" comment="Description"/>
+        <column xsi:type="text" name="registration_conditions" nullable="true" comment="Registration conditions (if set, user must accept before subscribing)"/>
         <column xsi:type="varchar" name="info_url_path" length="255" nullable="true" comment="Additional Info URL Path"/>
         <column xsi:type="varchar" name="recurrence_type" length="20" nullable="false" default="none" comment="Recurrence Type (none, quincenal)"/>
         <column xsi:type="datetime" name="end_date" nullable="true" comment="End Date (for recurring events)"/>
@@ -128,6 +130,7 @@
         <column xsi:type="varchar" name="status" length="20" nullable="false" default="confirmed" comment="Status (confirmed, waitlist)"/>
         <column xsi:type="varchar" name="phone_number" length="20" nullable="false" comment="Contact Phone Number"/>
         <column xsi:type="datetime" name="registration_date" nullable="false" comment="Registration Date"/>
+        <column xsi:type="smallint" name="attendee_count" unsigned="true" nullable="false" default="1" comment="Number of attendees for this registration"/>
         <column xsi:type="int" name="attendance_count" unsigned="true" nullable="false" default="0" comment="Attendance Count"/>
         <column xsi:type="smallint" name="email_reminders_disabled" unsigned="true" nullable="false" default="0" comment="Email Reminders Disabled"/>
         <column xsi:type="varchar" name="unsubscribe_code" length="64" nullable="true" comment="Unsubscribe Code"/>

@@ -273,6 +273,7 @@ class Email extends AbstractHelper
             $templateVars = [
                 'registration_id' => $registration->getRegistrationId(),
                 'customer_name' => $customerName,
+                'attendee_count' => $registration->getAttendeeCount(),
                 'meet_name' => $meet->getName(),
                 'meet_date' => $meetDate,
                 'meet_time' => $meetTime,
@@ -571,6 +572,7 @@ class Email extends AbstractHelper
             $templateVars = [
                 'registration_id' => $registration->getRegistrationId(),
                 'customer_name' => $customerName,
+                'attendee_count' => $registration->getAttendeeCount(),
                 'meet_name' => $meet->getName(),
                 'meet_date' => $meetDate,
                 'meet_time' => $meetTime,
@@ -717,6 +719,7 @@ class Email extends AbstractHelper
             $templateVars = [
                 'registration_id' => $registration->getRegistrationId(),
                 'customer_name' => $customerName,
+                'attendee_count' => $registration->getAttendeeCount(),
                 'meet_name' => $meet->getName(),
                 'meet_date' => $meetDate,
                 'meet_time' => $meetTime,
@@ -883,6 +886,7 @@ class Email extends AbstractHelper
             $templateVars = [
                 'registration_id' => $registration->getRegistrationId(),
                 'customer_name' => $customerName,
+                'attendee_count' => $registration->getAttendeeCount(),
                 'meet_name' => $meet->getName(),
                 'meet_date' => $meetDate,
                 'meet_time' => $meetTime,

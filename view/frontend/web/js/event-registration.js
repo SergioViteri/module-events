@@ -53,7 +53,7 @@ define([
         /**
          * Register for meet
          */
-        register: function (meetId, url, $button, phoneNumber) {
+        register: function (meetId, url, $button, phoneNumber, attendeeCount) {
             var self = this;
             var $card = $button.closest('.event-card');
             $card.addClass('loading');
@@ -66,6 +66,10 @@ define([
             // Add phone number if provided
             if (phoneNumber) {
                 requestData.phoneNumber = phoneNumber;
+            }
+            // Add attendee count (1 to meet's max)
+            if (attendeeCount !== undefined && attendeeCount !== null) {
+                requestData.attendeeCount = parseInt(attendeeCount, 10) || 1;
             }
 
             $.ajax({
@@ -87,9 +91,9 @@ define([
                         if (response.requiresPhone) {
                             $card.removeClass('loading');
                             $button.prop('disabled', false);
-                            self.showPhoneModal(meetId, $button, function(submittedPhone) {
-                                // Retry registration with phone number
-                                self.register(meetId, url, $button, submittedPhone);
+                            self.showPhoneModal(meetId, $button, function(submittedPhone, submittedAttendeeCount) {
+                                // Retry registration with phone number and attendee count
+                                self.register(meetId, url, $button, submittedPhone, submittedAttendeeCount);
                             });
                         } else {
                             self.showMessage(response.message || $t('An error occurred.'), 'error', $card);
@@ -378,16 +382,49 @@ define([
         showPhoneModal: function (meetId, $button, onSubmitCallback) {
             var self = this;
             var modalId = 'phone-modal-' + meetId;
-            
+            var maxAttendees = parseInt($button.data('max-attendees'), 10) || 1;
+            if (maxAttendees < 1) {
+                maxAttendees = 1;
+            }
+            var conditionsHtml = ($button.closest('.event-card').find('.registration-conditions').html() || '').trim();
+
             // Get most recent phone number to pre-fill
             this.getMostRecentPhoneNumber(meetId, function(prefillPhone) {
                 // Create modal if it doesn't exist
                 var $modal = $('#' + modalId);
                 if ($modal.length === 0) {
+                    var attendeeFieldHtml = '';
+                    if (maxAttendees > 1) {
+                        var options = [];
+                        for (var i = 1; i <= maxAttendees; i++) {
+                            options.push('<option value="' + i + '">' + i + '</option>');
+                        }
+                        attendeeFieldHtml = '<div class="field required">' +
+                            '<label class="label" for="attendee-count-' + meetId + '">' +
+                            '<span>' + $t('Number of people') + '</span>' +
+                            '</label>' +
+                            '<div class="control">' +
+                            '<select id="attendee-count-' + meetId + '" name="attendeeCount" class="select">' +
+                            options.join('') +
+                            '</select>' +
+                            '</div>' +
+                            '</div>';
+                    }
+                    var conditionsBlockHtml = '';
+                    if (conditionsHtml) {
+                        conditionsBlockHtml = '<div class="field required registration-conditions-block">' +
+                            '<div class="control">' +
+                            '<input type="checkbox" id="accept-conditions-' + meetId + '" name="acceptConditions" value="1" class="checkbox" /> ' +
+                            '<label for="accept-conditions-' + meetId + '" class="label">' + $t('I accept the conditions') + '</label>' +
+                            ' <a href="#" class="show-registration-conditions">' + $t('Show conditions') + '</a>' +
+                            '</div>' +
+                            '</div>';
+                    }
                     // Create modal HTML
-                    var modalHtml = '<div id="' + modalId + '" class="phone-modal" style="display: none;" data-meet-id="' + meetId + '">' +
+                    var modalHtml = '<div id="' + modalId + '" class="phone-modal" style="display: none;" data-meet-id="' + meetId + '" data-max-attendees="' + maxAttendees + '">' +
                         '<form id="phone-form-' + meetId + '" class="phone-form">' +
                         '<fieldset class="fieldset">' +
+                        (maxAttendees > 1 ? attendeeFieldHtml : '') +
                         '<div class="field required">' +
                         '<label class="label" for="phone-number-' + meetId + '">' +
                         '<span>' + $t('Phone Number') + '</span>' +
@@ -399,6 +436,7 @@ define([
                         '</div>' +
                         '</div>' +
                         '</fieldset>' +
+                        conditionsBlockHtml +
                         '<div class="actions-toolbar">' +
                         '<div class="primary">' +
                         '<button type="submit" class="action primary">' +
@@ -415,21 +453,72 @@ define([
                         '</div>';
                     $('body').append(modalHtml);
                     $modal = $('#' + modalId);
+                    if (conditionsHtml) {
+                        $modal.data('registrationConditions', conditionsHtml);
+                        $modal.find('.show-registration-conditions').on('click', function (e) {
+                            e.preventDefault();
+                            self.showConditionsModal($modal.data('registrationConditions'));
+                        });
+                    }
                 } else {
                     // Update pre-filled value
                     $modal.find('input[name="phoneNumber"]').val(prefillPhone || '');
                 }
 
-                // Initialize modal
-                phoneModal.init(modalId, meetId, prefillPhone, function(phoneNumber) {
+                // Initialize modal (pass maxAttendees and options with conditionsRequired)
+                var options = { conditionsRequired: conditionsHtml.length > 0 };
+                phoneModal.init(modalId, meetId, prefillPhone, function(phoneNumber, attendeeCount) {
                     if (onSubmitCallback && typeof onSubmitCallback === 'function') {
-                        onSubmitCallback(phoneNumber);
+                        onSubmitCallback(phoneNumber, attendeeCount !== undefined ? attendeeCount : 1);
                     }
-                });
+                }, maxAttendees, options);
 
                 // Show modal
                 phoneModal.show(modalId);
             });
+        },
+
+        /**
+         * Show a small modal with the registration conditions (HTML allowed)
+         */
+        showConditionsModal: function (conditionsHtml) {
+            var conditionsModalId = 'registration-conditions-modal';
+            var modalTitle = $t('Registration conditions');
+            var closeLabel = $t('Close');
+            var $conditionsModal = $('#' + conditionsModalId);
+            if ($conditionsModal.length === 0) {
+                var html = '<div id="' + conditionsModalId + '" style="display:none;">' +
+                    '<div class="registration-conditions-content" style="max-height: 400px; overflow: auto;">' + (conditionsHtml || '') + '</div>' +
+                    '</div>';
+                $('body').append(html);
+                $conditionsModal = $('#' + conditionsModalId);
+            } else {
+                $conditionsModal.find('.registration-conditions-content').html(conditionsHtml || '');
+            }
+            if (typeof require !== 'undefined') {
+                require(['Magento_Ui/js/modal/modal'], function (modal) {
+                    if (!$conditionsModal.data('modalInstance')) {
+                        var opts = {
+                            type: 'popup',
+                            responsive: true,
+                            innerScroll: true,
+                            title: modalTitle,
+                            buttons: [{
+                                text: closeLabel,
+                                class: 'action secondary',
+                                click: function () {
+                                    $conditionsModal.modal('closeModal');
+                                }
+                            }]
+                        };
+                        modal(opts, $conditionsModal);
+                        $conditionsModal.data('modalInstance', true);
+                    }
+                    $conditionsModal.modal('openModal');
+                });
+            } else {
+                $conditionsModal.show();
+            }
         },
 
         /**

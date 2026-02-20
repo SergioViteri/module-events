@@ -154,6 +154,23 @@ class Meet extends AbstractModel implements MeetInterface
     /**
      * @inheritdoc
      */
+    public function getMaxAttendeesPerRegistration()
+    {
+        $value = $this->getData(self::MAX_ATTENDEES_PER_REGISTRATION);
+        return $value !== null ? (int) $value : 1;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setMaxAttendeesPerRegistration($maxAttendeesPerRegistration)
+    {
+        return $this->setData(self::MAX_ATTENDEES_PER_REGISTRATION, (int) $maxAttendeesPerRegistration);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getDescription()
     {
         return $this->getData(self::DESCRIPTION);
@@ -165,6 +182,23 @@ class Meet extends AbstractModel implements MeetInterface
     public function setDescription($description)
     {
         return $this->setData(self::DESCRIPTION, $description);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRegistrationConditions()
+    {
+        $value = $this->getData(self::REGISTRATION_CONDITIONS);
+        return $value !== null ? (string) $value : '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRegistrationConditions($registrationConditions)
+    {
+        return $this->setData(self::REGISTRATION_CONDITIONS, $registrationConditions !== null ? (string) $registrationConditions : '');
     }
 
     /**

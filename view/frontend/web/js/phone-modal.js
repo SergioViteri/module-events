@@ -34,12 +34,17 @@ define([
          * @param {String} modalId - ID of the modal element
          * @param {String} meetId - Meet ID
          * @param {String|null} prefillPhone - Phone number to pre-fill
-         * @param {Function} onSubmit - Callback when form is submitted
+         * @param {Function} onSubmit - Callback when form is submitted (phoneNumber, attendeeCount)
+         * @param {Number} [maxAttendees=1] - Max attendees per registration (for reading attendeeCount from form)
+         * @param {Object} [options] - { conditionsRequired: boolean } - if true, checkbox "accept conditions" must be checked
          */
-        init: function (modalId, meetId, prefillPhone, onSubmit) {
+        init: function (modalId, meetId, prefillPhone, onSubmit, maxAttendees, options) {
             var self = this;
             var $modal = $('#' + modalId);
-            
+            maxAttendees = parseInt(maxAttendees, 10) || 1;
+            options = options || {};
+            var conditionsRequired = !!options.conditionsRequired;
+
             if ($modal.length === 0) {
                 console.error('Phone modal element not found: ' + modalId);
                 return;
@@ -66,6 +71,16 @@ define([
                 e.preventDefault();
                 
                 var $form = $(this);
+
+                // If conditions are required, check the checkbox
+                if (conditionsRequired) {
+                    var $acceptCheckbox = $form.find('input[name="acceptConditions"]');
+                    if (!$acceptCheckbox.length || !$acceptCheckbox.is(':checked')) {
+                        self.showError($modal, $t('You must accept the conditions to register.'));
+                        return false;
+                    }
+                }
+
                 var phoneNumber = $form.find('input[name="phoneNumber"]').val().trim();
                 
                 // Validate phone number: count digits only, but allow formatting characters (+, (, ), spaces, dashes)
@@ -79,12 +94,22 @@ define([
                 // Sanitize the phone number: only allow digits, +, (, ), spaces, and dashes
                 phoneNumber = phoneNumber.replace(/[^0-9+\-() ]/g, '');
 
+                // Read attendee count (1 to maxAttendees)
+                var attendeeCount = 1;
+                var $attendeeField = $form.find('select[name="attendeeCount"], input[name="attendeeCount"]');
+                if ($attendeeField.length) {
+                    attendeeCount = parseInt($attendeeField.val(), 10) || 1;
+                    if (attendeeCount < 1 || attendeeCount > maxAttendees) {
+                        attendeeCount = Math.max(1, Math.min(attendeeCount, maxAttendees));
+                    }
+                }
+
                 // Close modal
                 $modal.modal('closeModal');
 
-                // Call callback with phone number
+                // Call callback with phone number and attendee count
                 if (onSubmit && typeof onSubmit === 'function') {
-                    onSubmit(phoneNumber);
+                    onSubmit(phoneNumber, attendeeCount);
                 }
 
                 return false;

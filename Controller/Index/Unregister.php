@@ -108,14 +108,7 @@ class Unregister extends Action
             
             // Calculate updated available slots
             $meet = $this->meetRepository->getById($meetId);
-            $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-            $collection = $this->registrationRepository->getList(
-                $searchCriteriaBuilder
-                    ->addFilter('meet_id', $meetId)
-                    ->addFilter('status', 'confirmed')
-                    ->create()
-            );
-            $confirmed = $collection->getTotalCount();
+            $confirmed = $this->registrationRepository->getConfirmedAttendeeCountForMeet($meetId);
             $availableSlots = max(0, $meet->getMaxSlots() - $confirmed);
             
             return $result->setData([

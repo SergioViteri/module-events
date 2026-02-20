@@ -363,15 +363,7 @@ class EventList extends Template
      */
     public function getAvailableSlots($meet)
     {
-        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-        $collection = $this->registrationRepository->getList(
-            $searchCriteriaBuilder
-                ->addFilter('meet_id', $meet->getMeetId())
-                ->addFilter('status', 'confirmed')
-                ->create()
-        );
-
-        $confirmed = $collection->getTotalCount();
+        $confirmed = $this->registrationRepository->getConfirmedAttendeeCountForMeet($meet->getMeetId());
         return max(0, $meet->getMaxSlots() - $confirmed);
     }
 

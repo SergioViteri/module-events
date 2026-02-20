@@ -186,6 +186,18 @@ class Main extends Generic implements TabInterface
                 'note' => __('Enter phone number (9-15 digits). Formatting like +, (, ) is allowed.'),
             ]
         );
+
+        $fieldset->addField(
+            'attendee_count',
+            'text',
+            [
+                'name' => 'attendee_count',
+                'label' => __('Number of Attendees'),
+                'title' => __('Number of Attendees'),
+                'required' => true,
+                'note' => __('Number of people for this registration (1 to the meet\'s max attendees per subscriber).'),
+            ]
+        );
         
         $fieldset->addField(
             'registration_date',

@@ -106,7 +106,9 @@ class RecurrenceGenerator
                 ->setStartDate($currentDate->format('Y-m-d H:i:s'))
                 ->setDurationMinutes($parentMeet->getDurationMinutes())
                 ->setMaxSlots($parentMeet->getMaxSlots())
+                ->setMaxAttendeesPerRegistration($parentMeet->getMaxAttendeesPerRegistration())
                 ->setDescription($parentMeet->getDescription())
+                ->setRegistrationConditions($parentMeet->getRegistrationConditions())
                 ->setRecurrenceType(MeetInterface::RECURRENCE_TYPE_NONE) // Child meets are not recurrent
                 ->setIsActive($parentMeet->getIsActive());
             

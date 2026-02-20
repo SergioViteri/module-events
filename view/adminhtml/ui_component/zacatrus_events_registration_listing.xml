@@ -105,6 +105,12 @@
                 <label translate="true">Phone Number</label>
             </settings>
         </column>
+        <column name="attendee_count">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Attendees</label>
+            </settings>
+        </column>
         <column name="status" component="Magento_Ui/js/grid/columns/select">
             <settings>
                 <options>
