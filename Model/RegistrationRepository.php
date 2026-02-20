@@ -15,6 +15,7 @@ use Zaca\Events\Api\Data\RegistrationInterfaceFactory;
 use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
 use Zaca\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
 use Zaca\Events\Api\MeetRepositoryInterface;
+use Zaca\Events\Api\Data\MeetInterface;
 use Zaca\Events\Helper\Email as EmailHelper;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
@@ -216,7 +217,7 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         // Get meet
         $meet = $this->meetRepository->getById($meetId);
         
-        // Validate meet is active and in the future
+        // Validate meet is active
         if (!$meet->getIsActive()) {
             throw new LocalizedException(__('This meet is not active.'));
         }
@@ -229,8 +230,12 @@ class RegistrationRepository implements RegistrationRepositoryInterface
         if ($attendeeCount < 1 || $attendeeCount > $maxPerRegistration) {
             $attendeeCount = max(1, min($attendeeCount, $maxPerRegistration));
         }
-        
-        $now = new \DateTime();
+
+        $occurrenceEnd = $this->getOccurrenceEndDateTime($meet);
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        if ($occurrenceEnd === null || $now >= $occurrenceEnd) {
+            throw new LocalizedException(__('Registration for this event has closed.'));
+        }
 
         // Check available slots (sum of attendee_count for confirmed registrations)
         $confirmedSum = $this->getConfirmedAttendeeCountForMeet($meetId);
@@ -371,6 +376,49 @@ class RegistrationRepository implements RegistrationRepositoryInterface
             $this->logger->error('[RegistrationRepository] Error getting most recent phone number: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Get end datetime of the current/next occurrence (start + duration) in UTC.
+     * Returns null if no valid occurrence (e.g. recurring with next occurrence after end_date).
+     *
+     * @param MeetInterface $meet
+     * @return \DateTime|null
+     */
+    private function getOccurrenceEndDateTime(MeetInterface $meet): ?\DateTime
+    {
+        $nowUtc = new \DateTime('now', new \DateTimeZone('UTC'));
+        $durationMinutes = (int) $meet->getDurationMinutes();
+        $recurrenceType = $meet->getRecurrenceType();
+
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_NONE) {
+            $start = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $end = clone $start;
+            $end->modify('+' . $durationMinutes . ' minutes');
+            return $end;
+        }
+
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL ||
+            $recurrenceType === MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            $intervalDays = $recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL ? 15 : 7;
+            $start = new \DateTime($meet->getStartDate(), new \DateTimeZone('UTC'));
+            $nextStart = clone $start;
+            while ($nextStart <= $nowUtc) {
+                $nextStart->modify('+' . $intervalDays . ' days');
+            }
+            $endDate = $meet->getEndDate();
+            if ($endDate !== null) {
+                $endLimit = new \DateTime($endDate, new \DateTimeZone('UTC'));
+                if ($nextStart > $endLimit) {
+                    return null;
+                }
+            }
+            $occurrenceEnd = clone $nextStart;
+            $occurrenceEnd->modify('+' . $durationMinutes . ' minutes');
+            return $occurrenceEnd;
+        }
+
+        return null;
     }
 }
 

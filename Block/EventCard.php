@@ -491,6 +491,45 @@ class EventCard extends Template
     }
 
     /**
+     * Whether registration is still allowed (until end of occurrence).
+     *
+     * @return bool
+     */
+    public function canRegisterForEvent(): bool
+    {
+        if (!$this->event) {
+            return false;
+        }
+
+        $store = $this->storeManager->getStore();
+        $timezoneCode = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezoneCode);
+        $now = new \DateTime('now', $timezoneObj);
+
+        $occurrenceStart = null;
+        if ($this->isRecurring()) {
+            $nextStr = $this->getNextOccurrenceDate();
+            if ($nextStr === null) {
+                return false;
+            }
+            $occurrenceStart = new \DateTime($nextStr, new \DateTimeZone('UTC'));
+            $occurrenceStart->setTimezone($timezoneObj);
+        } else {
+            $occurrenceStart = new \DateTime($this->event->getStartDate(), new \DateTimeZone('UTC'));
+            $occurrenceStart->setTimezone($timezoneObj);
+        }
+
+        $durationMinutes = (int) $this->event->getDurationMinutes();
+        $occurrenceEnd = clone $occurrenceStart;
+        $occurrenceEnd->modify('+' . $durationMinutes . ' minutes');
+
+        return $now < $occurrenceEnd;
+    }
+
+    /**
      * Format event date display (handles recurring events)
      *
      * @return string

@@ -13,8 +13,6 @@
     <preference for="Zaca\Events\Api\Data\MeetInterface" type="Zaca\Events\Model\Meet"/>
     <preference for="Zaca\Events\Api\RegistrationRepositoryInterface" type="Zaca\Events\Model\RegistrationRepository"/>
     <preference for="Zaca\Events\Api\Data\RegistrationInterface" type="Zaca\Events\Model\Registration"/>
-    <preference for="Zaca\Events\Api\LeagueRepositoryInterface" type="Zaca\Events\Model\LeagueRepository"/>
-    <preference for="Zaca\Events\Api\Data\LeagueInterface" type="Zaca\Events\Model\League"/>
     <preference for="Zaca\Events\Api\EventTypeRepositoryInterface" type="Zaca\Events\Model\EventTypeRepository"/>
     <preference for="Zaca\Events\Api\ThemeRepositoryInterface" type="Zaca\Events\Model\ThemeRepository"/>
     <preference for="Zaca\Events\Api\Data\ThemeInterface" type="Zaca\Events\Model\Theme"/>
@@ -23,18 +21,11 @@
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">
-                <item name="zacatrus_events_league_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\League\Grid\Collection</item>
                 <item name="zacatrus_events_registration_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Registration\Grid\Collection</item>
                 <item name="zacatrus_events_theme_listing_data_source" xsi:type="string">Zaca\Events\Model\ResourceModel\Theme\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
-    
-    <virtualType name="zacatrus_events_league_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
-        <arguments>
-            <argument name="collection" xsi:type="object" shared="false">Zaca\Events\Model\ResourceModel\League\Grid\Collection</argument>
-        </arguments>
-    </virtualType>
     
     <virtualType name="zacatrus_events_registration_listing_data_source" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResultReporting" shared="false">
         <arguments>

@@ -12,7 +12,6 @@
                             <resource id="Zaca_Events::event_types" title="Event Types Management" sortOrder="17"/>
                             <resource id="Zaca_Events::themes" title="Themes Management" sortOrder="18"/>
                             <resource id="Zaca_Events::meets" title="Meets Management" sortOrder="20"/>
-                            <resource id="Zaca_Events::leagues" title="Leagues Management" sortOrder="30"/>
                             <resource id="Zaca_Events::participants" title="Participants Management" sortOrder="40"/>
                         </resource>
                     </resource>
