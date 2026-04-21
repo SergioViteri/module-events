@@ -8,11 +8,9 @@
  * @author      Zacatrus
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <body>
-        <referenceContainer name="content">
-            <block class="Zaca\Events\Block\Adminhtml\Meet\Grid" name="meet.grid"/>
-        </referenceContainer>
-    </body>
-</page>
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <container name="root">
+        <block class="Zaca\Events\Block\Adminhtml\Meet\Grid" name="meet.grid"/>
+    </container>
+</layout>
 
