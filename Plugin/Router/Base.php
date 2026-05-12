@@ -93,26 +93,34 @@ class Base
             if ($pathInfo !== $configuredPath) {
                 $actionPath = substr($pathInfo, strlen($configuredPath) + 1);
             }
-            
+            $actionPath = trim($actionPath, '/');
+
             // Rewrite the request to use 'events' frontName
             $request->setModuleName('events');
             $request->setRouteName('zaca_events');
-            
-            // Parse action path to set controller and action
-            if (!empty($actionPath)) {
-                $pathParts = explode('/', $actionPath);
-                if (isset($pathParts[0])) {
-                    $request->setControllerName($pathParts[0]);
-                }
-                if (isset($pathParts[1])) {
-                    $request->setActionName($pathParts[1]);
-                }
-            } else {
-                // Default to index controller and index action
+
+            if ($actionPath === '') {
+                // /<configuredPath> → index/index
                 $request->setControllerName('index');
                 $request->setActionName('index');
+            } else {
+                $pathParts = explode('/', $actionPath);
+                $first = $pathParts[0];
+                if ($first === 'index') {
+                    // /<configuredPath>/index/<action>/... → normal routing
+                    $request->setControllerName('index');
+                    if (isset($pathParts[1])) {
+                        $request->setActionName($pathParts[1]);
+                    }
+                } else {
+                    // /<configuredPath>/<location-slug>[/...] → location filter on the listing
+                    $request->setControllerName('index');
+                    $request->setActionName('index');
+                    $request->setParam('location_slug', $first);
+                    $request->setPathInfo('/' . $configuredPath . '/index/index');
+                }
             }
-            
+
             // Let the standard router handle the rest
             return $proceed($request);
         }

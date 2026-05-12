@@ -11,10 +11,12 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
         <title>Events</title>
+        <meta name="keywords" content="Eventos de juegos de mesa, Encuentros de juegos de mesa, partidas de juegos de mesa, torneos de juegos de mesa, ligas de juegos de mesa, firmas de juegos de mesa, eventos"/>
         <css src="Zaca_Events::css/events.css"/>
         <script src="Zaca_Events::js/event-registration.js"/>
     </head>
     <body>
+        <referenceBlock name="page.main.title" remove="true"/>
         <referenceContainer name="content">
             <block class="Zaca\Events\Block\EventList" name="zacatrus.events.list" template="Zaca_Events::events/list.phtml">
                 <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.card" template="Zaca_Events::events/card.phtml"/>

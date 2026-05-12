@@ -80,12 +80,9 @@ define([
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
-                        // Update available slots if provided
-                        if (response.availableSlots !== undefined && response.maxSlots !== undefined) {
-                            self.updateAvailableSlots($card, response.availableSlots, response.maxSlots);
-                        }
-                        // Update button to Unregister without reloading
-                        self.updateButtonToUnregister($button, $card, meetId, response.status, response.calendarIcalUrl, response.calendarGoogleUrl);
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 1200);
                     } else {
                         // Check if phone number is required
                         if (response.requiresPhone) {
@@ -136,14 +133,9 @@ define([
                 success: function (response) {
                     if (response.success) {
                         self.showMessage(response.message, 'success', $card);
-                        // Update available slots if provided
-                        if (response.availableSlots !== undefined && response.maxSlots !== undefined) {
-                            self.updateAvailableSlots($card, response.availableSlots, response.maxSlots);
-                        }
-                        // Update button to Register without reloading and hide calendar links
-                        self.updateButtonToRegister($button, $card, meetId, response.availableSlots);
-                        // Remove calendar links when unregistering
-                        self.hideCalendarLinks($card);
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 1200);
                     } else {
                         self.showMessage(response.message || $t('An error occurred.'), 'error', $card);
                         $card.removeClass('loading');

@@ -8,162 +8,163 @@ if (!$event) {
 }
 
 $availableSlots = $block->getAvailableSlots();
+$maxSlots = (int) $event->getMaxSlots();
 $isRegistered = $block->isCustomerRegistered();
 $registrationStatus = $block->getRegistrationStatus();
+$availabilityBadge = $block->getAvailabilityBadge();
+$themeName = $block->getThemeName();
+$typeLabel = $block->getEventTypeLabel();
+$shortDate = $block->getShortDateLabel();
+$storeName = $block->getStoreName();
+$durationMinutes = (int) $event->getDurationMinutes();
+$durationText = $durationMinutes > 0 ? (string) __('%1 minutos', $durationMinutes) : '';
+$slotsText = $block->getSlotsDisplayMode() !== 'none'
+    ? $block->formatSlotsDisplay($availableSlots, $maxSlots) . ' ' . (string) __('plazas libres')
+    : '';
+$recurrenceShort = $block->getRecurrenceShortLabel();
+$descriptionPlain = trim(strip_tags((string) $event->getDescription()));
 ?>
-<div class="event-card" data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>">
+<article class="event-card" data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>">
     <?php if ($block->getRegistrationConditions() !== ''): ?>
-    <div class="registration-conditions" data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>" style="display:none"><?= /* @noEscape */ $block->getRegistrationConditions() ?></div>
+        <div class="registration-conditions" data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>" style="display:none"><?= /* @noEscape */ $block->getRegistrationConditions() ?></div>
     <?php endif; ?>
-    <div class="event-header">
-        <div class="event-name-wrapper">
-            <h3 class="event-name">
-                <a href="<?= $block->escapeUrl($block->getEventViewUrl($event->getMeetId())) ?>" class="event-name-link">
-                    <?= $block->escapeHtml($event->getName()) ?>
-                </a>
-            </h3>
-            <?php if ($block->getThemeName()): ?>
-                <span class="event-theme"><?= $block->escapeHtml($block->getThemeName()) ?></span>
+
+    <div class="event-card-head">
+        <div class="event-tags">
+            <?php if ($themeName): ?>
+                <span class="event-tag event-tag-main"><?= $block->escapeHtml($themeName) ?></span>
+            <?php endif; ?>
+            <?php if ($typeLabel): ?>
+                <span class="event-tag"><?= $block->escapeHtml($typeLabel) ?></span>
+            <?php endif; ?>
+            <?php if ($recurrenceShort): ?>
+                <span class="event-tag event-tag-recurrence"><?= $block->escapeHtml($recurrenceShort) ?></span>
             <?php endif; ?>
         </div>
-        <span class="event-type"><?= $block->escapeHtml($block->getEventTypeLabel()) ?></span>
-    </div>
-
-    <div class="event-details">
-        <div class="event-detail">
-            <strong><?= $block->escapeHtml(__('Location:')) ?></strong>
-            <span><?= $block->escapeHtml($block->getStoreName()) ?></span>
-        </div>
-
-        <div class="event-detail">
-            <strong><?= $block->escapeHtml( __('Date:')) ?></strong>
-            <span>
-                <?php if ($block->isRecurring()): ?>
-                    <?php $dayOfWeek = $block->getRecurringDayOfWeek(); ?>
-                    <?php $nextDate = $block->getFormattedNextOccurrenceDate(); ?>
-                    <?php $periodicity = $block->getPeriodicityLabel(); ?>
-                    <?php if ($dayOfWeek && $nextDate): ?>
-                        <?= $block->escapeHtml($dayOfWeek) ?> - <?= $block->escapeHtml($nextDate) ?><?php if ($periodicity): ?> (<?= $block->escapeHtml($periodicity) ?>)<?php endif; ?>
-                    <?php else: ?>
-                        <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <?= $block->escapeHtml($block->getFormattedEventDate()) ?>
-                <?php endif; ?>
-            </span>
-        </div>
-
-
-        <div class="event-detail">
-            <strong><?= $block->escapeHtml(__('Duration:')) ?></strong>
-            <span><?= $block->escapeHtml($event->getDurationMinutes()) ?> <?= $block->escapeHtml(__('minutes')) ?></span>
-        </div>
-
-        <?php if ($block->getSlotsDisplayMode() !== 'none'): ?>
-        <div class="event-detail">
-            <strong><?= $block->escapeHtml(__('Available Slots:')) ?></strong>
-            <span class="slots-count <?= $availableSlots > 0 ? 'available' : 'full' ?>" data-display-mode="<?= $block->escapeHtmlAttr($block->getSlotsDisplayMode()) ?>">
-                <?= $block->escapeHtml($block->formatSlotsDisplay($availableSlots, $event->getMaxSlots())) ?>
-            </span>
-        </div>
-        <?php endif; ?>
-
-        <?php if ($block->hasInfoUrl($event)): ?>
-            <div class="event-detail">
-                <a href="<?= $block->escapeUrl($block->getInfoUrl($event)) ?>" 
-                   target="_blank" 
-                   class="event-info-link">
-                    <?= $block->escapeHtml(__('Event Details')) ?>
-                </a>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($event->getDescription()): ?>
-            <div class="event-description">
-                <?= /* @noEscape */ $block->getDescriptionHtml() ?>
-            </div>
-        <?php endif; ?>
-    </div>
-
-        <?php if ($block->isCustomerLoggedIn()): ?>
-            <?php if ($isRegistered): ?>
-                <div class="event-actions">
-                    <div class="registration-status">
-                        <?php if ($registrationStatus === 'waitlist'): ?>
-                            <span class="status-waitlist"><?= $block->escapeHtml(__('You are on the waitlist')) ?></span>
-                        <?php else: ?>
-                            <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="event-actions-buttons">
-                        <?php if ($block->shouldShowQrButton()): ?>
-                            <button type="button"
-                                    class="action secondary qr-button"
-                                    data-qr-url="<?= $block->escapeUrl($block->getQrCodeUrl()) ?>"
-                                    data-event-name="<?= $block->escapeHtmlAttr($event->getName()) ?>"
-                                    data-event-date="<?= $block->escapeHtmlAttr($block->getFormattedEventDate()) ?>">
-                                <?= $block->escapeHtml(__('View QR')) ?>
-                            </button>
-                        <?php endif; ?>
-                        <button type="button"
-                                class="action secondary unregister-btn"
-                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                                data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
-                            <?= $block->escapeHtml(__('Unregister')) ?>
-                        </button>
-                    </div>
-                </div>
-                <?php if ($block->canShowCalendarLinks()): ?>
-                <div>
-                    <div class="calendar-links" style="margin-top: 8px;">
-                        <a href="<?= $block->escapeUrl($block->getCalendarIcalUrl()) ?>" 
-                           style="margin-right: 12px;">
-                            <?= $block->escapeHtml(__('iCal')) ?>
-                        </a>
-                        <a href="<?= $block->escapeUrl($block->getCalendarGoogleUrl()) ?>" 
-                           target="_blank">
-                            <?= $block->escapeHtml(__('Add to Google Calendar')) ?>
-                        </a>
-                    </div>
-                    <div class="update-phone-wrapper" style="margin-top: 8px;">
-                        <a href="#" 
-                           class="update-phone-link" 
-                           data-meet-id="<?= $block->escapeHtml($block->getEvent()->getMeetId()) ?>"
-                           data-url="<?= $block->escapeUrl($block->getUpdatePhoneUrl($block->getEvent()->getMeetId())) ?>">
-                            <?= $block->escapeHtml(__('Update Phone Number')) ?>
-                        </a>
-                    </div>
-                </div>
-                <?php endif; ?>
-            <?php else: ?>
-                <div class="event-actions">
-                <?php if ($block->canRegisterForEvent() && !$isRegistered && $availableSlots > 0): ?>
-                    <button type="button" 
-                            class="action primary register-btn" 
-                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                            data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
-                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
-                        <?= $block->escapeHtml(__('Register')) ?>
-                    </button>
-                <?php elseif ($block->canRegisterForEvent() && !$isRegistered && $availableSlots <= 0): ?>
-                    <button type="button" 
-                            class="action primary register-btn waitlist-btn" 
-                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                            data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
-                            data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
-                        <?= $block->escapeHtml(__('Join Waitlist')) ?>
-                    </button>
-                <?php endif; ?>
-                </div>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="event-actions">
-            <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" 
-               class="action primary">
-                <?= $block->escapeHtml(__('Login to Register')) ?>
+        <h2 class="event-card-title">
+            <a href="<?= $block->escapeUrl($block->getEventViewUrl($event->getMeetId())) ?>" class="event-card-title-link">
+                <?= $block->escapeHtml($event->getName()) ?>
             </a>
+        </h2>
+        <?php if ($availabilityBadge): ?>
+            <span class="event-availability event-availability-<?= $block->escapeHtmlAttr($availabilityBadge['className']) ?>">
+                <?= $block->escapeHtml($availabilityBadge['label']) ?>
+            </span>
+        <?php endif; ?>
+    </div>
+
+    <div class="event-card-body">
+        <?php if ($descriptionPlain !== ''): ?>
+            <p class="event-card-desc"><?= $block->escapeHtml($descriptionPlain) ?></p>
+        <?php endif; ?>
+
+        <div class="event-card-meta">
+            <?php if ($shortDate): ?>
+                <div class="event-meta-row">
+                    <span class="event-meta-icon" aria-hidden="true">📅</span>
+                    <span><?= $block->escapeHtml($shortDate) ?></span>
+                </div>
+            <?php endif; ?>
+            <?php if ($storeName): ?>
+                <div class="event-meta-row">
+                    <span class="event-meta-icon" aria-hidden="true">📍</span>
+                    <span><?= $block->escapeHtml($storeName) ?></span>
+                </div>
+            <?php endif; ?>
+            <?php if ($durationText): ?>
+                <div class="event-meta-row">
+                    <span class="event-meta-icon" aria-hidden="true">⏱️</span>
+                    <span><?= $block->escapeHtml($durationText) ?></span>
+                </div>
+            <?php endif; ?>
+            <?php if ($slotsText): ?>
+                <div class="event-meta-row">
+                    <span class="event-meta-icon" aria-hidden="true">👥</span>
+                    <span><?= $block->escapeHtml($slotsText) ?></span>
+                </div>
+            <?php endif; ?>
+            <?php if ($block->hasInfoUrl($event)): ?>
+                <div class="event-meta-row">
+                    <a href="<?= $block->escapeUrl($block->getInfoUrl($event)) ?>" target="_blank" class="event-info-link">
+                        <?= $block->escapeHtml(__('Event Details')) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($isRegistered): ?>
+            <div class="event-registration-status">
+                <?php if ($registrationStatus === 'waitlist'): ?>
+                    <span class="status-waitlist"><?= $block->escapeHtml(__('You are on the waitlist')) ?></span>
+                <?php else: ?>
+                    <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
-</div>
+        <div class="event-card-actions">
+            <a href="<?= $block->escapeUrl($block->getEventViewUrl($event->getMeetId())) ?>"
+               class="event-action event-action-details">
+                <?= $block->escapeHtml(__('Ver detalles')) ?>
+            </a>
 
+            <?php if (!$block->isCustomerLoggedIn()): ?>
+                <a href="<?= $block->escapeUrl($block->getLoginUrlWithReturn()) ?>" class="event-action event-action-primary">
+                    <?= $block->escapeHtml(__('Iniciar sesión')) ?>
+                </a>
+            <?php elseif ($isRegistered): ?>
+                <button type="button"
+                        class="event-action event-action-danger unregister-btn"
+                        data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>"
+                        data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
+                    <?= $block->escapeHtml(__('Borrarse')) ?>
+                </button>
+            <?php elseif ($block->canRegisterForEvent() && $availableSlots > 0): ?>
+                <button type="button"
+                        class="event-action event-action-primary register-btn"
+                        data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>"
+                        data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
+                        data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                    <?= $block->escapeHtml(__('Reservar plaza')) ?>
+                </button>
+            <?php elseif ($block->canRegisterForEvent() && $availableSlots <= 0): ?>
+                <button type="button"
+                        class="event-action event-action-primary register-btn waitlist-btn"
+                        data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>"
+                        data-max-attendees="<?= (int) $block->getMaxAttendeesPerRegistration() ?>"
+                        data-url="<?= $block->escapeUrl($block->getRegisterUrl($event->getMeetId())) ?>">
+                    <?= $block->escapeHtml(__('Lista de espera')) ?>
+                </button>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($isRegistered && $block->shouldShowQrButton()): ?>
+            <div class="event-card-actions-secondary">
+                <button type="button"
+                        class="event-action event-action-secondary qr-button"
+                        data-qr-url="<?= $block->escapeUrl($block->getQrCodeUrl()) ?>"
+                        data-event-name="<?= $block->escapeHtmlAttr($event->getName()) ?>"
+                        data-event-date="<?= $block->escapeHtmlAttr($block->getFormattedEventDate()) ?>">
+                    <?= $block->escapeHtml(__('Ver QR')) ?>
+                </button>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($isRegistered && $block->canShowCalendarLinks()): ?>
+            <div class="event-card-extras">
+                <div class="calendar-links">
+                    <a href="<?= $block->escapeUrl($block->getCalendarIcalUrl()) ?>"><?= $block->escapeHtml(__('iCal')) ?></a>
+                    <a href="<?= $block->escapeUrl($block->getCalendarGoogleUrl()) ?>" target="_blank"><?= $block->escapeHtml(__('Add to Google Calendar')) ?></a>
+                </div>
+                <div class="update-phone-wrapper">
+                    <a href="#"
+                       class="update-phone-link"
+                       data-meet-id="<?= $block->escapeHtmlAttr($event->getMeetId()) ?>"
+                       data-url="<?= $block->escapeUrl($block->getUpdatePhoneUrl($event->getMeetId())) ?>">
+                        <?= $block->escapeHtml(__('Update Phone Number')) ?>
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</article>

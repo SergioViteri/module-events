@@ -86,6 +86,19 @@ class Main extends Generic implements TabInterface
                 'note' => __('Unique code for attendance validation. Alphanumeric characters only.'),
             ]
         );
+
+        $fieldset->addField(
+            'url_key',
+            'text',
+            [
+                'name' => 'url_key',
+                'label' => __('URL Slug'),
+                'title' => __('URL Slug'),
+                'required' => false,
+                'disabled' => $isElementDisabled,
+                'note' => __('Used in the public events URL, e.g. /eventos/madrid-chamberi. Leave empty to auto-generate from the name. Lowercase letters, numbers and hyphens only.'),
+            ]
+        );
         
         $fieldset->addField(
             'address',

@@ -191,9 +191,9 @@ class EventList extends Template
     public function getEvents()
     {
         if ($this->events === null) {
-            $locationId = $this->getRequest()->getParam('location_id');
-            $meetType = $this->getRequest()->getParam('meet_type');
+            $locationId = $this->getCurrentLocationId();
             $themeId = $this->getRequest()->getParam('theme_id');
+            $dateRange = $this->getCurrentDateRange();
 
             $events = $this->getAllVisibleEvents();
 
@@ -202,15 +202,16 @@ class EventList extends Template
                     return (int) $event->getLocationId() === (int) $locationId;
                 });
             }
-            if ($meetType) {
-                $events = array_filter($events, function ($event) use ($meetType) {
-                    return $event->getMeetType() === $meetType;
-                });
-            }
             if ($themeId) {
                 $events = array_filter($events, function ($event) use ($themeId) {
                     return (int) $event->getThemeId() === (int) $themeId;
                 });
+            }
+            if ($dateRange !== 'all') {
+                $days = (int) $dateRange;
+                if ($days > 0) {
+                    $events = $this->filterByDateRange($events, $days);
+                }
             }
 
             // Optional filter: only events the current customer is subscribed to (status=confirmed)
@@ -225,6 +226,151 @@ class EventList extends Template
         }
 
         return $this->events;
+    }
+
+    /**
+     * Current date-range filter value: 'all' (default), '7' or '30'.
+     *
+     * @return string
+     */
+    public function getCurrentDateRange(): string
+    {
+        $value = (string) $this->getRequest()->getParam('date_range', 'all');
+        return in_array($value, ['7', '30'], true) ? $value : 'all';
+    }
+
+    /**
+     * Current selected location, resolved from either ?location_id= or the URL slug.
+     *
+     * @return int|null
+     */
+    public function getCurrentLocationId(): ?int
+    {
+        $slug = (string) $this->getRequest()->getParam('location_slug', '');
+        if ($slug !== '') {
+            foreach ($this->getLocations() as $location) {
+                if ((string) $location->getUrlKey() === $slug) {
+                    return (int) $location->getLocationId();
+                }
+            }
+            return 0;
+        }
+        $id = $this->getRequest()->getParam('location_id');
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * Current Location object if a slug filter is active, else null.
+     *
+     * @return \Zaca\Events\Model\Location|null
+     */
+    public function getCurrentLocation()
+    {
+        $id = $this->getCurrentLocationId();
+        if (!$id) {
+            return null;
+        }
+        foreach ($this->getLocations() as $location) {
+            if ((int) $location->getLocationId() === (int) $id) {
+                return $location;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Current location slug if any, else empty string.
+     *
+     * @return string
+     */
+    public function getCurrentLocationSlug(): string
+    {
+        $slug = (string) $this->getRequest()->getParam('location_slug', '');
+        if ($slug !== '') {
+            return $slug;
+        }
+        $id = (int) $this->getRequest()->getParam('location_id');
+        if ($id > 0) {
+            foreach ($this->getLocations() as $location) {
+                if ((int) $location->getLocationId() === $id) {
+                    return (string) $location->getUrlKey();
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Base URL (path only, no query string) for the listing filtered by a given location.
+     * The JS layer appends the current theme/date/my_events params on the client side.
+     *
+     * @param \Zaca\Events\Model\Location|null $location
+     * @return string
+     */
+    public function getLocationFilterUrl($location = null): string
+    {
+        if ($location && $location->getUrlKey()) {
+            // Some upstream routers truncate /<route>/<slug>/ to .html — strip the slash
+            return rtrim($this->getUrl($this->getRoutePath() . '/' . $location->getUrlKey()), '/');
+        }
+        return $this->getUrl($this->getRoutePath());
+    }
+
+    /**
+     * Keep events whose effective start (next occurrence for recurring meets,
+     * start_date otherwise) falls within the next $days days from now.
+     *
+     * @param MeetInterface[] $events
+     * @param int $days
+     * @return MeetInterface[]
+     */
+    protected function filterByDateRange(array $events, int $days): array
+    {
+        $store = $this->storeManager->getStore();
+        $timezoneCode = $this->timezone->getConfigTimezone(ScopeInterface::SCOPE_STORE, $store->getCode());
+        $timezoneObj = new \DateTimeZone($timezoneCode);
+        $now = new \DateTime('now', $timezoneObj);
+        $limit = (clone $now)->modify('+' . $days . ' days');
+
+        return array_filter($events, function ($event) use ($timezoneObj, $now, $limit) {
+            $start = $this->getEffectiveStartDate($event, $timezoneObj);
+            if ($start === null) {
+                return false;
+            }
+            return $start >= $now && $start <= $limit;
+        });
+    }
+
+    /**
+     * Effective start (next occurrence for recurring meets, start_date otherwise) in store timezone.
+     *
+     * @param MeetInterface $event
+     * @param \DateTimeZone $timezoneObj
+     * @return \DateTime|null
+     */
+    protected function getEffectiveStartDate(MeetInterface $event, \DateTimeZone $timezoneObj): ?\DateTime
+    {
+        $recurrenceType = $event->getRecurrenceType();
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_NONE) {
+            try {
+                $dt = new \DateTime($event->getStartDate(), new \DateTimeZone('UTC'));
+                $dt->setTimezone($timezoneObj);
+                return $dt;
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        $next = $this->getNextOccurrenceDate($event);
+        if ($next === null) {
+            return null;
+        }
+        try {
+            $dt = new \DateTime($next, new \DateTimeZone('UTC'));
+            $dt->setTimezone($timezoneObj);
+            return $dt;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**
@@ -405,19 +551,31 @@ class EventList extends Template
     }
 
     /**
-     * Build the URL that toggles the "my events" lens, preserving the current query string.
+     * Build the URL that toggles the "my events" lens, preserving the current query string
+     * and the active location slug (if any) in the path.
      *
      * @return string
      */
     public function getMyEventsToggleUrl()
     {
         $params = $this->getRequest()->getParams();
+        // Remove path-only params so they don't leak into the query string
+        unset($params['location_slug'], $params['action_path']);
         if ($this->isMyEventsFilterActive()) {
             unset($params['my_events']);
         } else {
             $params['my_events'] = 1;
         }
-        return $this->getUrl($this->getRoutePath(), ['_query' => $params]);
+
+        $slug = $this->getCurrentLocationSlug();
+        $path = $slug !== '' ? $this->getRoutePath() . '/' . $slug : $this->getRoutePath();
+        $url = $this->getUrl($path, ['_query' => $params]);
+        if ($slug !== '') {
+            [$base, $qs] = array_pad(explode('?', $url, 2), 2, null);
+            $base = rtrim($base, '/');
+            $url = $qs === null ? $base : $base . '?' . $qs;
+        }
+        return $url;
     }
 
     /**

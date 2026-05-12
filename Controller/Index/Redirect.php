@@ -73,11 +73,20 @@ class Redirect extends Action
         
         // Preserve query parameters
         $queryParams = $request->getQuery()->toArray();
-        
-        // Set 301 permanent redirect
+
+        // Build target URL. When action_path is set and is not a known controller
+        // (i.e. it's a location slug), drop the trailing slash so upstream routers
+        // don't mangle /<route>/<slug>/ into a .html redirect.
+        $targetUrl = $this->_url->getUrl($redirectPath, ['_query' => $queryParams]);
+        if (!empty($actionPath) && strpos($actionPath, 'index') !== 0) {
+            [$base, $qs] = array_pad(explode('?', $targetUrl, 2), 2, null);
+            $base = rtrim($base, '/');
+            $targetUrl = $qs === null ? $base : $base . '?' . $qs;
+        }
+
         $resultRedirect->setHttpResponseCode(301);
-        $resultRedirect->setPath($redirectPath, ['_query' => $queryParams]);
-        
+        $resultRedirect->setUrl($targetUrl);
+
         return $resultRedirect;
     }
 }

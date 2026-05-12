@@ -52,5 +52,11 @@
     <type name="Magento\Framework\App\Router\Base">
         <plugin name="zaca_events_router" type="Zaca\Events\Plugin\Router\Base" sortOrder="10"/>
     </type>
+
+    <!-- Bypass URL rewrite for our events paths so location-slug URLs don't get caught
+         by catalog/CMS fuzzy rewrites -->
+    <type name="Magento\UrlRewrite\Controller\Router">
+        <plugin name="zaca_events_urlrewrite_bypass" type="Zaca\Events\Plugin\Router\UrlRewrite" sortOrder="10"/>
+    </type>
 </config>
 

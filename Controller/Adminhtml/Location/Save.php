@@ -66,6 +66,11 @@ class Save extends Action
                 $model->load($id);
             }
 
+            $data['url_key'] = $this->normalizeUrlKey(
+                $data['url_key'] ?? '',
+                $data['name'] ?? ($model->getName() ?? '')
+            );
+
             $model->setData($data);
 
             try {
@@ -100,6 +105,18 @@ class Save extends Action
         }
 
         return $resultRedirect->setPath('*/*/');
+    }
+
+    /**
+     * Sanitize the url_key. If empty, derive it from the location name.
+     */
+    private function normalizeUrlKey(string $candidate, string $name): string
+    {
+        $slug = \Zaca\Events\Setup\Patch\Data\BackfillLocationUrlKeys::slugify($candidate);
+        if ($slug !== '') {
+            return $slug;
+        }
+        return \Zaca\Events\Setup\Patch\Data\BackfillLocationUrlKeys::slugify($name);
     }
 }
 

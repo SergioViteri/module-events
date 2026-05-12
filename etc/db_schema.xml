@@ -165,6 +165,7 @@
         <column xsi:type="int" name="location_id" unsigned="true" nullable="false" identity="true" comment="Location ID"/>
         <column xsi:type="varchar" name="name" length="255" nullable="false" comment="Location Name"/>
         <column xsi:type="varchar" name="code" length="50" nullable="true" comment="Location Code"/>
+        <column xsi:type="varchar" name="url_key" length="100" nullable="true" comment="URL Slug for public path"/>
         <column xsi:type="varchar" name="address" length="255" nullable="true" comment="Address"/>
         <column xsi:type="varchar" name="city" length="255" nullable="true" comment="City"/>
         <column xsi:type="varchar" name="postal_code" length="20" nullable="true" comment="Postal Code"/>
@@ -179,6 +180,9 @@
         </constraint>
         <constraint xsi:type="unique" referenceId="UNQ_ZACA_EVENTS_LOCATION_CODE">
             <column name="code"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="UNQ_ZACA_EVENTS_LOCATION_URL_KEY">
+            <column name="url_key"/>
         </constraint>
         <index referenceId="IDX_ZACA_EVENTS_LOCATION_IS_ACTIVE" indexType="btree">
             <column name="is_active"/>

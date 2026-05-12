@@ -15,6 +15,7 @@
         <script src="Zaca_Events::js/event-registration.js"/>
     </head>
     <body>
+        <referenceBlock name="page.main.title" remove="true"/>
         <referenceContainer name="content">
             <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.view" template="Zaca_Events::events/view.phtml"/>
             <block class="Magento\Framework\View\Element\Template"

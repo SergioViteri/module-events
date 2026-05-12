@@ -505,6 +505,108 @@ class EventCard extends Template
     }
 
     /**
+     * Short, lowercase recurrence label for the card chip ("quincenal" / "semanal" / '').
+     *
+     * @return string
+     */
+    public function getRecurrenceShortLabel(): string
+    {
+        if (!$this->isRecurring() || !$this->event) {
+            return '';
+        }
+        $recurrenceType = $this->event->getRecurrenceType();
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL) {
+            return (string) __('quincenal');
+        }
+        if ($recurrenceType === MeetInterface::RECURRENCE_TYPE_SEMANAL) {
+            return (string) __('semanal');
+        }
+        return '';
+    }
+
+    /**
+     * Availability badge data for the card. Mirrors the mockup logic:
+     *  - <=0 → "Completo" / full
+     *  - <=3 → "Últimas N plazas" / last
+     *  - else → "Quedan N plazas" / available
+     * Returns null when the configured slots display mode is 'none'.
+     *
+     * @return array{label:string,className:string}|null
+     */
+    public function getAvailabilityBadge(): ?array
+    {
+        if ($this->getSlotsDisplayMode() === 'none' || !$this->event) {
+            return null;
+        }
+        $available = $this->getAvailableSlots();
+        if ($available <= 0) {
+            return ['label' => (string) __('Completo'), 'className' => 'full'];
+        }
+        if ($available <= 3) {
+            return [
+                'label' => (string) __('Últimas %1 plazas', $available),
+                'className' => 'last',
+            ];
+        }
+        return [
+            'label' => (string) __('Quedan %1 plazas', $available),
+            'className' => 'available',
+        ];
+    }
+
+    /**
+     * Short date label for the card: "vie, 15 may · 17:00" (uses next occurrence for recurring meets).
+     *
+     * @return string
+     */
+    public function getShortDateLabel(): string
+    {
+        if (!$this->event) {
+            return '';
+        }
+
+        $store = $this->storeManager->getStore();
+        $timezoneCode = $this->timezone->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store->getCode()
+        );
+        $timezoneObj = new \DateTimeZone($timezoneCode);
+
+        $sourceUtc = $this->isRecurring()
+            ? ($this->getNextOccurrenceDate() ?: $this->event->getStartDate())
+            : $this->event->getStartDate();
+
+        try {
+            $dt = new \DateTime($sourceUtc, new \DateTimeZone('UTC'));
+            $dt->setTimezone($timezoneObj);
+        } catch (\Exception $e) {
+            return '';
+        }
+
+        $datePart = '';
+        if (class_exists('\IntlDateFormatter')) {
+            $fmt = new \IntlDateFormatter(
+                'es_ES',
+                \IntlDateFormatter::NONE,
+                \IntlDateFormatter::NONE,
+                $timezoneCode,
+                \IntlDateFormatter::GREGORIAN,
+                'EEE, d MMM'
+            );
+            $formatted = $fmt->format($dt);
+            if (is_string($formatted) && $formatted !== '') {
+                $datePart = rtrim($formatted, '.');
+            }
+        }
+        if ($datePart === '') {
+            // Fallback without Intl
+            $datePart = $dt->format('D, j M');
+        }
+
+        return $datePart . ' · ' . $dt->format('H:i');
+    }
+
+    /**
      * Get periodicity label
      *
      * @return string|null
