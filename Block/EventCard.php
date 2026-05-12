@@ -298,26 +298,51 @@ class EventCard extends Template
     }
 
     /**
+     * Get the current customer's registration for this card's meet, if any.
+     * Prefers the precomputed map injected by EventList (avoids N+1).
+     *
+     * @return \Zaca\Events\Api\Data\RegistrationInterface|null
+     */
+    public function getMyRegistration()
+    {
+        if (!$this->event || !$this->customerSession->isLoggedIn()) {
+            return null;
+        }
+
+        $meetId = (int) $this->event->getMeetId();
+        $map = $this->getData('my_registrations_map');
+        if (is_array($map)) {
+            return $map[$meetId] ?? null;
+        }
+
+        // Fallback when the card is rendered outside of EventList
+        try {
+            $customerId = $this->customerSession->getCustomerId();
+            $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
+            $collection = $this->registrationRepository->getList(
+                $searchCriteriaBuilder
+                    ->addFilter('meet_id', $meetId)
+                    ->addFilter('customer_id', $customerId)
+                    ->create()
+            );
+            if ($collection->getTotalCount() > 0) {
+                $items = $collection->getItems();
+                return reset($items);
+            }
+        } catch (\Exception $e) {
+            // Fall through
+        }
+        return null;
+    }
+
+    /**
      * Check if customer is registered
      *
      * @return bool
      */
     public function isCustomerRegistered()
     {
-        if (!$this->event || !$this->customerSession->isLoggedIn()) {
-            return false;
-        }
-
-        $customerId = $this->customerSession->getCustomerId();
-        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-        $collection = $this->registrationRepository->getList(
-            $searchCriteriaBuilder
-                ->addFilter('meet_id', $this->event->getMeetId())
-                ->addFilter('customer_id', $customerId)
-                ->create()
-        );
-
-        return $collection->getTotalCount() > 0;
+        return $this->getMyRegistration() !== null;
     }
 
     /**
@@ -327,25 +352,36 @@ class EventCard extends Template
      */
     public function getRegistrationStatus()
     {
-        if (!$this->isCustomerRegistered()) {
+        $registration = $this->getMyRegistration();
+        return $registration ? $registration->getStatus() : null;
+    }
+
+    /**
+     * Whether the "View QR" button should render in this card.
+     * The QR URL is exposed only for the current customer's confirmed registration on this meet.
+     *
+     * @return bool
+     */
+    public function shouldShowQrButton()
+    {
+        return $this->customerSession->isLoggedIn() && $this->getQrCodeUrl() !== null;
+    }
+
+    /**
+     * URL to the QR PNG controller for the current customer's confirmed registration on this meet.
+     *
+     * @return string|null
+     */
+    public function getQrCodeUrl()
+    {
+        $registration = $this->getMyRegistration();
+        if (!$registration || $registration->getStatus() !== \Zaca\Events\Api\Data\RegistrationInterface::STATUS_CONFIRMED) {
             return null;
         }
-
-        $customerId = $this->customerSession->getCustomerId();
-        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-        $collection = $this->registrationRepository->getList(
-            $searchCriteriaBuilder
-                ->addFilter('meet_id', $this->event->getMeetId())
-                ->addFilter('customer_id', $customerId)
-                ->create()
+        return $this->getUrl(
+            $this->eventsHelper->getRoutePath() . '/index/qrcode',
+            ['_query' => ['registrationId' => $registration->getRegistrationId()], '_secure' => true]
         );
-
-        if ($collection->getTotalCount() > 0) {
-            $items = $collection->getItems();
-            return reset($items)->getStatus();
-        }
-
-        return null;
     }
 
     /**
@@ -777,32 +813,11 @@ class EventCard extends Template
      */
     public function hasPhoneNumber()
     {
-        if (!$this->event || !$this->isCustomerRegistered()) {
+        $registration = $this->getMyRegistration();
+        if (!$registration) {
             return false;
         }
-
-        $status = $this->getRegistrationStatus();
-        if (!$status) {
-            return false;
-        }
-
-        $customerId = $this->customerSession->getCustomerId();
-        $searchCriteriaBuilder = $this->searchCriteriaBuilderFactory->create();
-        $collection = $this->registrationRepository->getList(
-            $searchCriteriaBuilder
-                ->addFilter('meet_id', $this->event->getMeetId())
-                ->addFilter('customer_id', $customerId)
-                ->create()
-        );
-
-        if ($collection->getTotalCount() > 0) {
-            $items = $collection->getItems();
-            $registration = reset($items);
-            $phoneNumber = $registration->getPhoneNumber();
-            return !empty($phoneNumber);
-        }
-
-        return false;
+        return !empty($registration->getPhoneNumber());
     }
 
     /**

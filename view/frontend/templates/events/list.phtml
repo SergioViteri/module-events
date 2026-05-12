@@ -102,8 +102,21 @@
         </form>
     </div>
 
+    <?php if ($block->isCustomerLoggedIn() && $block->getMyEventsCount() > 0): ?>
+        <div class="my-events-link">
+            <a href="<?= $block->escapeUrl($block->getMyEventsToggleUrl()) ?>" class="my-events-toggle">
+                <?php if ($block->isMyEventsFilterActive()): ?>
+                    <?= $block->escapeHtml(__('← Show all events')) ?>
+                <?php else: ?>
+                    <?= $block->escapeHtml(__('Your events (%1) →', $block->getMyEventsCount())) ?>
+                <?php endif; ?>
+            </a>
+        </div>
+    <?php endif; ?>
+
     <div class="events-grid">
         <?php $events = $block->getEvents(); ?>
+        <?php $myRegistrationsMap = $block->getMyRegistrationsMap(); ?>
         <?php if (empty($events)): ?>
             <div class="message info empty">
                 <span><?= $block->escapeHtml(__('No meets found.')) ?></span>
@@ -113,6 +126,7 @@
                 <?php $cardBlock = $block->getChildBlock('zacatrus.events.card'); ?>
                 <?php if ($cardBlock): ?>
                     <?php $cardBlock->setEvent($event); ?>
+                    <?php $cardBlock->setData('my_registrations_map', $myRegistrationsMap); ?>
                     <?= $cardBlock->toHtml() ?>
                 <?php endif; ?>
             <?php endforeach; ?>
@@ -121,7 +135,7 @@
 </div>
 
 <script>
-require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady, registrationHandler, $) {
+require(['domReady!', 'zacatrusEventsRegistration', 'zacatrusEventsQrModal', 'jquery'], function(domReady, registrationHandler, qrModal, $) {
     // Initialize registration handlers
     try {
         if (registrationHandler && typeof registrationHandler.init === 'function') {
@@ -131,6 +145,15 @@ require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady
         }
     } catch (e) {
         console.error('Error initializing registration handler:', e);
+    }
+
+    // Initialize QR modal
+    try {
+        if (qrModal && typeof qrModal.init === 'function') {
+            qrModal.init();
+        }
+    } catch (e) {
+        console.error('Error initializing QR modal:', e);
     }
     
     var tooltipTimeout;

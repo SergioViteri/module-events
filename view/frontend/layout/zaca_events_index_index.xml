@@ -19,6 +19,9 @@
             <block class="Zaca\Events\Block\EventList" name="zacatrus.events.list" template="Zaca_Events::events/list.phtml">
                 <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.card" template="Zaca_Events::events/card.phtml"/>
             </block>
+            <block class="Magento\Framework\View\Element\Template"
+                   name="zaca.events.qr.modal"
+                   template="Zaca_Events::events/qr-modal.phtml"/>
         </referenceContainer>
     </body>
 </page>

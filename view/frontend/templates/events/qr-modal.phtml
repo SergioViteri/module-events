@@ -1,0 +1,14 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ */
+?>
+<div class="qr-modal-overlay" id="qr-modal" hidden>
+    <div class="qr-modal-content" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+        <button type="button" class="qr-modal-close" aria-label="<?= $block->escapeHtmlAttr(__('Close')) ?>">&times;</button>
+        <h2 id="qr-modal-title" class="qr-modal-title"></h2>
+        <p class="qr-modal-date"></p>
+        <img class="qr-modal-image" src="" alt="<?= $block->escapeHtmlAttr(__('Registration QR Code')) ?>"/>
+        <p class="qr-modal-hint"><?= $block->escapeHtml(__('Show this QR at the event entrance')) ?></p>
+    </div>
+</div>

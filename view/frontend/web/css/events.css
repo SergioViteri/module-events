@@ -832,3 +832,103 @@
     color: #0056b3;
     text-decoration: underline;
 }
+/* "Your events" inline toggle (above the events grid) */
+.my-events-link {
+    margin: 8px 0 12px;
+    text-align: right;
+}
+
+.my-events-link .my-events-toggle {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.95em;
+}
+
+.my-events-link .my-events-toggle:hover {
+    text-decoration: underline;
+}
+
+/* "View QR" button inside event cards (discreet, secondary) */
+.event-actions .qr-button {
+    margin-right: 8px;
+}
+
+/* QR modal */
+body.qr-modal-open {
+    overflow: hidden;
+}
+
+.qr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 16px;
+}
+
+.qr-modal-overlay.is-open {
+    display: flex;
+}
+
+.qr-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px 24px 20px;
+    max-width: min(90vw, 480px);
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+.qr-modal-close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    background: transparent;
+    border: 0;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    padding: 4px 8px;
+}
+
+.qr-modal-close:hover {
+    color: #000;
+}
+
+.qr-modal-title {
+    margin: 0 0 4px;
+    font-size: 1.2em;
+}
+
+.qr-modal-date {
+    margin: 0 0 16px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.qr-modal-image {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    background: #fff;
+}
+
+.qr-modal-hint {
+    margin: 12px 0 0;
+    color: #555;
+    font-size: 0.9em;
+}
+
+@media (max-width: 600px) {
+    .qr-modal-image {
+        max-width: 80vmin;
+    }
+}

@@ -95,8 +95,17 @@ $registrationStatus = $block->getRegistrationStatus();
                             <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
                         <?php endif; ?>
                     </div>
-                    <button type="button" 
-                            class="action secondary unregister-btn" 
+                    <?php if ($block->shouldShowQrButton()): ?>
+                        <button type="button"
+                                class="action secondary qr-button"
+                                data-qr-url="<?= $block->escapeUrl($block->getQrCodeUrl()) ?>"
+                                data-event-name="<?= $block->escapeHtmlAttr($event->getName()) ?>"
+                                data-event-date="<?= $block->escapeHtmlAttr($block->getFormattedEventDate()) ?>">
+                            <?= $block->escapeHtml(__('View QR')) ?>
+                        </button>
+                    <?php endif; ?>
+                    <button type="button"
+                            class="action secondary unregister-btn"
                             data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
                             data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
                         <?= $block->escapeHtml(__('Unregister')) ?>

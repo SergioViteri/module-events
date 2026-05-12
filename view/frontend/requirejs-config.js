@@ -9,7 +9,8 @@
 var config = {
     map: {
         '*': {
-            'zacatrusEventsRegistration': 'Zaca_Events/js/event-registration'
+            'zacatrusEventsRegistration': 'Zaca_Events/js/event-registration',
+            'zacatrusEventsQrModal': 'Zaca_Events/js/qr-modal'
         }
     },
     shim: {
