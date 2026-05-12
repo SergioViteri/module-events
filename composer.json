@@ -16,7 +16,7 @@
         "magento/module-backend": "*",
         "magento/module-customer": "*",
         "magento/module-store": "*",
-        "endroid/qr-code": "^4.0"
+        "endroid/qr-code": "*"
     },
     "autoload": {
         "files": [
