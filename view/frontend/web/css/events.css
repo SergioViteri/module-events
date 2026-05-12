@@ -551,6 +551,16 @@
     cursor: not-allowed;
 }
 
+.event-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.event-actions-buttons .action {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
 /* Loading State */
 .event-card.loading {
     opacity: 0.6;
@@ -659,14 +669,12 @@
         padding: 0.5rem 1rem;
     }
 
-    .event-actions {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
     .event-actions .action {
         flex: 0 0 auto;
+    }
+
+    .event-actions-buttons .action {
+        flex: 1 1 0;
     }
 }
 
@@ -832,25 +840,9 @@
     color: #0056b3;
     text-decoration: underline;
 }
-/* "Your events" inline toggle (above the events grid) */
-.my-events-link {
-    margin: 8px 0 12px;
-    text-align: right;
-}
-
-.my-events-link .my-events-toggle {
-    color: #007bff;
-    text-decoration: none;
-    font-size: 0.95em;
-}
-
-.my-events-link .my-events-toggle:hover {
-    text-decoration: underline;
-}
-
-/* "View QR" button inside event cards (discreet, secondary) */
-.event-actions .qr-button {
-    margin-right: 8px;
+/* "Only my events" toggle (between the filters block and the grid) */
+.my-events-toggle-wrapper {
+    margin: 0 0 2rem;
 }
 
 /* QR modal */

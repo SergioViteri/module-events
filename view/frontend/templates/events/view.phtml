@@ -116,12 +116,23 @@ $registrationStatus = $block->getRegistrationStatus();
                             <span class="status-confirmed"><?= $block->escapeHtml(__('You are registered')) ?></span>
                         <?php endif; ?>
                     </div>
-                    <button type="button" 
-                            class="action secondary unregister-btn" 
-                            data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
-                            data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
-                        <?= $block->escapeHtml(__('Unregister')) ?>
-                    </button>
+                    <div class="event-actions-buttons">
+                        <?php if ($block->shouldShowQrButton()): ?>
+                            <button type="button"
+                                    class="action secondary qr-button"
+                                    data-qr-url="<?= $block->escapeUrl($block->getQrCodeUrl()) ?>"
+                                    data-event-name="<?= $block->escapeHtmlAttr($event->getName()) ?>"
+                                    data-event-date="<?= $block->escapeHtmlAttr($block->getFormattedEventDate()) ?>">
+                                <?= $block->escapeHtml(__('View QR')) ?>
+                            </button>
+                        <?php endif; ?>
+                        <button type="button"
+                                class="action secondary unregister-btn"
+                                data-meet-id="<?= $block->escapeHtml($event->getMeetId()) ?>"
+                                data-url="<?= $block->escapeUrl($block->getUnregisterUrl($event->getMeetId())) ?>">
+                            <?= $block->escapeHtml(__('Unregister')) ?>
+                        </button>
+                    </div>
                 </div>
                 <?php if ($block->canShowCalendarLinks()): ?>
                 <div>
@@ -178,8 +189,7 @@ $registrationStatus = $block->getRegistrationStatus();
 </div>
 
 <script>
-require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady, registrationHandler, $) {
-    // Initialize registration handlers
+require(['domReady!', 'zacatrusEventsRegistration', 'zacatrusEventsQrModal', 'jquery'], function(domReady, registrationHandler, qrModal, $) {
     try {
         if (registrationHandler && typeof registrationHandler.init === 'function') {
             registrationHandler.init();
@@ -188,6 +198,14 @@ require(['domReady!', 'zacatrusEventsRegistration', 'jquery'], function(domReady
         }
     } catch (e) {
         console.error('Error initializing registration handler:', e);
+    }
+
+    try {
+        if (qrModal && typeof qrModal.init === 'function') {
+            qrModal.init();
+        }
+    } catch (e) {
+        console.error('Error initializing QR modal:', e);
     }
 });
 </script>

@@ -103,12 +103,15 @@
     </div>
 
     <?php if ($block->isCustomerLoggedIn() && $block->getMyEventsCount() > 0): ?>
-        <div class="my-events-link">
-            <a href="<?= $block->escapeUrl($block->getMyEventsToggleUrl()) ?>" class="my-events-toggle">
-                <?php if ($block->isMyEventsFilterActive()): ?>
-                    <?= $block->escapeHtml(__('← Show all events')) ?>
+        <?php $myEventsActive = $block->isMyEventsFilterActive(); ?>
+        <div class="my-events-toggle-wrapper">
+            <a href="<?= $block->escapeUrl($block->getMyEventsToggleUrl()) ?>"
+               class="my-events-chip <?= $myEventsActive ? 'active' : '' ?>"
+               aria-pressed="<?= $myEventsActive ? 'true' : 'false' ?>">
+                <?php if ($myEventsActive): ?>
+                    <?= $block->escapeHtml(__('Show all events')) ?>
                 <?php else: ?>
-                    <?= $block->escapeHtml(__('Your events (%1) →', $block->getMyEventsCount())) ?>
+                    <?= $block->escapeHtml(__('Show only your events (%1)', $block->getMyEventsCount())) ?>
                 <?php endif; ?>
             </a>
         </div>
