@@ -105,7 +105,6 @@ class Index extends Action
         }
 
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->getConfig()->getTitle()->set(__('Meets'));
 
         // Disable browser caching for this page
         $resultPage->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');

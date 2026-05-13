@@ -25,6 +25,7 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Framework\View\Page\Config as PageConfig;
 use Magento\Store\Model\StoreManagerInterface;
 use Zaca\Events\Helper\Data as EventsHelper;
 
@@ -111,6 +112,11 @@ class EventList extends Template
     protected $eventsHelper;
 
     /**
+     * @var PageConfig
+     */
+    protected $pageConfigService;
+
+    /**
      * Map of meet_id => RegistrationInterface for the current customer (lazy-loaded).
      * `false` while not loaded; an array (possibly empty) after the first lookup.
      *
@@ -148,6 +154,7 @@ class EventList extends Template
      * @param TimezoneInterface $timezone
      * @param StoreManagerInterface $storeManager
      * @param EventsHelper $eventsHelper
+     * @param PageConfig $pageConfigService
      * @param array $data
      */
     public function __construct(
@@ -165,6 +172,7 @@ class EventList extends Template
         TimezoneInterface $timezone,
         StoreManagerInterface $storeManager,
         EventsHelper $eventsHelper,
+        PageConfig $pageConfigService,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -181,6 +189,24 @@ class EventList extends Template
         $this->timezone = $timezone;
         $this->storeManager = $storeManager;
         $this->eventsHelper = $eventsHelper;
+        $this->pageConfigService = $pageConfigService;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function _prepareLayout()
+    {
+        parent::_prepareLayout();
+        if ($this->isModuleEnabled()) {
+            $location = $this->getCurrentLocation();
+            $city = $location ? trim((string) $location->getCity()) : '';
+            $title = $city !== ''
+                ? __('Eventos de juegos de mesa en %1', $city)
+                : __('Eventos de juegos de mesa en Zacatrus');
+            $this->pageConfigService->getTitle()->set((string) $title);
+        }
+        return $this;
     }
 
     /**
