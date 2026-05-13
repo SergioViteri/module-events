@@ -10,7 +10,8 @@
 namespace Zaca\Events\Service;
 
 use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Psr\Log\LoggerInterface;
 
@@ -31,6 +32,24 @@ class QrCodeGenerator
     }
 
     /**
+     * @param string $data
+     * @param int $size
+     * @return \Endroid\QrCode\Writer\Result\ResultInterface
+     */
+    private function buildResult(string $data, int $size)
+    {
+        $qrCode = new QrCode(
+            data: $data,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Low,
+            size: $size,
+            margin: 10
+        );
+
+        return (new PngWriter())->write($qrCode);
+    }
+
+    /**
      * Generate QR code image as base64 data URI
      *
      * @param string $data Data to encode in QR code
@@ -40,26 +59,12 @@ class QrCodeGenerator
     public function generateQrCodeImage(string $data, int $size = 300): string
     {
         try {
-            $writer = new PngWriter();
-            
-            $result = $writer->write(
-                \Endroid\QrCode\QrCode::create($data)
-                    ->setEncoding(new Encoding('UTF-8'))
-                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-                    ->setSize($size)
-                    ->setMargin(10)
-            );
-
-            // Get the data URI
-            $dataUri = $result->getDataUri();
-            
-            return $dataUri;
+            return $this->buildResult($data, $size)->getDataUri();
         } catch (\Throwable $e) {
             $this->logger->error('[QR Code Generator] Error generating QR code: ' . $e->getMessage());
             $this->logger->error('[QR Code Generator] Error class: ' . get_class($e));
             $this->logger->error('[QR Code Generator] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
             $this->logger->error('[QR Code Generator] Stack trace: ' . $e->getTraceAsString());
-            // Return empty string on error
             return '';
         }
     }
@@ -74,26 +79,12 @@ class QrCodeGenerator
     public function generateQrCodeBinary(string $data, int $size = 300): string
     {
         try {
-            $writer = new PngWriter();
-            
-            $result = $writer->write(
-                \Endroid\QrCode\QrCode::create($data)
-                    ->setEncoding(new Encoding('UTF-8'))
-                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-                    ->setSize($size)
-                    ->setMargin(10)
-            );
-
-            // Get the binary string
-            $binary = $result->getString();
-            
-            return $binary;
+            return $this->buildResult($data, $size)->getString();
         } catch (\Throwable $e) {
             $this->logger->error('[QR Code Generator] Error generating QR code binary: ' . $e->getMessage());
             $this->logger->error('[QR Code Generator] Error class: ' . get_class($e));
             $this->logger->error('[QR Code Generator] Error file: ' . $e->getFile() . ' Line: ' . $e->getLine());
             $this->logger->error('[QR Code Generator] Stack trace: ' . $e->getTraceAsString());
-            // Return empty string on error
             return '';
         }
     }
@@ -109,24 +100,11 @@ class QrCodeGenerator
     public function generateQrCodeFile(string $data, string $filePath, int $size = 300): bool
     {
         try {
-            $writer = new PngWriter();
-            
-            $result = $writer->write(
-                \Endroid\QrCode\QrCode::create($data)
-                    ->setEncoding(new Encoding('UTF-8'))
-                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-                    ->setSize($size)
-                    ->setMargin(10)
-            );
-
-            // Save to file
-            $result->saveToFile($filePath);
-            
+            $this->buildResult($data, $size)->saveToFile($filePath);
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('[QR Code Generator] Error generating QR code file: ' . $e->getMessage());
             return false;
         }
     }
 }
-
