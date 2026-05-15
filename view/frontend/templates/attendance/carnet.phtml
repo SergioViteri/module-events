@@ -1,0 +1,73 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$registry = $objectManager->get(\Magento\Framework\Registry::class);
+$eventsHelper = $objectManager->get(\Zaca\Events\Helper\Data::class);
+$routePath = $eventsHelper->getRoutePath() ?: 'events';
+
+$state    = $registry->registry('carnet_state');
+$barcode  = $registry->registry('carnet_barcode');
+$name     = (string) $registry->registry('carnet_customer_name');
+$matches  = $registry->registry('carnet_matches') ?: [];
+$formKey  = $objectManager->get(\Magento\Framework\Data\Form\FormKey::class)->getFormKey();
+// Post directly to the configured route_path — going through 'events/' would
+// 301-redirect (Plugin/Router/Base) and the browser would drop the POST body.
+$postUrl    = $block->getUrl($routePath . '/index/carnetAttend', ['b' => $barcode]);
+$attendBase = $block->getUrl($routePath . '/index/attendance');
+// Display the underlying member colour (#RRGGBB), not the CLT-prefixed scan code.
+$colorDisplay = '#' . substr((string) $barcode, 3);
+?>
+<style>
+.zce-card{max-width:520px;margin:40px auto;padding:28px 26px;border-radius:16px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.08);font-family:system-ui,sans-serif}
+.zce-card h1{margin:0 0 6px;font-size:22px}
+.zce-card .who{margin:0 0 18px;color:#6b7280;font-size:14px}
+.zce-card .barcode{font-family:'JetBrains Mono',monospace;font-size:13px;color:#4b5563}
+.zce-card label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4b5563;margin-bottom:6px}
+.zce-card input[type=text]{width:100%;height:44px;padding:0 14px;border:1px solid rgba(0,0,0,.18);border-radius:10px;font:inherit}
+.zce-card button{margin-top:14px;height:44px;padding:0 22px;border:0;border-radius:10px;background:#377ABE;color:#fff;font-weight:700;cursor:pointer}
+.zce-card .picker{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.zce-card .pick{display:block;padding:14px;border-radius:12px;border:1px solid rgba(0,0,0,.12);text-decoration:none;color:#111}
+.zce-card .pick:hover{background:#f6f1e8}
+.zce-card .pick .meet{font-weight:700;font-size:15px}
+.zce-card .pick .when{color:#6b7280;font-size:13px}
+.zce-card .empty{padding:18px;border-radius:10px;background:#fff8e1;color:#7c5c00;font-size:14px}
+</style>
+
+<div class="zce-card">
+    <?php if ($name): ?>
+        <h1><?= $escaper->escapeHtml($name) ?></h1>
+    <?php else: ?>
+        <h1><?= $escaper->escapeHtml(__('Carnet de socio')) ?></h1>
+    <?php endif; ?>
+    <p class="who"><span class="barcode"><?= $escaper->escapeHtml($colorDisplay) ?></span></p>
+
+    <?php if ($state === 'awaiting_location'): ?>
+        <p><?= $escaper->escapeHtml(__('Introduce el código de tu tienda para confirmar la asistencia.')) ?></p>
+        <form method="post" action="<?= $escaper->escapeUrl($postUrl) ?>" autocomplete="off">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>">
+            <label for="location_code"><?= $escaper->escapeHtml(__('Código de tienda')) ?></label>
+            <input type="text" id="location_code" name="location_code" required>
+            <button type="submit"><?= $escaper->escapeHtml(__('Validar')) ?></button>
+        </form>
+    <?php elseif ($state === 'no_match'): ?>
+        <div class="empty"><?= $escaper->escapeHtml(__('No hay ningún evento de este cliente hoy en esta tienda.')) ?></div>
+    <?php elseif ($state === 'pick' && !empty($matches)): ?>
+        <p><?= $escaper->escapeHtml(__('Hay varios eventos del cliente hoy en esta tienda. Elige cuál confirmar:')) ?></p>
+        <div class="picker">
+            <?php foreach ($matches as $row): /** @var \Zaca\Events\Api\Data\RegistrationInterface $reg */
+                $reg  = $row['registration'];
+                $meet = $row['meet'];
+                $when = $meet->getStartDate() ? date('H:i', strtotime($meet->getStartDate())) : '';
+                $url  = $attendBase . '?registrationId=' . (int) $reg->getRegistrationId();
+            ?>
+                <a class="pick" href="<?= $escaper->escapeUrl($url) ?>">
+                    <div class="meet"><?= $escaper->escapeHtml((string) $meet->getName()) ?></div>
+                    <?php if ($when): ?><div class="when"><?= $escaper->escapeHtml(__('Hoy a las %1', $when)) ?></div><?php endif; ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>

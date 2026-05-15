@@ -14,7 +14,10 @@ use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Model\RegistrationFactory;
 use Zaca\Events\Model\AttendanceFactory;
 use Zaca\Events\Model\ResourceModel\Attendance\CollectionFactory as AttendanceCollectionFactory;
+use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollectionFactory;
 use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
+use Zaca\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
+use Zaca\Events\Model\ResourceModel\Meet\CollectionFactory as MeetCollectionFactory;
 use Psr\Log\LoggerInterface;
 
 class AttendanceValidator
@@ -55,20 +58,30 @@ class AttendanceValidator
     protected $logger;
 
     /**
-     * @param LocationFactory $locationFactory
-     * @param RegistrationFactory $registrationFactory
-     * @param AttendanceFactory $attendanceFactory
-     * @param AttendanceCollectionFactory $attendanceCollectionFactory
-     * @param RegistrationResourceModel $registrationResource
-     * @param LoggerInterface $logger
+     * @var LocationCollectionFactory
      */
+    protected $locationCollectionFactory;
+
+    /**
+     * @var RegistrationCollectionFactory
+     */
+    protected $registrationCollectionFactory;
+
+    /**
+     * @var MeetCollectionFactory
+     */
+    protected $meetCollectionFactory;
+
     public function __construct(
         LocationFactory $locationFactory,
         RegistrationFactory $registrationFactory,
         AttendanceFactory $attendanceFactory,
         AttendanceCollectionFactory $attendanceCollectionFactory,
         RegistrationResourceModel $registrationResource,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        LocationCollectionFactory $locationCollectionFactory,
+        RegistrationCollectionFactory $registrationCollectionFactory,
+        MeetCollectionFactory $meetCollectionFactory
     ) {
         $this->locationFactory = $locationFactory;
         $this->registrationFactory = $registrationFactory;
@@ -76,6 +89,68 @@ class AttendanceValidator
         $this->attendanceCollectionFactory = $attendanceCollectionFactory;
         $this->registrationResource = $registrationResource;
         $this->logger = $logger;
+        $this->locationCollectionFactory = $locationCollectionFactory;
+        $this->registrationCollectionFactory = $registrationCollectionFactory;
+        $this->meetCollectionFactory = $meetCollectionFactory;
+    }
+
+    /**
+     * Find the location id whose configured code matches the given input.
+     * Case-sensitive. Returns null if no location holds that code.
+     */
+    public function findLocationIdByCode(string $code): ?int
+    {
+        $code = trim($code);
+        if ($code === '') {
+            return null;
+        }
+        $collection = $this->locationCollectionFactory->create();
+        $collection->addFieldToFilter('code', $code)->setPageSize(1);
+        foreach ($collection as $location) {
+            return (int) $location->getId();
+        }
+        return null;
+    }
+
+    /**
+     * Find the customer's registrations whose meet is at the given location and
+     * whose meet date (possibly recurring) matches the given day. Returns an
+     * array of [registration, meet] tuples — empty when nothing matches.
+     *
+     * @return array<int, array{registration: \Zaca\Events\Api\Data\RegistrationInterface, meet: MeetInterface}>
+     */
+    public function findRegistrationsForCustomerTodayAtLocation(int $customerId, int $locationId, \DateTime $today): array
+    {
+        $regCollection = $this->registrationCollectionFactory->create();
+        $regCollection->addFieldToFilter('customer_id', $customerId);
+
+        $registrations = [];
+        $meetIds = [];
+        foreach ($regCollection as $reg) {
+            $registrations[(int) $reg->getRegistrationId()] = $reg;
+            $meetIds[] = (int) $reg->getMeetId();
+        }
+        if (empty($meetIds)) {
+            return [];
+        }
+
+        $meetCollection = $this->meetCollectionFactory->create();
+        $meetCollection->addFieldToFilter('meet_id', ['in' => array_unique($meetIds)]);
+        $meetCollection->addFieldToFilter('location_id', $locationId);
+
+        $matches = [];
+        foreach ($meetCollection as $meet) {
+            if (!$this->isDateValidForMeet($meet, $today)) {
+                continue;
+            }
+            foreach ($registrations as $reg) {
+                if ((int) $reg->getMeetId() !== (int) $meet->getMeetId()) {
+                    continue;
+                }
+                $matches[] = ['registration' => $reg, 'meet' => $meet];
+            }
+        }
+        return $matches;
     }
 
     /**
