@@ -18,6 +18,15 @@
     <preference for="Zaca\Events\Api\Data\ThemeInterface" type="Zaca\Events\Model\Theme"/>
     <preference for="Zaca\Events\Api\LocationRepositoryInterface" type="Zaca\Events\Model\LocationRepository"/>
     <preference for="Zaca\Events\Api\Data\LocationInterface" type="Zaca\Events\Model\Location"/>
+    <preference for="Zaca\Events\Api\TimeSlotRepositoryInterface" type="Zaca\Events\Model\Ludoteca\TimeSlotRepository"/>
+    <preference for="Zaca\Events\Api\Data\TimeSlotInterface" type="Zaca\Events\Model\Ludoteca\TimeSlot"/>
+    <preference for="Zaca\Events\Api\TableBookingRepositoryInterface" type="Zaca\Events\Model\Ludoteca\TableBookingRepository"/>
+    <preference for="Zaca\Events\Api\Data\TableBookingInterface" type="Zaca\Events\Model\Ludoteca\TableBooking"/>
+    <preference for="Zaca\Events\Api\Data\TableBookingSlotInterface" type="Zaca\Events\Model\Ludoteca\TableBookingSlot"/>
+    <preference for="Zaca\Events\Api\TableBookingSlotRepositoryInterface" type="Zaca\Events\Model\Ludoteca\TableBookingSlotRepository"/>
+    <preference for="Zaca\Events\Api\Data\TableBookingSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Zaca\Events\Api\Data\TableBookingSlotSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+    <preference for="Zaca\Events\Api\Data\TimeSlotSearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
     
     <!-- Grid Collections -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
@@ -46,6 +55,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="events_send_reminders" xsi:type="object">Zaca\Events\Console\Command\SendRemindersCommand</item>
+                <item name="events_send_ludoteca_reminders" xsi:type="object">Zaca\Events\Console\Command\SendLudotecaRemindersCommand</item>
             </argument>
         </arguments>
     </type>
@@ -53,6 +63,7 @@
     <!-- Router Plugin for Dynamic Route Path -->
     <type name="Magento\Framework\App\Router\Base">
         <plugin name="zaca_events_router" type="Zaca\Events\Plugin\Router\Base" sortOrder="10"/>
+        <plugin name="zaca_ludoteca_router" type="Zaca\Events\Plugin\Router\Ludoteca" sortOrder="20"/>
     </type>
 
     <!-- Bypass URL rewrite for our events paths so location-slug URLs don't get caught

@@ -1,0 +1,21 @@
+<!--@subject {{trans "Reserva de ludoteca cancelada"}} @-->
+<!--@vars {
+"var booking_id":"Booking ID",
+"var customer_name":"Customer Name",
+"var location_name":"Store name",
+"var booking_date":"Booking date (formatted)"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr class="email-intro">
+        <td>
+            <p class="greeting">{{trans "Hola %customer_name," customer_name=$customer_name}}</p>
+            <p>{{trans "Hemos cancelado tu reserva #%booking_id en %location_name para el %booking_date." booking_id=$booking_id location_name=$location_name booking_date=$booking_date}}</p>
+            <p>{{trans "Esperamos verte pronto."}}</p>
+        </td>
+    </tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}

@@ -176,6 +176,20 @@ class Main extends Generic implements TabInterface
         );
         
         $fieldset->addField(
+            'total_tables',
+            'text',
+            [
+                'name' => 'total_tables',
+                'label' => __('Total Ludoteca Tables'),
+                'title' => __('Total Ludoteca Tables'),
+                'required' => false,
+                'disabled' => $isElementDisabled,
+                'class' => 'validate-zero-or-greater-number',
+                'note' => __('How many ludoteca tables this store has. Set to 0 to disable ludoteca bookings at this store.'),
+            ]
+        );
+
+        $fieldset->addField(
             'is_active',
             'select',
             [

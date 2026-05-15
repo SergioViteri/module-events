@@ -13,6 +13,8 @@
                             <resource id="Zaca_Events::themes" title="Themes Management" sortOrder="18"/>
                             <resource id="Zaca_Events::meets" title="Meets Management" sortOrder="20"/>
                             <resource id="Zaca_Events::participants" title="Participants Management" sortOrder="40"/>
+                            <resource id="Zaca_Events::time_slots" title="Ludoteca Time Slots" sortOrder="50"/>
+                            <resource id="Zaca_Events::table_bookings" title="Ludoteca Bookings" sortOrder="60"/>
                         </resource>
                     </resource>
             </resource>

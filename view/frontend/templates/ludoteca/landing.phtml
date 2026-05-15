@@ -1,0 +1,161 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\Ludoteca\Landing $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$locations = $block->getLocations();
+$capacityPerTable = $block->getCapacityPerTable();
+$myBookings = $block->getMyActiveBookings();
+$cancelUrl = $block->getCancelMyBookingUrl();
+$formKey = $block->getFormKey();
+?>
+<div class="ludoteca-landing">
+    <header class="ludoteca-landing-hero">
+        <h1 class="ludoteca-landing-title"><?= $escaper->escapeHtml(__('Reserva mesa de ludoteca')) ?></h1>
+        <p class="ludoteca-landing-intro">
+            <?= $escaper->escapeHtml(__('Elige una tienda y reserva 1 o 2 mesas para venir a jugar dentro del horario comercial.')) ?>
+        </p>
+    </header>
+
+    <?php if (!empty($myBookings)): ?>
+        <section class="ludoteca-mybookings">
+            <h2 class="ludoteca-mybookings-title"><?= $escaper->escapeHtml(__('Tus próximas reservas')) ?></h2>
+            <ul class="ludoteca-mybookings-list">
+                <?php foreach ($myBookings as $b): ?>
+                    <li class="ludoteca-mybookings-item">
+                        <div class="ludoteca-mybookings-info">
+                            <div class="ludoteca-mybookings-head">
+                                <strong><?= $escaper->escapeHtml($b['location_name']) ?></strong>
+                                <span class="ludoteca-mybookings-date"><?= $escaper->escapeHtml($block->formatBookingDate($b['booking_date'])) ?></span>
+                            </div>
+                            <?php if (!empty($b['slots'])): ?>
+                                <ul class="ludoteca-mybookings-slots">
+                                    <?php foreach ($b['slots'] as $s): ?>
+                                        <li>
+                                            <?= $escaper->escapeHtml(sprintf('%s – %s', $s['start'], $s['end'])) ?>
+                                            · <?= $escaper->escapeHtml(sprintf('%d %s', $s['tables'], __('mesa(s)')->render())) ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </div>
+                        <form method="post"
+                              action="<?= $escaper->escapeUrl($cancelUrl) ?>"
+                              class="ludoteca-mybookings-cancel-form"
+                              onsubmit="return confirm(<?= $escaper->escapeJs(json_encode((string) __('¿Cancelar esta reserva?'))) ?>);">
+                            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+                            <input type="hidden" name="booking_id" value="<?= (int) $b['booking_id'] ?>"/>
+                            <button type="submit" class="ludoteca-mybookings-cancel">
+                                <?= $escaper->escapeHtml(__('Cancelar reserva')) ?>
+                            </button>
+                        </form>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
+    <?php endif; ?>
+
+    <?php if (empty($locations)): ?>
+        <div class="ludoteca-empty">
+            <p><?= $escaper->escapeHtml(__('Aún no hay tiendas con ludoteca configurada.')) ?></p>
+        </div>
+    <?php else: ?>
+        <div class="ludoteca-grid">
+            <?php foreach ($locations as $location):
+                $tables = (int) $location->getData('total_tables');
+                $slotCount = $block->getSlotCountFor((int) $location->getId());
+                $address = $block->formatAddress($location);
+                $url = $block->getStoreUrl((string) $location->getUrlKey());
+            ?>
+                <article class="ludoteca-card">
+                    <div class="ludoteca-card-head">
+                        <h2 class="ludoteca-card-title">
+                            <a href="<?= $escaper->escapeUrl($url) ?>" class="ludoteca-card-title-link">
+                                <?= $escaper->escapeHtml((string) $location->getName()) ?>
+                            </a>
+                        </h2>
+                    </div>
+
+                    <div class="ludoteca-card-body">
+                        <p class="ludoteca-card-desc">
+                            <?= $escaper->escapeHtml(__('Reserva 1 o 2 mesas para venir a jugar a esta tienda. Cada mesa admite hasta %1 personas.', $capacityPerTable)) ?>
+                        </p>
+
+                        <div class="ludoteca-card-meta">
+                            <?php if ($address !== ''): ?>
+                                <div class="ludoteca-meta-row">
+                                    <span class="ludoteca-meta-icon" aria-hidden="true">📍</span>
+                                    <span><?= $escaper->escapeHtml($address) ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <div class="ludoteca-meta-row">
+                                <span class="ludoteca-meta-icon" aria-hidden="true">🪑</span>
+                                <span>
+                                    <?= $escaper->escapeHtml(__('%1 mesas (hasta %2 personas)', $tables, $tables * $capacityPerTable)) ?>
+                                </span>
+                            </div>
+                            <?php if ($slotCount > 0): ?>
+                                <div class="ludoteca-meta-row">
+                                    <span class="ludoteca-meta-icon" aria-hidden="true">🕒</span>
+                                    <span><?= $escaper->escapeHtml(__('%1 turnos al día', $slotCount)) ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="ludoteca-card-actions">
+                            <a href="<?= $escaper->escapeUrl($url) ?>" class="ludoteca-action ludoteca-action-primary">
+                                <?= $escaper->escapeHtml(__('Ver disponibilidad')) ?>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
+<style>
+.ludoteca-landing { margin: 24px 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: #111; }
+.ludoteca-landing-hero { max-width: 720px; margin-bottom: 24px; }
+.ludoteca-landing-title { margin: 0 0 8px; font-size: 28px; line-height: 1.15; letter-spacing: -.01em; }
+.ludoteca-landing-intro { margin: 0; color: #555; font-size: 14px; line-height: 1.55; }
+.ludoteca-empty { padding: 24px; border: 1px solid #e3e3e3; border-radius: 16px; background: #fafafa; }
+.ludoteca-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.ludoteca-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e3e3e3; border-radius: 24px; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.06); transition: transform .18s ease, box-shadow .18s ease; }
+.ludoteca-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.10); }
+.ludoteca-card-head { padding: 20px; border-bottom: 1px solid #eee; }
+.ludoteca-card-title { margin: 0; font-size: 18px; line-height: 1.22; letter-spacing: -.01em; color: #111; }
+.ludoteca-card-title-link, .ludoteca-card-title-link:visited { color: inherit; text-decoration: none; }
+.ludoteca-card-title-link:hover { color: #0074bd; }
+.ludoteca-card-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.ludoteca-card-desc { margin: 0; font-size: 14px; line-height: 1.5; color: #444; }
+.ludoteca-card-meta { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: #fafafa; font-size: 13px; }
+.ludoteca-meta-row { display: flex; align-items: flex-start; gap: 8px; }
+.ludoteca-meta-icon { color: #0074bd; flex-shrink: 0; }
+.ludoteca-card-actions { margin-top: auto; }
+.ludoteca-action { display: inline-block; padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; text-decoration: none; transition: background .18s ease; }
+.ludoteca-action-primary,
+.ludoteca-action-primary:visited { background: #0074bd; color: #fff; }
+.ludoteca-action-primary:hover,
+.ludoteca-action-primary:focus,
+.ludoteca-action-primary:active { background: #005f9d; color: #fff; text-decoration: none; }
+@media (max-width: 960px) { .ludoteca-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .ludoteca-grid { grid-template-columns: 1fr; } }
+
+.ludoteca-mybookings { margin-bottom: 28px; padding: 18px 20px; border: 1px solid #d0e6f4; border-radius: 16px; background: #f4faff; }
+.ludoteca-mybookings-title { margin: 0 0 12px; font-size: 18px; color: #00477a; }
+.ludoteca-mybookings-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ludoteca-mybookings-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 14px; background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; }
+.ludoteca-mybookings-info { flex: 1; min-width: 0; }
+.ludoteca-mybookings-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.ludoteca-mybookings-date { color: #555; font-size: 13px; }
+.ludoteca-mybookings-slots { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; color: #444; }
+.ludoteca-mybookings-slots li { padding: 2px 0; }
+.ludoteca-mybookings-cancel-form { margin: 0; flex-shrink: 0; }
+.ludoteca-mybookings-cancel { padding: 8px 14px; border-radius: 999px; border: 1px solid #c0392b; background: #fff; color: #c0392b; font-weight: 700; font-size: 13px; cursor: pointer; transition: background .18s ease, color .18s ease; }
+.ludoteca-mybookings-cancel:hover, .ludoteca-mybookings-cancel:focus { background: #c0392b; color: #fff; }
+@media (max-width: 620px) {
+    .ludoteca-mybookings-item { flex-direction: column; align-items: stretch; }
+    .ludoteca-mybookings-cancel { width: 100%; }
+}
+</style>

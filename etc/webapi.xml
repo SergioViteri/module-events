@@ -37,5 +37,27 @@
             <resource ref="Zaca_Events::locations"/>
         </resources>
     </route>
+
+    <!-- Ludoteca admin endpoints (used by the Slack /reservas command) -->
+    <route url="/V1/zacatrus-events/admin/table-bookings" method="GET">
+        <service class="Zaca\Events\Api\TableBookingRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Zaca_Events::table_bookings"/>
+        </resources>
+    </route>
+
+    <route url="/V1/zacatrus-events/admin/table-booking-slots" method="GET">
+        <service class="Zaca\Events\Api\TableBookingSlotRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Zaca_Events::table_bookings"/>
+        </resources>
+    </route>
+
+    <route url="/V1/zacatrus-events/admin/time-slots" method="GET">
+        <service class="Zaca\Events\Api\TimeSlotRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Zaca_Events::time_slots"/>
+        </resources>
+    </route>
 </routes>
 

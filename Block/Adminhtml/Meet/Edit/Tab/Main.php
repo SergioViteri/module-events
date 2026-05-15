@@ -248,7 +248,7 @@ class Main extends Generic implements TabInterface
                 'note' => __('Maximum number of people a customer can register in one subscription for this event (1 to 10).'),
             ]
         );
-        
+
         $fieldset->addField(
             'description',
             'textarea',

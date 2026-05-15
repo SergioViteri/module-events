@@ -28,6 +28,38 @@
                     <source_model>Zaca\Events\Model\Config\Source\SlotsDisplayMode</source_model>
                 </field>
             </group>
+
+            <group id="ludoteca" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Ludoteca</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Ludoteca Reservations</label>
+                    <comment>Enable or disable the in-store ludoteca table reservation feature.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="route_path" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Ludoteca Route Path</label>
+                    <comment>URL path for ludoteca pages (default: 'ludoteca'). Only alphanumeric characters, hyphens, and underscores.</comment>
+                    <validate>validate-alphanum-with-dashes</validate>
+                </field>
+                <field id="days_in_advance_default" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Days in Advance (non-Club customers)</label>
+                    <comment>How many days ahead a logged-in customer who is NOT a Club member can book a table. Default: 2.</comment>
+                    <validate>validate-zero-or-greater-number</validate>
+                </field>
+                <field id="days_in_advance_club" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Days in Advance (Club members)</label>
+                    <comment>How many days ahead a Club member can book a table. Default: 30.</comment>
+                    <validate>validate-zero-or-greater-number</validate>
+                </field>
+                <field id="club_signup_url" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Club Signup URL</label>
+                    <comment>URL where non-Club customers are sent when they try to book a date that is only available for Club members. Leave blank to fall back to Zaca_Box defaults.</comment>
+                </field>
+                <field id="reminder_days_before" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Reminder Days Before Booking</label>
+                    <comment>Comma-separated list of days before the booking date when a reminder email should be sent (e.g., "1" or "2,1"). Leave blank to disable.</comment>
+                </field>
+            </group>
         </section>
     </system>
 </config>

@@ -1,0 +1,74 @@
+<!--@subject {{trans "Recordatorio: tu reserva de ludoteca"}} @-->
+<!--@vars {
+"var booking_id":"Booking ID",
+"var customer_name":"Customer Name",
+"var location_name":"Store name",
+"var location_address":"Store address",
+"var booking_date":"Booking date (formatted)",
+"var slots_text":"Slots summary (HTML)",
+"var qr_code_url":"QR code image URL",
+"var cancel_url":"Cancellation URL",
+"var days_before":"Number of days remaining"
+} @-->
+
+{{template config_path="design/email/header_template"}}
+
+<table>
+    <tr class="email-intro">
+        <td>
+            <p class="greeting">{{trans "Hola %customer_name," customer_name=$customer_name}}</p>
+            <p>{{trans "Te recordamos que tienes una reserva de ludoteca próxima."}}</p>
+        </td>
+    </tr>
+    <tr class="email-information">
+        <td>
+            <table class="message-details">
+                <tr>
+                    <td><strong>{{trans "Reserva:"}}</strong></td>
+                    <td>#{{var booking_id}}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{trans "Tienda:"}}</strong></td>
+                    <td>{{var location_name}}</td>
+                </tr>
+                {{depend location_address}}
+                <tr>
+                    <td><strong>{{trans "Dirección:"}}</strong></td>
+                    <td>{{var location_address}}</td>
+                </tr>
+                {{/depend}}
+                <tr>
+                    <td><strong>{{trans "Día:"}}</strong></td>
+                    <td>{{var booking_date}}</td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <strong>{{trans "Turnos:"}}</strong><br/>
+                        {{var slots_text|raw}}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr class="email-qrcode">
+        <td>
+            <p><strong>{{trans "Recuerda enseñar este QR al llegar a la tienda:"}}</strong></p>
+            <p><img src="{{var qr_code_url}}" alt="{{trans "QR de la reserva"}}" style="max-width:300px;height:auto;"/></p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top:14px;">
+            <p>{{trans "Si ya no puedes venir, cancela la reserva para liberar las mesas:"}}</p>
+            <p>
+                <a href="{{var cancel_url}}" style="display:inline-block;padding:8px 16px;background:#a23434;color:#fff;text-decoration:none;border-radius:6px;">{{trans "Cancelar la reserva"}}</a>
+            </p>
+        </td>
+    </tr>
+    <tr class="email-footer">
+        <td>
+            <p>{{trans "¡Os esperamos!"}}</p>
+        </td>
+    </tr>
+</table>
+
+{{template config_path="design/email/footer_template"}}
