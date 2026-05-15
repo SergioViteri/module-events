@@ -9,10 +9,11 @@
 
 namespace Zaca\Events\Model;
 
+use Zaca\Events\Api\Data\LocationInterface;
 use Zaca\Events\Model\ResourceModel\Location as LocationResourceModel;
 use Magento\Framework\Model\AbstractModel;
 
-class Location extends AbstractModel
+class Location extends AbstractModel implements LocationInterface
 {
     /**
      * @inheritdoc
@@ -83,6 +84,27 @@ class Location extends AbstractModel
     public function setCode($code)
     {
         return $this->setData('code', $code);
+    }
+
+    /**
+     * Get URL Key
+     *
+     * @return string|null
+     */
+    public function getUrlKey()
+    {
+        return $this->getData('url_key');
+    }
+
+    /**
+     * Set URL Key
+     *
+     * @param string $urlKey
+     * @return $this
+     */
+    public function setUrlKey($urlKey)
+    {
+        return $this->setData('url_key', $urlKey);
     }
 
     /**

@@ -10,6 +10,7 @@
 namespace Zaca\Events\Api;
 
 use Zaca\Events\Api\Data\RegistrationInterface;
+use Zaca\Events\Api\Data\RegistrationSearchResultsInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
@@ -40,7 +41,7 @@ interface RegistrationRepositoryInterface
      * Get list of registrations
      *
      * @param SearchCriteriaInterface $searchCriteria
-     * @return SearchResultsInterface
+     * @return RegistrationSearchResultsInterface
      */
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface;
 

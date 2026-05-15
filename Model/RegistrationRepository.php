@@ -146,6 +146,10 @@ class RegistrationRepository implements RegistrationRepositoryInterface
     /**
      * @inheritdoc
      */
+    /**
+     * @param SearchCriteriaInterface $searchCriteria
+     * @return \Zaca\Events\Api\Data\RegistrationSearchResultsInterface
+     */
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface
     {
         $collection = $this->registrationCollectionFactory->create();

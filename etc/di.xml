@@ -16,6 +16,8 @@
     <preference for="Zaca\Events\Api\EventTypeRepositoryInterface" type="Zaca\Events\Model\EventTypeRepository"/>
     <preference for="Zaca\Events\Api\ThemeRepositoryInterface" type="Zaca\Events\Model\ThemeRepository"/>
     <preference for="Zaca\Events\Api\Data\ThemeInterface" type="Zaca\Events\Model\Theme"/>
+    <preference for="Zaca\Events\Api\LocationRepositoryInterface" type="Zaca\Events\Model\LocationRepository"/>
+    <preference for="Zaca\Events\Api\Data\LocationInterface" type="Zaca\Events\Model\Location"/>
     
     <!-- Grid Collections -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

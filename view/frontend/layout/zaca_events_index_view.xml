@@ -17,7 +17,7 @@
     <body>
         <referenceBlock name="page.main.title" remove="true"/>
         <referenceContainer name="content">
-            <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.view" template="Zaca_Events::events/view.phtml"/>
+            <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.view" template="Zaca_Events::events/view.phtml" cacheable="false"/>
             <block class="Magento\Framework\View\Element\Template"
                    name="zaca.events.qr.modal"
                    template="Zaca_Events::events/qr-modal.phtml"/>

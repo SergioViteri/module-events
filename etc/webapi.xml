@@ -23,5 +23,19 @@
             <resource ref="Zaca_Events::registrations"/>
         </resources>
     </route>
+
+    <route url="/V1/zacatrus-events/admin/meets" method="GET">
+        <service class="Zaca\Events\Api\MeetRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Zaca_Events::meets"/>
+        </resources>
+    </route>
+
+    <route url="/V1/zacatrus-events/admin/locations" method="GET">
+        <service class="Zaca\Events\Api\LocationRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Zaca_Events::locations"/>
+        </resources>
+    </route>
 </routes>
 

@@ -115,6 +115,10 @@ class MeetRepository implements MeetRepositoryInterface
     /**
      * @inheritdoc
      */
+    /**
+     * @param SearchCriteriaInterface $searchCriteria
+     * @return \Zaca\Events\Api\Data\MeetSearchResultsInterface
+     */
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface
     {
         $collection = $this->meetCollectionFactory->create();

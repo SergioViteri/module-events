@@ -1,6 +1,6 @@
 <?php
 /**
- * Zacatrus Events Meet Repository Interface
+ * Zacatrus Events Location Repository Interface
  *
  * @category    Zacatrus
  * @package     Zaca_Events
@@ -9,59 +9,58 @@
 
 namespace Zaca\Events\Api;
 
-use Zaca\Events\Api\Data\MeetInterface;
-use Zaca\Events\Api\Data\MeetSearchResultsInterface;
+use Zaca\Events\Api\Data\LocationInterface;
+use Zaca\Events\Api\Data\LocationSearchResultsInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\CouldNotDeleteException;
 
-interface MeetRepositoryInterface
+interface LocationRepositoryInterface
 {
     /**
-     * Save meet
+     * Save location
      *
-     * @param MeetInterface $meet
-     * @return MeetInterface
+     * @param LocationInterface $location
+     * @return LocationInterface
      * @throws CouldNotSaveException
      */
-    public function save(MeetInterface $meet): MeetInterface;
+    public function save(LocationInterface $location): LocationInterface;
 
     /**
-     * Get meet by ID
+     * Get location by ID
      *
-     * @param int $meetId
-     * @return MeetInterface
+     * @param int $locationId
+     * @return LocationInterface
      * @throws NoSuchEntityException
      */
-    public function getById(int $meetId): MeetInterface;
+    public function getById(int $locationId): LocationInterface;
 
     /**
-     * Get list of meets
+     * Get list of locations
      *
      * @param SearchCriteriaInterface $searchCriteria
-     * @return MeetSearchResultsInterface
+     * @return LocationSearchResultsInterface
      */
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface;
 
     /**
-     * Delete meet
+     * Delete location
      *
-     * @param MeetInterface $meet
+     * @param LocationInterface $location
      * @return bool
      * @throws CouldNotDeleteException
      */
-    public function delete(MeetInterface $meet): bool;
+    public function delete(LocationInterface $location): bool;
 
     /**
-     * Delete meet by ID
+     * Delete location by ID
      *
-     * @param int $meetId
+     * @param int $locationId
      * @return bool
      * @throws NoSuchEntityException
      * @throws CouldNotDeleteException
      */
-    public function deleteById(int $meetId): bool;
+    public function deleteById(int $locationId): bool;
 }
-

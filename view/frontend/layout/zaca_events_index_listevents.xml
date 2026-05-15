@@ -18,7 +18,7 @@
     <body>
         <referenceBlock name="page.main.title" remove="true"/>
         <referenceContainer name="content">
-            <block class="Zaca\Events\Block\EventList" name="zacatrus.events.list" template="Zaca_Events::events/list.phtml">
+            <block class="Zaca\Events\Block\EventList" name="zacatrus.events.list" template="Zaca_Events::events/list.phtml" cacheable="false">
                 <block class="Zaca\Events\Block\EventCard" name="zacatrus.events.card" template="Zaca_Events::events/card.phtml"/>
             </block>
             <block class="Magento\Framework\View\Element\Template"
