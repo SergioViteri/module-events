@@ -19,32 +19,40 @@ interface TableBookingRepositoryInterface
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface;
 
     /**
+     * @return \Zaca\Events\Model\Ludoteca\TableBooking
      * @throws CouldNotSaveException
      */
     public function save(TableBooking $booking): TableBooking;
 
     /**
+     * @return \Zaca\Events\Model\Ludoteca\TableBooking
      * @throws NoSuchEntityException
      */
     public function getById(int $id): TableBooking;
 
     /**
+     * @return \Zaca\Events\Model\Ludoteca\TableBooking
      * @throws NoSuchEntityException
      */
     public function getByUnsubscribeCode(string $code): TableBooking;
 
     /**
+     * @return bool
      * @throws CouldNotDeleteException
      */
     public function delete(TableBooking $booking): bool;
 
     /**
      * Bookings for a customer (most recent first).
+     *
+     * @return \Zaca\Events\Model\ResourceModel\Ludoteca\TableBooking\Collection
      */
     public function getByCustomer(int $customerId): Collection;
 
     /**
      * Booking slot lines for a given booking, ordered by time_slot start_time.
+     *
+     * @return \Zaca\Events\Model\ResourceModel\Ludoteca\TableBookingSlot\Collection
      */
     public function getSlots(int $bookingId): SlotCollection;
 }

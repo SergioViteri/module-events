@@ -18,21 +18,25 @@ interface TimeSlotRepositoryInterface
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface;
 
     /**
+     * @return \Zaca\Events\Model\Ludoteca\TimeSlot
      * @throws CouldNotSaveException
      */
     public function save(TimeSlot $timeSlot): TimeSlot;
 
     /**
+     * @return \Zaca\Events\Model\Ludoteca\TimeSlot
      * @throws NoSuchEntityException
      */
     public function getById(int $id): TimeSlot;
 
     /**
+     * @return bool
      * @throws CouldNotDeleteException
      */
     public function delete(TimeSlot $timeSlot): bool;
 
     /**
+     * @return bool
      * @throws NoSuchEntityException
      * @throws CouldNotDeleteException
      */
@@ -40,6 +44,8 @@ interface TimeSlotRepositoryInterface
 
     /**
      * Active time slots for a location, ordered by sort_order then start_time.
+     *
+     * @return \Zaca\Events\Model\ResourceModel\Ludoteca\TimeSlot\Collection
      */
     public function getActiveByLocation(int $locationId): Collection;
 }

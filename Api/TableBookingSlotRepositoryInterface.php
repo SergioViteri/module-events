@@ -18,6 +18,7 @@ interface TableBookingSlotRepositoryInterface
     public function getList(SearchCriteriaInterface $searchCriteria): SearchResultsInterface;
 
     /**
+     * @return \Zaca\Events\Api\Data\TableBookingSlotInterface
      * @throws NoSuchEntityException
      */
     public function getById(int $slotId): TableBookingSlotInterface;
