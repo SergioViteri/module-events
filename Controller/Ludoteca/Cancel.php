@@ -46,19 +46,19 @@ class Cancel extends Action
         $code = trim((string) $this->getRequest()->getParam('code'));
         if ($code === '') {
             $this->messageManager->addErrorMessage(__('Falta el código de la reserva.'));
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         try {
             $booking = $this->bookings->getByUnsubscribeCode($code);
         } catch (NoSuchEntityException $e) {
             $this->messageManager->addErrorMessage(__('No encontramos esa reserva. Puede que ya esté cancelada.'));
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         if ($booking->getStatus() === TableBookingInterface::STATUS_CANCELLED) {
             $this->messageManager->addNoticeMessage(__('Esta reserva ya estaba cancelada.'));
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         try {
@@ -67,7 +67,7 @@ class Cancel extends Action
         } catch (\Throwable $e) {
             $this->logger->error('[Ludoteca Cancel] Could not cancel booking ' . $booking->getBookingId() . ': ' . $e->getMessage());
             $this->messageManager->addErrorMessage(__('No se pudo cancelar la reserva. Inténtalo de nuevo.'));
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         try {
@@ -77,6 +77,12 @@ class Cancel extends Action
         }
 
         $this->messageManager->addSuccessMessage(__('Tu reserva ha sido cancelada.'));
-        return $this->_redirect($this->helper->getLudotecaPublicUrl());
+        return $this->redirectToLanding();
+    }
+
+    private function redirectToLanding()
+    {
+        return $this->resultRedirectFactory->create()
+            ->setUrl($this->helper->getLudotecaPublicUrl());
     }
 }

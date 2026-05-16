@@ -23,6 +23,7 @@ use Psr\Log\LoggerInterface;
 use Zaca\Events\Api\TableBookingRepositoryInterface;
 use Zaca\Events\Helper\Data as EventsHelper;
 use Zaca\Events\Model\LocationFactory;
+use Zaca\Events\Service\QrCodeGenerator;
 
 class LudotecaEmail extends AbstractHelper
 {
@@ -37,6 +38,7 @@ class LudotecaEmail extends AbstractHelper
     private TimezoneInterface $timezone;
     private EventsHelper $helper;
     private State $appState;
+    private QrCodeGenerator $qr;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -51,7 +53,8 @@ class LudotecaEmail extends AbstractHelper
         UrlInterface $urlBuilder,
         TimezoneInterface $timezone,
         EventsHelper $helper,
-        State $appState
+        State $appState,
+        QrCodeGenerator $qr
     ) {
         parent::__construct($context);
         $this->inlineTranslation = $inlineTranslation;
@@ -65,6 +68,7 @@ class LudotecaEmail extends AbstractHelper
         $this->timezone = $timezone;
         $this->helper = $helper;
         $this->appState = $appState;
+        $this->qr = $qr;
         $this->logger = $context->getLogger();
     }
 
@@ -80,11 +84,11 @@ class LudotecaEmail extends AbstractHelper
 
             $this->inlineTranslation->suspend();
 
-            $base = rtrim($this->urlBuilder->getBaseUrl(['_secure' => true]), '/');
-            $qrUrl = $base . $this->helper->getLudotecaPublicUrl('qrcode', ['id' => $bookingId]);
-            $cancelUrl = $base . $this->helper->getLudotecaPublicUrl('cancel', [
-                'code' => (string) $booking->getUnsubscribeCode(),
-            ]);
+            $cancelUrl = $this->urlBuilder->getUrl(
+                'zaca_ludoteca/cancel',
+                ['code' => (string) $booking->getUnsubscribeCode()],
+                ['_secure' => true]
+            );
 
             $vars = [
                 'booking_id' => $booking->getBookingId(),
@@ -93,7 +97,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $qrUrl,
+                'qr_code_url' => $this->buildQrDataUri($bookingId, $location),
                 'cancel_url' => $cancelUrl,
             ];
 
@@ -135,11 +139,11 @@ class LudotecaEmail extends AbstractHelper
 
             $this->inlineTranslation->suspend();
 
-            $base = rtrim($this->urlBuilder->getBaseUrl(['_secure' => true]), '/');
-            $qrUrl = $base . $this->helper->getLudotecaPublicUrl('qrcode', ['id' => $bookingId]);
-            $cancelUrl = $base . $this->helper->getLudotecaPublicUrl('cancel', [
-                'code' => (string) $booking->getUnsubscribeCode(),
-            ]);
+            $cancelUrl = $this->urlBuilder->getUrl(
+                'zaca_ludoteca/cancel',
+                ['code' => (string) $booking->getUnsubscribeCode()],
+                ['_secure' => true]
+            );
 
             $vars = [
                 'booking_id' => $booking->getBookingId(),
@@ -148,7 +152,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $qrUrl,
+                'qr_code_url' => $this->buildQrDataUri($bookingId, $location),
                 'cancel_url' => $cancelUrl,
                 'days_before' => $daysBefore,
             ];
@@ -221,6 +225,29 @@ class LudotecaEmail extends AbstractHelper
             $this->logger->error('[Ludoteca Email] Cancellation error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Build a data URI (base64 PNG) with the attendance QR for the booking.
+     *
+     * Inlined instead of served from a URL because the QR endpoint must be reachable
+     * by the recipient's mail client to render — which fails in dev (local hostname)
+     * and triggers spam filters that flag <img src> pointing to non-resolvable hosts.
+     */
+    private function buildQrDataUri(int $bookingId, $location): string
+    {
+        if (!$location || !$location->getId() || !$location->getCode()) {
+            return '';
+        }
+        $attendanceUrl = $this->urlBuilder->getUrl(
+            'zaca_ludoteca/attendance',
+            [
+                'id' => $bookingId,
+                'code' => (string) $location->getCode(),
+            ],
+            ['_secure' => true]
+        );
+        return $this->qr->generateQrCodeImage($attendanceUrl, 300);
     }
 
     private function renderSlotsHtml(int $bookingId): string

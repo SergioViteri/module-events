@@ -52,19 +52,19 @@ class Qrcode extends Action
     {
         $bookingId = (int) $this->getRequest()->getParam('id');
         if ($bookingId <= 0) {
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         try {
             $booking = $this->bookings->getById($bookingId);
         } catch (NoSuchEntityException $e) {
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         $location = $this->locationFactory->create();
         $location->load($booking->getLocationId());
         if (!$location->getId() || !$location->getCode()) {
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         $base = rtrim($this->urlBuilder->getBaseUrl(['_secure' => true]), '/');
@@ -75,7 +75,7 @@ class Qrcode extends Action
 
         $binary = $this->qr->generateQrCodeBinary($attendanceUrl, 300);
         if ($binary === '') {
-            return $this->_redirect($this->helper->getLudotecaPublicUrl());
+            return $this->redirectToLanding();
         }
 
         $result = $this->rawFactory->create();
@@ -84,5 +84,11 @@ class Qrcode extends Action
         $result->setHeader('Cache-Control', 'public, max-age=3600');
         $result->setContents($binary);
         return $result;
+    }
+
+    private function redirectToLanding()
+    {
+        return $this->resultRedirectFactory->create()
+            ->setUrl($this->helper->getLudotecaPublicUrl());
     }
 }
