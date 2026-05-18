@@ -66,6 +66,11 @@ class Save extends Action
                 $model->load($id);
             }
 
+            // Treat empty stamp_code as "no stamp" — the carnet helper filters on IS NOT NULL.
+            if (array_key_exists('stamp_code', $data) && trim((string) $data['stamp_code']) === '') {
+                $data['stamp_code'] = null;
+            }
+
             $model->setData($data);
 
             try {

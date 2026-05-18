@@ -109,6 +109,26 @@ class Main extends Generic implements TabInterface
             ]
         );
 
+        $fieldset->addField(
+            'stamp_code',
+            'select',
+            [
+                'label' => __('Carnet stamp'),
+                'title' => __('Carnet stamp'),
+                'name' => 'stamp_code',
+                'required' => false,
+                'options' => [
+                    '' => __('— None —'),
+                    'lorcana' => __('Lorcana'),
+                    'onepiece' => __('One Piece'),
+                    'riftbound' => __('Riftbound'),
+                    'starwars' => __('Star Wars Unlimited'),
+                    'zacatrus' => __('Zacatrus'),
+                ],
+                'note' => __('Game code used to group attendance into stamps on the member carnet. Themes with no stamp do not appear on the carnet.'),
+            ]
+        );
+
         if (!$model->getId()) {
             $model->setData('is_active', '1');
             $model->setData('sort_order', '0');

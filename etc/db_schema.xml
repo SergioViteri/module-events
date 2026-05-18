@@ -52,6 +52,7 @@
         <column xsi:type="text" name="description" nullable="true" comment="Description"/>
         <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Is Active"/>
         <column xsi:type="int" name="sort_order" unsigned="true" nullable="false" default="0" comment="Sort Order"/>
+        <column xsi:type="varchar" name="stamp_code" length="50" nullable="true" comment="Stamp code for carnet aggregation (lorcana, onepiece, riftbound, starwars, zacatrus). NULL = no stamp."/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -62,6 +63,9 @@
         </index>
         <index referenceId="IDX_ZACA_EVENTS_THEME_SORT_ORDER" indexType="btree">
             <column name="sort_order"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_THEME_STAMP_CODE" indexType="btree">
+            <column name="stamp_code"/>
         </index>
     </table>
 
@@ -237,6 +241,22 @@
         </index>
         <index referenceId="IDX_ZACA_EVENTS_ATTENDANCE_DATE" indexType="btree">
             <column name="attendance_date"/>
+        </index>
+    </table>
+
+    <table name="zaca_events_attendance_summary" resource="default" engine="innodb" comment="Per-customer attendance counters grouped by theme. Pre-aggregated to avoid scanning the attendance log when rendering the carnet.">
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="int" name="theme_id" unsigned="true" nullable="false" comment="Theme ID"/>
+        <column xsi:type="int" name="attendance_count" unsigned="true" nullable="false" default="0" comment="Attendance Count"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="customer_id"/>
+            <column name="theme_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_ATTSUM_CUSTOMER_ID" table="zaca_events_attendance_summary" column="customer_id" referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_ATTSUM_THEME_ID" table="zaca_events_attendance_summary" column="theme_id" referenceTable="zaca_events_theme" referenceColumn="theme_id" onDelete="CASCADE"/>
+        <index referenceId="IDX_ZACA_EVENTS_ATTSUM_CUSTOMER_ID" indexType="btree">
+            <column name="customer_id"/>
         </index>
     </table>
 

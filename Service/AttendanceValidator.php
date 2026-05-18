@@ -18,6 +18,7 @@ use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollec
 use Zaca\Events\Model\ResourceModel\Registration as RegistrationResourceModel;
 use Zaca\Events\Model\ResourceModel\Registration\CollectionFactory as RegistrationCollectionFactory;
 use Zaca\Events\Model\ResourceModel\Meet\CollectionFactory as MeetCollectionFactory;
+use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;
 
 class AttendanceValidator
@@ -72,6 +73,11 @@ class AttendanceValidator
      */
     protected $meetCollectionFactory;
 
+    /**
+     * @var ResourceConnection
+     */
+    protected $resource;
+
     public function __construct(
         LocationFactory $locationFactory,
         RegistrationFactory $registrationFactory,
@@ -81,7 +87,8 @@ class AttendanceValidator
         LoggerInterface $logger,
         LocationCollectionFactory $locationCollectionFactory,
         RegistrationCollectionFactory $registrationCollectionFactory,
-        MeetCollectionFactory $meetCollectionFactory
+        MeetCollectionFactory $meetCollectionFactory,
+        ResourceConnection $resource
     ) {
         $this->locationFactory = $locationFactory;
         $this->registrationFactory = $registrationFactory;
@@ -92,6 +99,7 @@ class AttendanceValidator
         $this->locationCollectionFactory = $locationCollectionFactory;
         $this->registrationCollectionFactory = $registrationCollectionFactory;
         $this->meetCollectionFactory = $meetCollectionFactory;
+        $this->resource = $resource;
     }
 
     /**
@@ -341,9 +349,15 @@ class AttendanceValidator
             $registration->setAttendanceCount($currentCount + 1);
             $this->registrationResource->save($registration);
 
+            $this->bumpAttendanceSummary(
+                (int) $registration->getCustomerId(),
+                (int) $registration->getMeetId(),
+                1
+            );
+
             $this->logger->info(
-                '[Attendance Validator] Attendance recorded for registration ID: ' . $registrationId . 
-                ', Location ID: ' . $locationId . 
+                '[Attendance Validator] Attendance recorded for registration ID: ' . $registrationId .
+                ', Location ID: ' . $locationId .
                 ', New count: ' . ($currentCount + 1)
             );
 
@@ -394,9 +408,15 @@ class AttendanceValidator
             $registration->setAttendanceCount($newCount);
             $this->registrationResource->save($registration);
 
+            $this->bumpAttendanceSummary(
+                (int) $registration->getCustomerId(),
+                (int) $registration->getMeetId(),
+                -1
+            );
+
             $this->logger->info(
-                '[Attendance Validator] Attendance removed for registration ID: ' . $registrationId . 
-                ', Old count: ' . $currentCount . 
+                '[Attendance Validator] Attendance removed for registration ID: ' . $registrationId .
+                ', Old count: ' . $currentCount .
                 ', New count: ' . $newCount
             );
 
@@ -404,6 +424,51 @@ class AttendanceValidator
         } catch (\Exception $e) {
             $this->logger->error('[Attendance Validator] Error removing attendance: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Adjust the (customer_id, theme_id) row in zaca_events_attendance_summary by $delta.
+     * Resolves theme_id from meet; no-op if the meet has no theme. Isolated try/catch
+     * so a summary failure never reverts the attendance record itself.
+     */
+    private function bumpAttendanceSummary(int $customerId, int $meetId, int $delta): void
+    {
+        if ($customerId <= 0 || $meetId <= 0 || $delta === 0) {
+            return;
+        }
+        try {
+            $connection = $this->resource->getConnection();
+            $meetTable = $this->resource->getTableName('zaca_events_meet');
+            $themeId = $connection->fetchOne(
+                $connection->select()->from($meetTable, 'theme_id')->where('meet_id = ?', $meetId)
+            );
+            if ($themeId === false || $themeId === null || $themeId === '') {
+                return;
+            }
+            $themeId = (int) $themeId;
+            $summaryTable = $this->resource->getTableName('zaca_events_attendance_summary');
+
+            if ($delta > 0) {
+                $sql = sprintf(
+                    'INSERT INTO %s (customer_id, theme_id, attendance_count) VALUES (?, ?, ?) '
+                    . 'ON DUPLICATE KEY UPDATE attendance_count = attendance_count + VALUES(attendance_count)',
+                    $connection->quoteIdentifier($summaryTable)
+                );
+                $connection->query($sql, [$customerId, $themeId, $delta]);
+            } else {
+                // Clamp to 0 so we never store negatives if the log diverges.
+                $connection->update(
+                    $summaryTable,
+                    ['attendance_count' => new \Zend_Db_Expr('GREATEST(0, attendance_count + ' . (int) $delta . ')')],
+                    ['customer_id = ?' => $customerId, 'theme_id = ?' => $themeId]
+                );
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning(
+                '[Attendance Validator] Summary update failed (customer=' . $customerId
+                . ', meet=' . $meetId . ', delta=' . $delta . '): ' . $e->getMessage()
+            );
         }
     }
 }
