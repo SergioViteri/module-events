@@ -30,8 +30,33 @@ class Ludoteca
 
     public function aroundMatch(BaseRouter $subject, callable $proceed, RequestInterface $request)
     {
+        // If the request already has a controller set (e.g. it was forwarded
+        // after a NotFoundException from one of our controllers, or a later
+        // router/handler already rewrote it), don't rewrite again — otherwise
+        // we loop forever.
+        if ($request->getControllerName() !== null) {
+            return $proceed($request);
+        }
+
         $configured = $this->helper->getLudotecaRoutePath();
         $pathInfo = trim((string) $request->getPathInfo(), '/');
+
+        $isLudotecaPath = ($pathInfo === 'ludoteca' || strpos($pathInfo, 'ludoteca/') === 0
+            || $pathInfo === $configured || strpos($pathInfo, $configured . '/') === 0);
+
+        // Feature disabled → bypass the noroute handler (Amasty xsearch hijacks
+        // it to redirect to /catalogsearch/result/) and render the CMS 404 page
+        // directly. AJAX hits fall through to the real controllers, which
+        // return a JSON 404 with error=disabled.
+        if ($isLudotecaPath
+            && !$this->helper->isLudotecaEnabled()
+            && !$request->isAjax()
+        ) {
+            $request->setModuleName('cms')
+                ->setControllerName('noroute')
+                ->setActionName('index');
+            return $proceed($request);
+        }
 
         // Literal /ludoteca/... when admin configured a different path → 301 redirect
         if ($configured !== 'ludoteca'

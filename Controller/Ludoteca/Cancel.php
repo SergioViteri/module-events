@@ -10,6 +10,7 @@ namespace Zaca\Events\Controller\Ludoteca;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\View\Result\PageFactory;
 use Psr\Log\LoggerInterface;
 use Zaca\Events\Api\Data\TableBookingInterface;
@@ -43,6 +44,10 @@ class Cancel extends Action
 
     public function execute()
     {
+        if (!$this->helper->isLudotecaEnabled()) {
+            throw new NotFoundException(__('Page not found.'));
+        }
+
         $code = trim((string) $this->getRequest()->getParam('code'));
         if ($code === '') {
             $this->messageManager->addErrorMessage(__('Falta el código de la reserva.'));

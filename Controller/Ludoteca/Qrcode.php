@@ -11,6 +11,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\RawFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\UrlInterface;
 use Psr\Log\LoggerInterface;
 use Zaca\Events\Api\TableBookingRepositoryInterface;
@@ -50,6 +51,10 @@ class Qrcode extends Action
 
     public function execute()
     {
+        if (!$this->helper->isLudotecaEnabled()) {
+            throw new NotFoundException(__('Page not found.'));
+        }
+
         $bookingId = (int) $this->getRequest()->getParam('id');
         if ($bookingId <= 0) {
             return $this->redirectToLanding();

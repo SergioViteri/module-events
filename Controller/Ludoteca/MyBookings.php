@@ -16,6 +16,7 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Zaca\Events\Api\Data\TableBookingInterface;
 use Zaca\Events\Api\TableBookingRepositoryInterface;
+use Zaca\Events\Helper\Data as EventsHelper;
 
 class MyBookings extends Action implements HttpGetActionInterface
 {
@@ -23,24 +24,31 @@ class MyBookings extends Action implements HttpGetActionInterface
     private JsonFactory $jsonFactory;
     private TableBookingRepositoryInterface $bookings;
     private TimezoneInterface $timezone;
+    private EventsHelper $helper;
 
     public function __construct(
         Context $context,
         CustomerSession $customerSession,
         JsonFactory $jsonFactory,
         TableBookingRepositoryInterface $bookings,
-        TimezoneInterface $timezone
+        TimezoneInterface $timezone,
+        EventsHelper $helper
     ) {
         parent::__construct($context);
         $this->customerSession = $customerSession;
         $this->jsonFactory = $jsonFactory;
         $this->bookings = $bookings;
         $this->timezone = $timezone;
+        $this->helper = $helper;
     }
 
     public function execute()
     {
         $result = $this->jsonFactory->create();
+
+        if (!$this->helper->isLudotecaEnabled()) {
+            return $result->setHttpResponseCode(404)->setData(['ok' => false, 'error' => 'disabled']);
+        }
 
         if (!$this->customerSession->isLoggedIn()) {
             return $result->setData(['ok' => true, 'items' => []]);

@@ -8,6 +8,7 @@ namespace Zaca\Events\Controller\Ludoteca;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\Exception\NotFoundException;
 use Zaca\Events\Helper\Data as EventsHelper;
 
 class Redirect extends Action
@@ -22,6 +23,10 @@ class Redirect extends Action
 
     public function execute()
     {
+        if (!$this->helper->isLudotecaEnabled()) {
+            throw new NotFoundException(__('Page not found.'));
+        }
+
         $tail = trim((string) $this->getRequest()->getParam('action_path'), '/');
         $target = $this->helper->getLudotecaPublicUrl($tail);
         $redirect = $this->resultRedirectFactory->create();

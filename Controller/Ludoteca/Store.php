@@ -11,6 +11,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
 use Zaca\Events\Helper\Data as EventsHelper;
@@ -40,8 +41,7 @@ class Store extends Action
     public function execute()
     {
         if (!$this->helper->isLudotecaEnabled()) {
-            $this->getResponse()->setHttpResponseCode(404);
-            return $this->pageFactory->create()->setStatusHeader(404, '1.1', 'Not Found');
+            throw new NotFoundException(__('Page not found.'));
         }
 
         $slug = trim((string) $this->getRequest()->getParam('location_slug'));

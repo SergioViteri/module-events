@@ -7,7 +7,7 @@ namespace Zaca\Events\Controller\Ludoteca;
 
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\View\Result\PageFactory;
 use Zaca\Events\Helper\Data as EventsHelper;
 
@@ -29,14 +29,8 @@ class Index extends Action
     public function execute()
     {
         if (!$this->helper->isLudotecaEnabled()) {
-            return $this->buildNotFound();
+            throw new NotFoundException(__('Page not found.'));
         }
         return $this->pageFactory->create();
-    }
-
-    private function buildNotFound()
-    {
-        $this->getResponse()->setHttpResponseCode(404);
-        return $this->pageFactory->create()->setStatusHeader(404, '1.1', 'Not Found');
     }
 }

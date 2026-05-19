@@ -14,6 +14,7 @@ use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\NotFoundException;
 use Psr\Log\LoggerInterface;
 use Zaca\Events\Api\Data\TableBookingInterface;
 use Zaca\Events\Api\TableBookingRepositoryInterface;
@@ -46,6 +47,10 @@ class CancelMine extends Action implements HttpPostActionInterface
 
     public function execute()
     {
+        if (!$this->helper->isLudotecaEnabled()) {
+            throw new NotFoundException(__('Page not found.'));
+        }
+
         $referer = (string) $this->_redirect->getRefererUrl();
         $back = $referer !== '' ? $referer : $this->_url->getDirectUrl($this->helper->getLudotecaRoutePath());
         $redirect = $this->resultRedirectFactory->create()->setUrl($back);

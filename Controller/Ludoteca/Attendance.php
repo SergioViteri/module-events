@@ -13,6 +13,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
 use Psr\Log\LoggerInterface;
@@ -57,6 +58,10 @@ class Attendance extends Action
 
     public function execute()
     {
+        if (!$this->helper->isLudotecaEnabled()) {
+            throw new NotFoundException(__('Page not found.'));
+        }
+
         $bookingId = (int) $this->getRequest()->getParam('id');
         $code = (string) $this->getRequest()->getParam('code');
 
