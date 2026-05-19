@@ -138,10 +138,7 @@ $hasActiveBooking = $block->hasActiveBooking();
     </section>
 
     <section class="ludoteca-slots-section" id="ludoteca-slots-section" hidden>
-        <h3>
-            <?= $escaper->escapeHtml(__('Elige turno para')) ?>
-            <span id="ludoteca-selected-date"></span>
-        </h3>
+        <h3 id="ludoteca-slots-heading"><?= $escaper->escapeHtml(__('Elige una fecha en el calendario')) ?></h3>
         <div class="ludoteca-slots-grid" id="ludoteca-slots-grid"></div>
     </section>
 
@@ -283,7 +280,9 @@ $hasActiveBooking = $block->hasActiveBooking();
     var elNext = root.querySelector('.ludoteca-cal-next');
     var elSlotsSection = root.querySelector('#ludoteca-slots-section');
     var elSlotsGrid = root.querySelector('#ludoteca-slots-grid');
-    var elSelectedDate = root.querySelector('#ludoteca-selected-date');
+    var elSlotsHeading = root.querySelector('#ludoteca-slots-heading');
+    var slotsHeadingDefault = elSlotsHeading ? elSlotsHeading.textContent : '';
+    var slotsHeadingPrefix = '<?= $escaper->escapeJs(__('Elige turno para')) ?>';
     var elFormSection = root.querySelector('#ludoteca-form-section');
     var elLoginCta = root.querySelector('#ludoteca-login-cta');
     var elForm = root.querySelector('#ludoteca-form');
@@ -356,7 +355,9 @@ $hasActiveBooking = $block->hasActiveBooking();
         ctx.selectedDate = key;
         ctx.selectedSlots = [];
         elDays.querySelectorAll('button[data-date]').forEach(function (b) { b.classList.toggle('selected', b.dataset.date === key); });
-        elSelectedDate.textContent = formatHumanDate(key);
+        if (elSlotsHeading) {
+            elSlotsHeading.textContent = slotsHeadingPrefix + ' ' + formatHumanDate(key);
+        }
         loadSlots();
     }
 
