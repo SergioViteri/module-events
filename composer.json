@@ -2,7 +2,7 @@
     "name": "zaca/events",
     "description": "Zacatrus Events Management Module for Magento 2",
     "type": "magento2-module",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "license": "proprietary",
     "authors": [
         {
@@ -16,7 +16,8 @@
         "magento/module-backend": "*",
         "magento/module-customer": "*",
         "magento/module-store": "*",
-        "endroid/qr-code": "*"
+        "endroid/qr-code": "*",
+        "zaca/box": "*"
     },
     "autoload": {
         "files": [

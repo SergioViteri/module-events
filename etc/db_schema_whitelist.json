@@ -144,6 +144,7 @@
             "country": true,
             "latitude": true,
             "longitude": true,
+            "total_tables": true,
             "is_active": true,
             "created_at": true,
             "updated_at": true
@@ -181,20 +182,24 @@
         "column": {
             "attendance_id": true,
             "registration_id": true,
+            "booking_id": true,
             "location_id": true,
             "attendance_date": true,
             "created_at": true
         },
         "index": {
             "ZACA_EVENTS_ATTENDANCE_REGISTRATION_ID": true,
+            "ZACA_EVENTS_ATTENDANCE_BOOKING_ID": true,
             "ZACA_EVENTS_ATTENDANCE_LOCATION_ID": true,
             "ZACA_EVENTS_ATTENDANCE_ATTENDANCE_DATE": true
         },
         "constraint": {
             "PRIMARY": true,
             "FK_CE168D5BC66DB5867040E71D72B15B7A": true,
+            "FK_842DC3F91A30A257873A4FB47CC72D52": true,
             "FK_44B689E4BBF83FDE1BA48C67F282362F": true,
-            "ZACA_EVENTS_ATTENDANCE_REGISTRATION_ID_ATTENDANCE_DATE": true
+            "ZACA_EVENTS_ATTENDANCE_REGISTRATION_ID_ATTENDANCE_DATE": true,
+            "ZACA_EVENTS_ATTENDANCE_BOOKING_ID_ATTENDANCE_DATE": true
         }
     },
     "zaca_events_attendance_summary": {
@@ -211,6 +216,87 @@
             "PRIMARY": true,
             "ZACA_EVENTS_ATTENDANCE_SUMMARY_CSTR_ID_CSTR_ENTT_ENTT_ID": true,
             "FK_3C21F918FEC5A5712873B77D3C84A8F9": true
+        }
+    },
+    "zaca_events_time_slot": {
+        "column": {
+            "time_slot_id": true,
+            "location_id": true,
+            "day_of_week": true,
+            "start_time": true,
+            "end_time": true,
+            "sort_order": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "ZACA_EVENTS_TIME_SLOT_LOCATION_ID": true,
+            "ZACA_EVENTS_TIME_SLOT_IS_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_40444D74F9C180BC91E25A948B9D4352": true
+        }
+    },
+    "zaca_events_table_booking": {
+        "column": {
+            "booking_id": true,
+            "location_id": true,
+            "customer_id": true,
+            "booking_date": true,
+            "status": true,
+            "phone_number": true,
+            "unsubscribe_code": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "ZACA_EVENTS_TABLE_BOOKING_LOCATION_ID_BOOKING_DATE": true,
+            "ZACA_EVENTS_TABLE_BOOKING_CUSTOMER_ID": true,
+            "ZACA_EVENTS_TABLE_BOOKING_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_19B88FB222EB4DD279E902B6AFBB0B73": true,
+            "ZACA_EVENTS_TABLE_BOOKING_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true,
+            "ZACA_EVENTS_TABLE_BOOKING_UNSUBSCRIBE_CODE": true
+        }
+    },
+    "zaca_events_table_booking_slot": {
+        "column": {
+            "slot_id": true,
+            "booking_id": true,
+            "location_id": true,
+            "booking_date": true,
+            "time_slot_id": true,
+            "tables_count": true,
+            "created_at": true
+        },
+        "index": {
+            "IDX_79BBA64D33AFD0E12D0E8B9DC447F8ED": true,
+            "ZACA_EVENTS_TABLE_BOOKING_SLOT_BOOKING_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_9E4F70C6B9BF867DF05426356CF9D929": true,
+            "FK_D8898D0CB7F3D576E78482CC6322AE6F": true
+        }
+    },
+    "zaca_events_ludoteca_reminder_sent": {
+        "column": {
+            "id": true,
+            "booking_id": true,
+            "reminder_days": true,
+            "sent_at": true
+        },
+        "index": {
+            "ZACA_EVENTS_LUDOTECA_REMINDER_SENT_BOOKING_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_C75257D920D8358DBCC5EB273111E00C": true,
+            "ZACA_EVENTS_LUDOTECA_REMINDER_SENT_BOOKING_ID_REMINDER_DAYS": true
         }
     },
     "zaca_events_reminder_sent": {

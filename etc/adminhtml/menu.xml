@@ -20,6 +20,23 @@
         <add id="Zaca_Events::event_types" title="Event Types" module="Zaca_Events" sortOrder="17" parent="Zaca_Events::events" action="zaca_events/eventtype" resource="Zaca_Events::event_types"/>
         <add id="Zaca_Events::themes" title="Themes" module="Zaca_Events" sortOrder="18" parent="Zaca_Events::events" action="zaca_events/theme" resource="Zaca_Events::themes"/>
         <add id="Zaca_Events::meets" title="Meets" module="Zaca_Events" sortOrder="20" parent="Zaca_Events::events" action="zaca_events/meet" resource="Zaca_Events::meets"/>
+        <add id="Zaca_Events::time_slots" title="Ludoteca Time Slots" module="Zaca_Events" sortOrder="50" parent="Zaca_Events::events" action="zaca_events/ludotecatimeslot" resource="Zaca_Events::time_slots"/>
+        <add id="Zaca_Events::table_bookings" title="Ludoteca Bookings" module="Zaca_Events" sortOrder="60" parent="Zaca_Events::events" action="zaca_events/ludotecabooking" resource="Zaca_Events::table_bookings"/>
+
+        <!-- Link from the shared "Zacatrus" root menu (provided by Zaca_Extra) -->
+        <add id="Zaca_Events::events_zaca"
+             title="Events"
+             module="Zaca_Events"
+             parent="Zaca_Extra::zaca"
+             dependsOnModule="Zaca_Extra"
+             resource="Zaca_Events::events"/>
+        <add id="Zaca_Events::events_zaca_config"
+             title="Configuración"
+             module="Zaca_Events"
+             parent="Zaca_Events::events_zaca"
+             dependsOnModule="Zaca_Extra"
+             action="adminhtml/system_config/edit/section/zaca_events"
+             resource="Zaca_Events::config"/>
     </menu>
 </config>
 

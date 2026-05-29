@@ -13,6 +13,9 @@
         <route id="zaca_events" frontName="events">
             <module name="Zaca_Events"/>
         </route>
+        <route id="zaca_ludoteca" frontName="ludoteca">
+            <module name="Zaca_Events"/>
+        </route>
     </router>
 </config>
 

@@ -1,0 +1,50 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\Ludoteca\AttendanceCheck $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$result = $block->getResult();
+$booking = $block->getBooking();
+$location = $block->getLocation();
+$slots = $block->getSlots();
+?>
+<div class="ludoteca-attendance">
+    <div class="ludoteca-attendance-result <?= $result['ok'] ? 'ok' : 'err' ?>">
+        <h1><?= $escaper->escapeHtml($result['message']) ?></h1>
+    </div>
+
+    <?php if ($booking && $location): ?>
+        <div class="ludoteca-attendance-detail">
+            <p>
+                <strong><?= $escaper->escapeHtml(__('Tienda')) ?>:</strong>
+                <?= $escaper->escapeHtml((string) $location->getName()) ?>
+            </p>
+            <p>
+                <strong><?= $escaper->escapeHtml(__('Día')) ?>:</strong>
+                <?= $escaper->escapeHtml((string) $booking->getBookingDate()) ?>
+            </p>
+            <?php if (!empty($slots)): ?>
+                <p><strong><?= $escaper->escapeHtml(__('Turnos')) ?>:</strong></p>
+                <ul>
+                    <?php foreach ($slots as $slot): ?>
+                        <li>
+                            <?= $escaper->escapeHtml(substr($slot['start_time'], 0, 5)) ?> – <?= $escaper->escapeHtml(substr($slot['end_time'], 0, 5)) ?>
+                            · <?= $escaper->escapeHtml((string) $slot['tables_count']) ?> <?= $escaper->escapeHtml(__('mesa(s)')) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
+<style>
+.ludoteca-attendance { margin: 24px 0; padding: 0; font-family: Arial, Helvetica, sans-serif; text-align: center; }
+.ludoteca-attendance-result { padding: 24px; border-radius: 16px; margin-bottom: 18px; }
+.ludoteca-attendance-result.ok { background: #e7f5e5; color: #24702b; }
+.ludoteca-attendance-result.err { background: #fde7e7; color: #a23434; }
+.ludoteca-attendance-result h1 { margin: 0; font-size: 22px; }
+.ludoteca-attendance-detail { background: #f7f7f7; border-radius: 16px; padding: 18px; text-align: left; }
+.ludoteca-attendance-detail p { margin: 0 0 8px; }
+.ludoteca-attendance-detail ul { margin: 4px 0 0 18px; }
+</style>

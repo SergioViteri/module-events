@@ -13,6 +13,9 @@
         <job name="zaca_events_send_reminders" instance="Zaca\Events\Cron\SendReminders" method="execute">
             <schedule>0 9 * * *</schedule>
         </job>
+        <job name="zaca_events_send_ludoteca_reminders" instance="Zaca\Events\Cron\SendLudotecaReminders" method="execute">
+            <schedule>15 9 * * *</schedule>
+        </job>
     </group>
 </config>
 

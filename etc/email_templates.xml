@@ -15,5 +15,8 @@
     <template id="events_confirmed_to_waitlist" label="Events: Confirmed to Waitlist" file="confirmed_to_waitlist.html" type="html" module="Zaca_Events" area="frontend"/>
     <template id="events_unregistration" label="Events: Unregistration" file="unregistration.html" type="html" module="Zaca_Events" area="frontend"/>
     <template id="events_reminder" label="Events: Reminder" file="reminder.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="ludoteca_booking_confirmed" label="Ludoteca: Booking Confirmed" file="ludoteca_booking_confirmed.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="ludoteca_booking_cancelled" label="Ludoteca: Booking Cancelled" file="ludoteca_booking_cancelled.html" type="html" module="Zaca_Events" area="frontend"/>
+    <template id="ludoteca_booking_reminder" label="Ludoteca: Booking Reminder" file="ludoteca_booking_reminder.html" type="html" module="Zaca_Events" area="frontend"/>
 </config>
 

@@ -1,0 +1,562 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\Ludoteca\StoreReservation $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$location = $block->getLocation();
+if (!$location) {
+    return;
+}
+$locationId = (int) $location->getId();
+$totalTables = (int) $location->getData('total_tables');
+$isLoggedIn = $block->isLoggedIn();
+?>
+<?php
+$isClub = $block->isClubMember();
+$hasActiveBooking = $block->hasActiveBooking();
+?>
+<div class="ludoteca-store"
+     data-location-id="<?= $escaper->escapeHtmlAttr($locationId) ?>"
+     data-total-tables="<?= $escaper->escapeHtmlAttr($totalTables) ?>"
+     data-is-logged-in="<?= $isLoggedIn ? '1' : '0' ?>"
+     data-is-club="<?= $isClub ? '1' : '0' ?>"
+     data-has-active-booking="<?= $hasActiveBooking ? '1' : '0' ?>"
+     data-calendar-url="<?= $escaper->escapeHtmlAttr($block->getCalendarUrl()) ?>"
+     data-slots-url="<?= $escaper->escapeHtmlAttr($block->getSlotsUrl()) ?>"
+     data-reserve-url="<?= $escaper->escapeHtmlAttr($block->getReserveUrl()) ?>"
+     data-login-url="<?= $escaper->escapeHtmlAttr($block->getLoginUrl()) ?>"
+     data-club-signup-url="<?= $escaper->escapeHtmlAttr((string) $block->getClubSignupUrl()) ?>"
+     data-mybookings-url="<?= $escaper->escapeHtmlAttr($block->getMyBookingsUrl()) ?>"
+     data-cancel-mybooking-url="<?= $escaper->escapeHtmlAttr($block->getCancelMyBookingUrl()) ?>">
+
+    <header class="ludoteca-header">
+        <a class="ludoteca-back" href="<?= $escaper->escapeUrl($block->getLandingUrl()) ?>">
+            &larr; <?= $escaper->escapeHtml(__('Ver todas las tiendas')) ?>
+        </a>
+        <h1><?= $escaper->escapeHtml(__('Ludoteca %1', $location->getName())) ?></h1>
+        <?php if ($location->getAddress() || $location->getCity()): ?>
+            <p class="ludoteca-address">
+                <?= $escaper->escapeHtml(trim((string) $location->getAddress() . ' · ' . (string) $location->getCity(), ' ·')) ?>
+            </p>
+        <?php endif; ?>
+        <?php if (!$isLoggedIn): ?>
+            <p class="ludoteca-login-notice">
+                <?= $escaper->escapeHtml(__('Para confirmar una reserva tienes que iniciar sesión.')) ?>
+                <a href="<?= $escaper->escapeUrl($block->getLoginUrl()) ?>"><?= $escaper->escapeHtml(__('Iniciar sesión')) ?></a>
+            </p>
+        <?php elseif ($hasActiveBooking && !$isClub): ?>
+            <p class="ludoteca-login-notice">
+                <?= $escaper->escapeHtml(__('Ya tienes una reserva activa. Cancélala antes de hacer otra, o únete al Club Zacatrus para reservar varios turnos.')) ?>
+                <?php if ($block->getClubSignupUrl()): ?>
+                    <a href="<?= $escaper->escapeUrl($block->getClubSignupUrl()) ?>"><?= $escaper->escapeHtml(__('Hazte del Club')) ?></a>
+                <?php endif; ?>
+            </p>
+        <?php elseif (!$isClub): ?>
+            <p class="ludoteca-login-notice ludoteca-login-notice-info">
+                <?= $escaper->escapeHtml(__('Sólo los socios del Club pueden reservar más de un turno a la vez.')) ?>
+                <?php if ($block->getClubSignupUrl()): ?>
+                    <a href="<?= $escaper->escapeUrl($block->getClubSignupUrl()) ?>"><?= $escaper->escapeHtml(__('Hazte del Club')) ?></a>
+                <?php endif; ?>
+            </p>
+        <?php endif; ?>
+    </header>
+
+    <div id="ludoteca-mybookings-container">
+        <?php
+        $myBookings = $block->getMyActiveBookingsAtLocation();
+        if (!empty($myBookings)):
+            $cancelUrl = $block->getCancelMyBookingUrl();
+            $formKey = $block->getFormKey();
+        ?>
+            <section class="ludoteca-mybookings">
+                <h2 class="ludoteca-mybookings-title"><?= $escaper->escapeHtml(__('Tus próximas reservas en esta tienda')) ?></h2>
+                <ul class="ludoteca-mybookings-list">
+                    <?php foreach ($myBookings as $b): ?>
+                        <li class="ludoteca-mybookings-item">
+                            <div class="ludoteca-mybookings-info">
+                                <div class="ludoteca-mybookings-head">
+                                    <strong><?= $escaper->escapeHtml($block->formatBookingDate($b['booking_date'])) ?></strong>
+                                </div>
+                                <?php if (!empty($b['slots'])): ?>
+                                    <ul class="ludoteca-mybookings-slots">
+                                        <?php foreach ($b['slots'] as $s): ?>
+                                            <li>
+                                                <?= $escaper->escapeHtml(sprintf('%s – %s', $s['start'], $s['end'])) ?>
+                                                · <?= $escaper->escapeHtml(sprintf('%d %s', $s['tables'], __('mesa(s)')->render())) ?>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
+                            <form method="post"
+                                  action="<?= $escaper->escapeUrl($cancelUrl) ?>"
+                                  class="ludoteca-mybookings-cancel-form"
+                                  onsubmit="return confirm(<?= $escaper->escapeJs(json_encode((string) __('¿Cancelar esta reserva?'))) ?>);">
+                                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+                                <input type="hidden" name="booking_id" value="<?= (int) $b['booking_id'] ?>"/>
+                                <button type="submit" class="ludoteca-mybookings-cancel">
+                                    <?= $escaper->escapeHtml(__('Cancelar reserva')) ?>
+                                </button>
+                            </form>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </section>
+        <?php endif; ?>
+    </div>
+
+    <section class="ludoteca-config">
+        <label>
+            <?= $escaper->escapeHtml(__('Mesas que quieres reservar')) ?>
+            <select id="ludoteca-tables-count">
+                <option value="1" selected>1 <?= $escaper->escapeHtml(__('mesa')) ?></option>
+                <option value="2">2 <?= $escaper->escapeHtml(__('mesas')) ?></option>
+            </select>
+        </label>
+        <small><?= $escaper->escapeHtml(__('Hasta 6 personas por mesa.')) ?></small>
+    </section>
+
+    <section class="ludoteca-calendar-section">
+        <div class="ludoteca-calendar-header">
+            <button type="button" class="ludoteca-cal-prev" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes anterior')) ?>">&larr;</button>
+            <h2 class="ludoteca-cal-title">&nbsp;</h2>
+            <button type="button" class="ludoteca-cal-next" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes siguiente')) ?>">&rarr;</button>
+        </div>
+        <div class="ludoteca-cal-weekdays">
+            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+        <div class="ludoteca-cal-days" id="ludoteca-cal-days"></div>
+        <div class="ludoteca-cal-legend">
+            <span class="lg-free">■ <?= $escaper->escapeHtml(__('Libre')) ?></span>
+            <span class="lg-partial">■ <?= $escaper->escapeHtml(__('Pocas plazas')) ?></span>
+            <span class="lg-busy">■ <?= $escaper->escapeHtml(__('Sin disponibilidad')) ?></span>
+            <?php if (!$isClub): ?>
+                <span class="lg-out_of_range">■ <?= $escaper->escapeHtml(__('Sólo para el Club')) ?></span>
+            <?php endif; ?>
+            <span class="lg-not_yet">■ <?= $escaper->escapeHtml(__('No disponible todavía')) ?></span>
+        </div>
+    </section>
+
+    <section class="ludoteca-slots-section" id="ludoteca-slots-section" hidden>
+        <h3 id="ludoteca-slots-heading"><?= $escaper->escapeHtml(__('Elige una fecha en el calendario')) ?></h3>
+        <div class="ludoteca-slots-grid" id="ludoteca-slots-grid"></div>
+    </section>
+
+    <?php if ($isLoggedIn): ?>
+        <section class="ludoteca-form-section" id="ludoteca-form-section" hidden>
+            <form id="ludoteca-form">
+                <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>">
+                <label>
+                    <?= $escaper->escapeHtml(__('Teléfono de contacto')) ?>
+                    <input type="tel" id="ludoteca-phone" name="phone_number"
+                           value="<?= $escaper->escapeHtmlAttr($block->getCustomerPhone()) ?>" required>
+                </label>
+                <button type="submit" id="ludoteca-submit" class="ludoteca-submit" disabled>
+                    <?= $escaper->escapeHtml(__('Confirmar reserva')) ?>
+                </button>
+                <p class="ludoteca-submit-hint" id="ludoteca-submit-hint">
+                    <?= $escaper->escapeHtml(__('Elige un turno arriba para continuar.')) ?>
+                </p>
+                <p class="ludoteca-form-msg" id="ludoteca-form-msg"></p>
+            </form>
+        </section>
+    <?php else: ?>
+        <section class="ludoteca-login-cta" id="ludoteca-login-cta" hidden>
+            <p><?= $escaper->escapeHtml(__('Para confirmar una reserva necesitas tener cuenta y haber iniciado sesión.')) ?></p>
+            <a class="ludoteca-action ludoteca-action-primary" href="<?= $escaper->escapeUrl($block->getLoginUrl()) ?>">
+                <?= $escaper->escapeHtml(__('Iniciar sesión o registrarte')) ?>
+            </a>
+        </section>
+    <?php endif; ?>
+</div>
+
+<style>
+.ludoteca-store { margin: 24px 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: #111; }
+.ludoteca-back { display: inline-block; margin-bottom: 8px; color: #5b5b5b; font-size: 13px; text-decoration: none; }
+.ludoteca-back:hover { color: #0074bd; text-decoration: underline; }
+.ludoteca-header h1 { margin: 0 0 4px; font-size: 26px; }
+.ludoteca-address { color: #666; font-size: 13px; margin: 0 0 8px; }
+.ludoteca-login-notice { background: #fff5e4; padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+.ludoteca-login-notice a { color: #0074bd; }
+.ludoteca-config { margin: 18px 0; }
+.ludoteca-config label { display: block; font-weight: 700; margin-bottom: 4px; }
+.ludoteca-config select { padding: 6px 10px; border: 1px solid #d7d7d7; border-radius: 999px; }
+.ludoteca-config small { display: block; color: #666; margin-top: 4px; }
+.ludoteca-calendar-section { padding: 14px; border: 1px solid #e3e3e3; border-radius: 16px; background: #fafafa; }
+.ludoteca-calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ludoteca-cal-title { font-size: 16px; margin: 0; text-transform: capitalize; }
+.ludoteca-calendar-header button { border: 1px solid #111; background: #fff; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.ludoteca-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 11px; color: #666; text-align: center; margin-bottom: 4px; }
+.ludoteca-cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.ludoteca-cal-days button { padding: 0; height: 36px; border-radius: 8px; border: 1px solid #eee; font-size: 12px; font-weight: 700; cursor: pointer; }
+.ludoteca-cal-days .empty { background: transparent; border: 0; cursor: default; }
+.ludoteca-cal-days .past { background: #ececec; color: #888; cursor: not-allowed; }
+.ludoteca-cal-days .out_of_range { background: #ddd2f2; color: #5b3aa2; cursor: pointer; }
+.ludoteca-cal-days .not_yet { background: #f0f0f5; color: #8a8a9a; cursor: not-allowed; }
+.ludoteca-cal-days .free { background: #e7f5e5; color: #24702b; }
+.ludoteca-cal-days .partial { background: #fff2d9; color: #9a6200; }
+.ludoteca-cal-days .busy { background: #fde7e7; color: #a23434; cursor: not-allowed; }
+.ludoteca-cal-days .closed { background: #f0f0f0; color: #999; cursor: not-allowed; }
+.ludoteca-cal-days .selected { outline: 3px solid #0074bd; outline-offset: 1px; }
+.ludoteca-cal-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; margin-top: 10px; color: #555; }
+.ludoteca-cal-legend .lg-free { color: #24702b; }
+.ludoteca-cal-legend .lg-partial { color: #9a6200; }
+.ludoteca-cal-legend .lg-busy { color: #a23434; }
+.ludoteca-cal-legend .lg-out_of_range { color: #5b3aa2; }
+.ludoteca-cal-legend .lg-not_yet { color: #8a8a9a; }
+.ludoteca-cal-legend .lg-past { color: #888; }
+.ludoteca-slots-section, .ludoteca-form-section { margin-top: 18px; padding: 14px; border: 1px solid #e3e3e3; border-radius: 16px; }
+.ludoteca-slots-section h3 { margin: 0 0 14px; }
+.ludoteca-slots-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.ludoteca-slots-grid button { padding: 12px; border-radius: 12px; border: 1px solid #eee; font-weight: 700; cursor: pointer; }
+.ludoteca-slots-grid .free { background: #e7f5e5; color: #24702b; }
+.ludoteca-slots-grid .partial { background: #fff2d9; color: #9a6200; }
+.ludoteca-slots-grid .busy { background: #fde7e7; color: #a23434; cursor: not-allowed; }
+.ludoteca-slots-grid .mine { background: #eef6fc; color: #0074bd; cursor: default; border-color: #0074bd; }
+.ludoteca-slots-grid .selected { outline: 3px solid #0074bd; outline-offset: 1px; }
+.ludoteca-form-section label { display: block; margin-bottom: 12px; font-weight: 700; }
+.ludoteca-form-section input { width: 100%; padding: 8px 12px; border: 1px solid #d7d7d7; border-radius: 8px; box-sizing: border-box; }
+.ludoteca-submit { background: #0074bd; color: #fff; border: 0; padding: 12px 18px; border-radius: 999px; font-weight: 700; cursor: pointer; }
+.ludoteca-submit:disabled { opacity: .5; cursor: not-allowed; }
+.ludoteca-submit-hint { margin: 8px 0 0; font-size: 12px; color: #5b5b5b; }
+.ludoteca-form-msg { margin-top: 10px; font-size: 13px; min-height: 18px; }
+.ludoteca-form-msg.ok { color: #24702b; }
+.ludoteca-form-msg.err { color: #a23434; }
+.ludoteca-login-cta { margin-top: 18px; padding: 18px; border: 1px solid #e3e3e3; border-radius: 16px; background: #fff5e4; text-align: center; }
+.ludoteca-login-cta p { margin: 0 0 12px; font-size: 14px; color: #7a4a00; }
+.ludoteca-login-cta .ludoteca-action { display: inline-block; padding: 10px 18px; border-radius: 999px; background: #0074bd; color: #fff; font-weight: 700; text-decoration: none; }
+.ludoteca-login-cta .ludoteca-action:hover { background: #005f9d; text-decoration: none; }
+@media (max-width: 540px) { .ludoteca-slots-grid { grid-template-columns: 1fr; } }
+
+.ludoteca-mybookings { margin-bottom: 20px; padding: 16px 18px; border: 1px solid #d0e6f4; border-radius: 14px; background: #f4faff; }
+.ludoteca-mybookings-title { margin: 0 0 10px; font-size: 16px; color: #00477a; }
+.ludoteca-mybookings-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ludoteca-mybookings-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 10px 12px; background: #fff; border: 1px solid #e3e3e3; border-radius: 10px; }
+.ludoteca-mybookings-info { flex: 1; min-width: 0; }
+.ludoteca-mybookings-head { font-size: 14px; margin-bottom: 2px; }
+.ludoteca-mybookings-slots { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; color: #444; }
+.ludoteca-mybookings-slots li { padding: 2px 0; }
+.ludoteca-mybookings-cancel-form { margin: 0; flex-shrink: 0; }
+.ludoteca-mybookings-cancel { padding: 7px 12px; border-radius: 999px; border: 1px solid #c0392b; background: #fff; color: #c0392b; font-weight: 700; font-size: 12px; cursor: pointer; transition: background .18s ease, color .18s ease; }
+.ludoteca-mybookings-cancel:hover, .ludoteca-mybookings-cancel:focus { background: #c0392b; color: #fff; }
+@media (max-width: 540px) {
+    .ludoteca-mybookings-item { flex-direction: column; align-items: stretch; }
+    .ludoteca-mybookings-cancel { width: 100%; }
+}
+</style>
+
+<script>
+(function () {
+    var root = document.querySelector('.ludoteca-store');
+    if (!root) { return; }
+    var ctx = {
+        locationId: parseInt(root.dataset.locationId, 10),
+        totalTables: parseInt(root.dataset.totalTables, 10),
+        loggedIn: root.dataset.isLoggedIn === '1',
+        isClub: root.dataset.isClub === '1',
+        hasActiveBooking: root.dataset.hasActiveBooking === '1',
+        urls: {
+            calendar: root.dataset.calendarUrl,
+            slots: root.dataset.slotsUrl,
+            reserve: root.dataset.reserveUrl,
+            login: root.dataset.loginUrl,
+            clubSignup: root.dataset.clubSignupUrl,
+            myBookings: root.dataset.mybookingsUrl,
+            cancelMyBooking: root.dataset.cancelMybookingUrl
+        },
+        viewYear: 0,
+        viewMonth: 0,
+        selectedDate: null,
+        selectedSlots: [],
+        slotsAvailable: []
+    };
+    // Non-club customers can only reserve one slot per booking.
+    var singleSlotOnly = ctx.loggedIn && !ctx.isClub;
+    var monthNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+    var elTitle = root.querySelector('.ludoteca-cal-title');
+    var elDays = root.querySelector('#ludoteca-cal-days');
+    var elPrev = root.querySelector('.ludoteca-cal-prev');
+    var elNext = root.querySelector('.ludoteca-cal-next');
+    var elSlotsSection = root.querySelector('#ludoteca-slots-section');
+    var elSlotsGrid = root.querySelector('#ludoteca-slots-grid');
+    var elSlotsHeading = root.querySelector('#ludoteca-slots-heading');
+    var slotsHeadingDefault = elSlotsHeading ? elSlotsHeading.textContent : '';
+    var slotsHeadingPrefix = '<?= $escaper->escapeJs(__('Elige turno para')) ?>';
+    var elFormSection = root.querySelector('#ludoteca-form-section');
+    var elLoginCta = root.querySelector('#ludoteca-login-cta');
+    var elForm = root.querySelector('#ludoteca-form');
+    var elMsg = elForm ? elForm.querySelector('#ludoteca-form-msg') : null;
+    var elSubmit = root.querySelector('#ludoteca-submit');
+    var elSubmitHint = root.querySelector('#ludoteca-submit-hint');
+    var elTableCount = root.querySelector('#ludoteca-tables-count');
+
+    function setMsg(text, kind) {
+        if (!elMsg) { return; }
+        elMsg.textContent = text || '';
+        elMsg.className = 'ludoteca-form-msg' + (kind ? ' ' + kind : '');
+    }
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    ctx.viewYear = today.getFullYear();
+    ctx.viewMonth = today.getMonth() + 1;
+
+    function loadMonth() {
+        var url = ctx.urls.calendar + '?location_id=' + ctx.locationId + '&year=' + ctx.viewYear + '&month=' + ctx.viewMonth;
+        fetch(url, { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.ok) { elDays.innerHTML = ''; return; }
+                renderMonth(data.days || {});
+            })
+            .catch(function () { elDays.innerHTML = ''; });
+    }
+
+    function renderMonth(days) {
+        elTitle.textContent = monthNames[ctx.viewMonth - 1] + ' ' + ctx.viewYear;
+        var first = new Date(ctx.viewYear, ctx.viewMonth - 1, 1);
+        var dow = first.getDay();
+        var leading = dow === 0 ? 6 : dow - 1;
+        var lastDay = new Date(ctx.viewYear, ctx.viewMonth, 0).getDate();
+        var html = '';
+        for (var i = 0; i < leading; i++) {
+            html += '<button class="empty" type="button" disabled aria-hidden="true"></button>';
+        }
+        for (var d = 1; d <= lastDay; d++) {
+            var key = ctx.viewYear + '-' + pad(ctx.viewMonth) + '-' + pad(d);
+            var state = days[key] || 'closed';
+            var disabled = (state === 'past' || state === 'busy' || state === 'closed' || state === 'not_yet') ? 'disabled' : '';
+            var sel = (ctx.selectedDate === key) ? ' selected' : '';
+            html += '<button type="button" class="' + state + sel + '" data-date="' + key + '" data-state="' + state + '" ' + disabled + '>' + d + '</button>';
+        }
+        elDays.innerHTML = html;
+        elDays.querySelectorAll('button[data-date]').forEach(function (btn) {
+            btn.addEventListener('click', function () { onDayClick(btn); });
+        });
+    }
+
+    function onDayClick(btn) {
+        var state = btn.dataset.state;
+        var key = btn.dataset.date;
+        if (state === 'out_of_range') {
+            if (!ctx.loggedIn) {
+                window.location.href = ctx.urls.login;
+                return;
+            }
+            if (ctx.urls.clubSignup) {
+                window.location.href = ctx.urls.clubSignup;
+            } else {
+                setMsg('<?= $escaper->escapeJs(__('Esta fecha sólo está disponible para socios del Club Zacatrus.')) ?>', 'err');
+            }
+            return;
+        }
+        if (state === 'past' || state === 'busy' || state === 'closed' || state === 'not_yet') { return; }
+        ctx.selectedDate = key;
+        ctx.selectedSlots = [];
+        elDays.querySelectorAll('button[data-date]').forEach(function (b) { b.classList.toggle('selected', b.dataset.date === key); });
+        if (elSlotsHeading) {
+            elSlotsHeading.textContent = slotsHeadingPrefix + ' ' + formatHumanDate(key);
+        }
+        loadSlots();
+    }
+
+    function loadSlots() {
+        elSlotsSection.hidden = false;
+        elSlotsGrid.innerHTML = '<p>...</p>';
+        updateFormVisibility();
+        var url = ctx.urls.slots + '?location_id=' + ctx.locationId + '&date=' + ctx.selectedDate;
+        fetch(url, { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.ok) { elSlotsGrid.innerHTML = '<p><?= $escaper->escapeJs(__('No se pudo cargar la disponibilidad.')) ?></p>'; return; }
+                ctx.slotsAvailable = data.slots || [];
+                renderSlots();
+            })
+            .catch(function () { elSlotsGrid.innerHTML = '<p><?= $escaper->escapeJs(__('Error de red.')) ?></p>'; });
+    }
+
+    function renderSlots() {
+        if (!ctx.slotsAvailable.length) {
+            elSlotsGrid.innerHTML = '<p><?= $escaper->escapeJs(__('No hay turnos disponibles este día.')) ?></p>';
+            updateFormVisibility();
+            return;
+        }
+        var requested = parseInt(elTableCount.value, 10);
+        var html = '';
+        ctx.slotsAvailable.forEach(function (slot) {
+            var state, label, disabled;
+            if (slot.is_mine) {
+                state = 'mine';
+                disabled = 'disabled';
+                label = '<?= $escaper->escapeJs(__('Reservado por ti')) ?> (' + slot.mine_tables + ')';
+            } else if (slot.free_tables < requested) {
+                state = 'busy';
+                disabled = 'disabled';
+                label = slot.free_tables + '/' + slot.total_tables + ' <?= $escaper->escapeJs(__('mesas libres')) ?>';
+            } else {
+                state = slot.state;
+                disabled = '';
+                label = slot.free_tables + '/' + slot.total_tables + ' <?= $escaper->escapeJs(__('mesas libres')) ?>';
+            }
+            var sel = ctx.selectedSlots.indexOf(slot.time_slot_id) >= 0 ? ' selected' : '';
+            html += '<button type="button" class="' + state + sel + '" data-id="' + slot.time_slot_id + '" ' + disabled + '>'
+                  + formatTime(slot.start_time) + ' – ' + formatTime(slot.end_time)
+                  + '<br><small>' + label + '</small>'
+                  + '</button>';
+        });
+        elSlotsGrid.innerHTML = html;
+        elSlotsGrid.querySelectorAll('button[data-id]').forEach(function (btn) {
+            btn.addEventListener('click', function () { onSlotClick(btn); });
+        });
+        updateFormVisibility();
+    }
+
+    function onSlotClick(btn) {
+        var id = parseInt(btn.dataset.id, 10);
+        var idx = ctx.selectedSlots.indexOf(id);
+        if (idx >= 0) {
+            ctx.selectedSlots.splice(idx, 1);
+        } else if (singleSlotOnly) {
+            // Replace any previously selected slot — non-club allowed only one.
+            ctx.selectedSlots = [id];
+        } else {
+            ctx.selectedSlots.push(id);
+        }
+        renderSlots();
+    }
+
+    function updateFormVisibility() {
+        var dayPicked = !!ctx.selectedDate;
+        var slotPicked = ctx.selectedSlots.length > 0;
+        if (elFormSection) { elFormSection.hidden = !dayPicked; }
+        if (elLoginCta) { elLoginCta.hidden = !dayPicked; }
+        if (elSubmit) { elSubmit.disabled = !slotPicked; }
+        if (elSubmitHint) { elSubmitHint.hidden = slotPicked; }
+    }
+
+    if (elForm) elForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        setMsg('');
+        if (!ctx.loggedIn) {
+            window.location.href = ctx.urls.login;
+            return;
+        }
+        if (!ctx.selectedDate || !ctx.selectedSlots.length) { return; }
+        var requested = parseInt(elTableCount.value, 10);
+        var slots = ctx.selectedSlots.map(function (id) {
+            return { time_slot_id: id, tables_count: requested };
+        });
+        var fd = new FormData();
+        fd.append('form_key', root.querySelector('input[name="form_key"]').value);
+        fd.append('location_id', ctx.locationId);
+        fd.append('booking_date', ctx.selectedDate);
+        fd.append('phone_number', root.querySelector('#ludoteca-phone').value);
+        slots.forEach(function (s, idx) {
+            Object.keys(s).forEach(function (k) { fd.append('slots[' + idx + '][' + k + ']', s[k]); });
+        });
+
+        var btn = elForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        fetch(ctx.urls.reserve, { method: 'POST', body: fd, credentials: 'same-origin' })
+            .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+            .then(function (res) {
+                btn.disabled = false;
+                if (res.body && res.body.ok) {
+                    setMsg(res.body.message || '<?= $escaper->escapeJs(__('Reserva confirmada.')) ?>', 'ok');
+                    ctx.selectedSlots = [];
+                    loadMonth();
+                    loadSlots();
+                    refreshMyBookings();
+                } else if (res.body && res.body.error === 'login_required') {
+                    window.location.href = res.body.login_url || ctx.urls.login;
+                } else {
+                    setMsg((res.body && res.body.message) ? res.body.message : '<?= $escaper->escapeJs(__('No se pudo confirmar la reserva.')) ?>', 'err');
+                }
+            })
+            .catch(function () {
+                btn.disabled = false;
+                setMsg('<?= $escaper->escapeJs(__('Error de red.')) ?>', 'err');
+            });
+    });
+
+    elPrev.addEventListener('click', function () {
+        ctx.viewMonth--;
+        if (ctx.viewMonth < 1) { ctx.viewMonth = 12; ctx.viewYear--; }
+        loadMonth();
+    });
+    elNext.addEventListener('click', function () {
+        ctx.viewMonth++;
+        if (ctx.viewMonth > 12) { ctx.viewMonth = 1; ctx.viewYear++; }
+        loadMonth();
+    });
+    elTableCount.addEventListener('change', function () {
+        ctx.selectedSlots = [];
+        if (ctx.selectedDate) { renderSlots(); }
+    });
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function formatTime(t) { return (t || '').substring(0, 5); }
+    function formatHumanDate(key) {
+        var parts = key.split('-');
+        return parts[2] + ' de ' + monthNames[parseInt(parts[1], 10) - 1] + ' de ' + parts[0];
+    }
+
+    var I18N = {
+        title: '<?= $escaper->escapeJs(__('Tus próximas reservas en esta tienda')) ?>',
+        cancel: '<?= $escaper->escapeJs(__('Cancelar reserva')) ?>',
+        confirmCancel: '<?= $escaper->escapeJs(__('¿Cancelar esta reserva?')) ?>',
+        tables: '<?= $escaper->escapeJs(__('mesa(s)')) ?>'
+    };
+    function escHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function refreshMyBookings() {
+        if (!ctx.urls.myBookings || !ctx.loggedIn) { return; }
+        var url = ctx.urls.myBookings + (ctx.urls.myBookings.indexOf('?') === -1 ? '?' : '&')
+            + 'location_id=' + ctx.locationId;
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { renderMyBookings(data && data.items ? data.items : []); })
+            .catch(function () {});
+    }
+    function renderMyBookings(items) {
+        var container = document.getElementById('ludoteca-mybookings-container');
+        if (!container) { return; }
+        if (!items.length) { container.innerHTML = ''; return; }
+        var formKey = (root.querySelector('input[name="form_key"]') || {}).value || '';
+        var html = '<section class="ludoteca-mybookings">'
+            + '<h2 class="ludoteca-mybookings-title">' + escHtml(I18N.title) + '</h2>'
+            + '<ul class="ludoteca-mybookings-list">';
+        items.forEach(function (b) {
+            html += '<li class="ludoteca-mybookings-item">'
+                + '<div class="ludoteca-mybookings-info">'
+                + '<div class="ludoteca-mybookings-head"><strong>' + escHtml(b.booking_date_human) + '</strong></div>';
+            if (b.slots && b.slots.length) {
+                html += '<ul class="ludoteca-mybookings-slots">';
+                b.slots.forEach(function (s) {
+                    html += '<li>' + escHtml(s.start) + ' – ' + escHtml(s.end)
+                        + ' · ' + s.tables + ' ' + escHtml(I18N.tables)
+                        + '</li>';
+                });
+                html += '</ul>';
+            }
+            html += '</div>'
+                + '<form method="post" action="' + escHtml(ctx.urls.cancelMyBooking) + '" '
+                + 'class="ludoteca-mybookings-cancel-form" '
+                + 'onsubmit="return confirm(' + JSON.stringify(I18N.confirmCancel).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + ');">'
+                + '<input type="hidden" name="form_key" value="' + escHtml(formKey) + '"/>'
+                + '<input type="hidden" name="booking_id" value="' + parseInt(b.booking_id, 10) + '"/>'
+                + '<button type="submit" class="ludoteca-mybookings-cancel">' + escHtml(I18N.cancel) + '</button>'
+                + '</form>'
+                + '</li>';
+        });
+        html += '</ul></section>';
+        container.innerHTML = html;
+    }
+
+    loadMonth();
+})();
+</script>

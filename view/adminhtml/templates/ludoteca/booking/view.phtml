@@ -1,0 +1,62 @@
+<?php
+/**
+ * @var \Zaca\Events\Block\Adminhtml\LudotecaBooking\View $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$booking = $block->getBooking();
+if (!$booking) {
+    return;
+}
+$slots = $block->getSlots();
+?>
+<div class="admin__page-section">
+    <h2><?= $escaper->escapeHtml(__('Booking #%1', $booking->getBookingId())) ?></h2>
+    <table class="admin__table-secondary">
+        <tr><th><?= $escaper->escapeHtml(__('Status')) ?>:</th>
+            <td><?= $escaper->escapeHtml($booking->getStatus()) ?></td></tr>
+        <tr><th><?= $escaper->escapeHtml(__('Store')) ?>:</th>
+            <td><?= $escaper->escapeHtml($block->getLocationName()) ?></td></tr>
+        <tr><th><?= $escaper->escapeHtml(__('Date')) ?>:</th>
+            <td><?= $escaper->escapeHtml($booking->getBookingDate()) ?></td></tr>
+        <tr><th><?= $escaper->escapeHtml(__('Customer')) ?>:</th>
+            <td><?= $escaper->escapeHtml($block->getCustomerLine()) ?></td></tr>
+        <tr><th><?= $escaper->escapeHtml(__('Phone')) ?>:</th>
+            <td><?= $escaper->escapeHtml($booking->getPhoneNumber()) ?></td></tr>
+        <tr><th><?= $escaper->escapeHtml(__('Created')) ?>:</th>
+            <td><?= $escaper->escapeHtml((string) $booking->getCreatedAt()) ?></td></tr>
+    </table>
+
+    <h3><?= $escaper->escapeHtml(__('Slots')) ?></h3>
+    <?php if (empty($slots)): ?>
+        <p><?= $escaper->escapeHtml(__('No slots recorded for this booking.')) ?></p>
+    <?php else: ?>
+        <table class="admin__table-secondary">
+            <thead>
+                <tr>
+                    <th><?= $escaper->escapeHtml(__('Start')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('End')) ?></th>
+                    <th><?= $escaper->escapeHtml(__('Tables')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($slots as $slot): ?>
+                    <tr>
+                        <td><?= $escaper->escapeHtml($slot['start_time']) ?></td>
+                        <td><?= $escaper->escapeHtml($slot['end_time']) ?></td>
+                        <td><?= $escaper->escapeHtml((string) $slot['tables_count']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+
+    <div class="admin__field" style="margin-top:18px;">
+        <a class="action-default" href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>"><?= $escaper->escapeHtml(__('Back')) ?></a>
+        <?php if ($booking->getStatus() !== \Zaca\Events\Api\Data\TableBookingInterface::STATUS_CANCELLED): ?>
+            <a class="action-default action-secondary" href="<?= $escaper->escapeUrl($block->getCancelUrl()) ?>"
+               onclick="return confirm('<?= $escaper->escapeJs(__('Cancel this booking?')) ?>');">
+                <?= $escaper->escapeHtml(__('Cancel booking')) ?>
+            </a>
+        <?php endif; ?>
+    </div>
+</div>

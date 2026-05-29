@@ -9,10 +9,12 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Zaca_Events" setup_version="1.0.0">
+    <module name="Zaca_Events" setup_version="1.1.0">
         <sequence>
             <module name="Magento_Customer"/>
             <module name="Magento_Store"/>
+            <module name="Zaca_Box"/>
+            <module name="Zaca_Extra"/>
         </sequence>
     </module>
 </config>
