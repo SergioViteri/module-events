@@ -16,8 +16,10 @@
         "magento/module-backend": "*",
         "magento/module-customer": "*",
         "magento/module-store": "*",
-        "endroid/qr-code": "*",
-        "zaca/box": "*"
+        "endroid/qr-code": "*"
+    },
+    "suggest": {
+        "zaca/box": "Enables Ludoteca Club-member perks (advance booking window). Optional; Zaca_Events degrades gracefully without it."
     },
     "autoload": {
         "files": [

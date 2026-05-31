@@ -11,19 +11,54 @@ namespace Zaca\Events\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
-use Zaca\Box\Helper\Club as ClubHelper;
 
 class Data extends AbstractHelper
 {
-    private ClubHelper $clubHelper;
+    /**
+     * FQCN of the optional Club helper shipped by Zaca_Box.
+     *
+     * Resolved lazily and guarded by class_exists() so Zaca_Events can be
+     * deployed without Zaca_Box's Club support (e.g. while Club is not yet
+     * ready for production). ::class does not autoload, so referencing it here
+     * is safe even when the class is absent.
+     */
+    private const CLUB_HELPER_CLASS = \Zaca\Box\Helper\Club::class;
+
+    private ObjectManagerInterface $objectManager;
+
+    /**
+     * Cached Club helper instance.
+     *
+     * false = not resolved yet, null = unavailable (Zaca_Box Club missing).
+     *
+     * @var object|null|false
+     */
+    private $clubHelper = false;
 
     public function __construct(
         Context $context,
-        ClubHelper $clubHelper
+        ObjectManagerInterface $objectManager
     ) {
+        $this->objectManager = $objectManager;
         parent::__construct($context);
-        $this->clubHelper = $clubHelper;
+    }
+
+    /**
+     * Lazily resolve the optional Zaca_Box Club helper.
+     *
+     * @return object|null Club helper, or null when Zaca_Box Club is not installed.
+     */
+    private function getClubHelper()
+    {
+        if ($this->clubHelper === false) {
+            $this->clubHelper = class_exists(self::CLUB_HELPER_CLASS)
+                ? $this->objectManager->get(self::CLUB_HELPER_CLASS)
+                : null;
+        }
+
+        return $this->clubHelper;
     }
 
     /**
@@ -150,7 +185,13 @@ class Data extends AbstractHelper
 
     public function isClubMember(?int $customerId): bool
     {
-        return $customerId !== null && $this->clubHelper->isCustomerClub($customerId);
+        if ($customerId === null) {
+            return false;
+        }
+
+        $club = $this->getClubHelper();
+
+        return $club !== null && $club->isCustomerClub($customerId);
     }
 
     /**
