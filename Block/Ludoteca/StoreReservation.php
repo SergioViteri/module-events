@@ -105,6 +105,15 @@ class StoreReservation extends Template
     }
 
     /**
+     * True when the optional Club feature is available in this install.
+     * Drives whether Club-specific notices/upsells are rendered at all.
+     */
+    public function isClubAvailable(): bool
+    {
+        return $this->helper->isClubFeatureAvailable();
+    }
+
+    /**
      * True when the logged-in customer already has a confirmed booking with a
      * future (or today's) date. Used to inform non-Club users that they cannot
      * create a second reservation until they cancel the existing one.

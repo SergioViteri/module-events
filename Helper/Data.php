@@ -195,6 +195,23 @@ class Data extends AbstractHelper
     }
 
     /**
+     * Whether the optional Zaca_Box Club feature is active in this install.
+     *
+     * False both when main is deployed without Club support (helper class
+     * absent) and when Club is installed but disabled via `box/club/enabled`.
+     * Callers should hide Club-specific messaging/upsells in that case.
+     */
+    public function isClubFeatureAvailable(): bool
+    {
+        $club = $this->getClubHelper();
+        if ($club === null) {
+            return false;
+        }
+
+        return !method_exists($club, 'isEnabled') || $club->isEnabled();
+    }
+
+    /**
      * Days-before-booking that the reminder cron should target.
      *
      * @return int[]

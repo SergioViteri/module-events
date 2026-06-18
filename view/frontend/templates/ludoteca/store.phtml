@@ -39,6 +39,7 @@ $hasActiveBooking = $block->hasActiveBooking();
                 <?= $escaper->escapeHtml(trim((string) $location->getAddress() . ' · ' . (string) $location->getCity(), ' ·')) ?>
             </p>
         <?php endif; ?>
+        <?php $clubAvailable = $block->isClubAvailable(); ?>
         <?php if (!$isLoggedIn): ?>
             <p class="ludoteca-login-notice">
                 <?= $escaper->escapeHtml(__('Para confirmar una reserva tienes que iniciar sesión.')) ?>
@@ -46,12 +47,16 @@ $hasActiveBooking = $block->hasActiveBooking();
             </p>
         <?php elseif ($hasActiveBooking && !$isClub): ?>
             <p class="ludoteca-login-notice">
-                <?= $escaper->escapeHtml(__('Ya tienes una reserva activa. Cancélala antes de hacer otra, o únete al Club Zacatrus para reservar varios turnos.')) ?>
-                <?php if ($block->getClubSignupUrl()): ?>
-                    <a href="<?= $escaper->escapeUrl($block->getClubSignupUrl()) ?>"><?= $escaper->escapeHtml(__('Hazte del Club')) ?></a>
+                <?php if ($clubAvailable): ?>
+                    <?= $escaper->escapeHtml(__('Ya tienes una reserva activa. Cancélala antes de hacer otra, o únete al Club Zacatrus para reservar varios turnos.')) ?>
+                    <?php if ($block->getClubSignupUrl()): ?>
+                        <a href="<?= $escaper->escapeUrl($block->getClubSignupUrl()) ?>"><?= $escaper->escapeHtml(__('Hazte del Club')) ?></a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml(__('Ya tienes una reserva activa. Cancélala antes de hacer otra.')) ?>
                 <?php endif; ?>
             </p>
-        <?php elseif (!$isClub): ?>
+        <?php elseif ($clubAvailable && !$isClub): ?>
             <p class="ludoteca-login-notice ludoteca-login-notice-info">
                 <?= $escaper->escapeHtml(__('Sólo los socios del Club pueden reservar más de un turno a la vez.')) ?>
                 <?php if ($block->getClubSignupUrl()): ?>
@@ -130,7 +135,7 @@ $hasActiveBooking = $block->hasActiveBooking();
             <span class="lg-free">■ <?= $escaper->escapeHtml(__('Libre')) ?></span>
             <span class="lg-partial">■ <?= $escaper->escapeHtml(__('Pocas plazas')) ?></span>
             <span class="lg-busy">■ <?= $escaper->escapeHtml(__('Sin disponibilidad')) ?></span>
-            <?php if (!$isClub): ?>
+            <?php if ($clubAvailable && !$isClub): ?>
                 <span class="lg-out_of_range">■ <?= $escaper->escapeHtml(__('Sólo para el Club')) ?></span>
             <?php endif; ?>
             <span class="lg-not_yet">■ <?= $escaper->escapeHtml(__('No disponible todavía')) ?></span>

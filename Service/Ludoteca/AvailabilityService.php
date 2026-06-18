@@ -44,7 +44,12 @@ class AvailabilityService
     {
         $today = new \DateTimeImmutable('today');
         $maxAdvanceUser = $this->helper->getMaxAdvanceDays($customerId);
-        $maxAdvanceClub = $this->helper->getClubMaxAdvanceDays();
+        // Without the Club feature there is no premium horizon: collapse the
+        // Club window onto the user's so days beyond it render as 'not_yet'
+        // (grey) instead of 'out_of_range' (purple "Sólo para el Club").
+        $maxAdvanceClub = $this->helper->isClubFeatureAvailable()
+            ? $this->helper->getClubMaxAdvanceDays()
+            : $maxAdvanceUser;
         $userBookableDate = $today->modify('+' . max(0, $maxAdvanceUser - 1) . ' days');
         $clubBookableDate = $today->modify('+' . max(0, $maxAdvanceClub - 1) . ' days');
 
