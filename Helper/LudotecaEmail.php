@@ -97,7 +97,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $this->buildQrDataUri($bookingId, $location),
+                'qr_code_url' => $this->buildQrImageUrl($bookingId),
                 'cancel_url' => $cancelUrl,
             ];
 
@@ -152,7 +152,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $this->buildQrDataUri($bookingId, $location),
+                'qr_code_url' => $this->buildQrImageUrl($bookingId),
                 'cancel_url' => $cancelUrl,
                 'days_before' => $daysBefore,
             ];
@@ -228,26 +228,17 @@ class LudotecaEmail extends AbstractHelper
     }
 
     /**
-     * Build a data URI (base64 PNG) with the attendance QR for the booking.
+     * Build the public URL of the attendance QR image for the booking.
      *
-     * Inlined instead of served from a URL because the QR endpoint must be reachable
-     * by the recipient's mail client to render — which fails in dev (local hostname)
-     * and triggers spam filters that flag <img src> pointing to non-resolvable hosts.
+     * Served from the `qrcode` controller (Controller/Ludoteca/Qrcode.php) rather
+     * than inlined as a base64 data URI: Gmail (and other major webmail clients)
+     * strip <img src="data:..."> in emails, so the recipient only saw the alt text.
+     * A hosted HTTPS URL renders everywhere. Mirrors the events flow in Helper\Email.
      */
-    private function buildQrDataUri(int $bookingId, $location): string
+    private function buildQrImageUrl(int $bookingId): string
     {
-        if (!$location || !$location->getId() || !$location->getCode()) {
-            return '';
-        }
-        $attendanceUrl = $this->urlBuilder->getUrl(
-            'zaca_ludoteca/attendance',
-            [
-                'id' => $bookingId,
-                'code' => (string) $location->getCode(),
-            ],
-            ['_secure' => true]
-        );
-        return $this->qr->generateQrCodeImage($attendanceUrl, 300);
+        $base = rtrim($this->urlBuilder->getBaseUrl(['_secure' => true]), '/');
+        return $base . $this->helper->getLudotecaPublicUrl('qrcode', ['id' => $bookingId]);
     }
 
     private function renderSlotsHtml(int $bookingId): string
