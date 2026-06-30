@@ -123,9 +123,9 @@ $hasActiveBooking = $block->hasActiveBooking();
 
     <section class="ludoteca-calendar-section">
         <div class="ludoteca-calendar-header">
-            <button type="button" class="ludoteca-cal-prev" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes anterior')) ?>">&larr;</button>
+            <button type="button" class="ludoteca-cal-prev" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes anterior')) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
             <h2 class="ludoteca-cal-title">&nbsp;</h2>
-            <button type="button" class="ludoteca-cal-next" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes siguiente')) ?>">&rarr;</button>
+            <button type="button" class="ludoteca-cal-next" aria-label="<?= $escaper->escapeHtmlAttr(__('Mes siguiente')) ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
         </div>
         <div class="ludoteca-cal-weekdays">
             <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
@@ -190,7 +190,9 @@ $hasActiveBooking = $block->hasActiveBooking();
 .ludoteca-calendar-section { padding: 14px; border: 1px solid #e3e3e3; border-radius: 16px; background: #fafafa; }
 .ludoteca-calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .ludoteca-cal-title { font-size: 16px; margin: 0; text-transform: capitalize; }
-.ludoteca-calendar-header button { border: 1px solid #111; background: #fff; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.ludoteca-calendar-header button { display: flex; align-items: center; justify-content: center; padding: 6px 12px; border: 1px solid #111; background: #fff; border-radius: 999px; color: #111; cursor: pointer; transition: background .15s, color .15s; }
+.ludoteca-calendar-header button:hover { background: #111; color: #fff; }
+.ludoteca-calendar-header button svg { display: block; width: 22px; height: 22px; }
 .ludoteca-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 11px; color: #666; text-align: center; margin-bottom: 4px; }
 .ludoteca-cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .ludoteca-cal-days button { padding: 0; height: 36px; border-radius: 8px; border: 1px solid #eee; font-size: 12px; font-weight: 700; cursor: pointer; }
