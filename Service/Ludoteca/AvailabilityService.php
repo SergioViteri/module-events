@@ -14,6 +14,7 @@
 namespace Zaca\Events\Service\Ludoteca;
 
 use Magento\Framework\App\ResourceConnection;
+use Zaca\Events\Api\Data\MeetInterface;
 use Zaca\Events\Helper\Data as Helper;
 
 class AvailabilityService
@@ -25,6 +26,10 @@ class AvailabilityService
     public const STATE_FREE = 'free';
     public const STATE_PARTIAL = 'partial';
     public const STATE_BUSY = 'busy';
+
+    /** Mirrors the interval days used by AttendanceValidator's own recurrence math. */
+    private const QUINCENAL_DAYS = 15;
+    private const SEMANAL_DAYS = 7;
 
     private ResourceConnection $resource;
     private Helper $helper;
@@ -350,8 +355,14 @@ class AvailabilityService
     /**
      * Active meets at this location that may overlap any slot in the requested
      * month. Any meet at the location occupies all the ludoteca tables during
-     * its time range — we keep the segment list small by filtering loosely by
-     * start_date and refining the overlap test in PHP.
+     * its time range.
+     *
+     * Non-recurring meets (and quincenal ones, which get materialized as
+     * separate rows by RecurrenceGenerator) are matched by a literal start_date
+     * in the window. Weekly ('semanal') meets are never materialized beyond
+     * their first row, so their future occurrences are expanded here from the
+     * parent row's start_date/recurrence_type — the same on-the-fly approach
+     * AttendanceValidator::isDateValidForMeet already uses for check-in.
      *
      * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable}>
      */
@@ -361,26 +372,66 @@ class AvailabilityService
         \DateTimeImmutable $to
     ): array {
         $connection = $this->resource->getConnection();
-        $windowStart = $from->modify('-1 day')->format('Y-m-d 00:00:00');
-        $windowEnd = $to->modify('+1 day')->format('Y-m-d 23:59:59');
+        $windowStart = $from->modify('-1 day')->setTime(0, 0, 0);
+        $windowEnd = $to->modify('+1 day')->setTime(23, 59, 59);
 
-        $rows = $connection->fetchAll(
-            $connection->select()
-                ->from(
-                    $this->resource->getTableName('zaca_events_meet'),
-                    ['start_date', 'duration_minutes']
-                )
-                ->where('location_id = ?', $locationId)
-                ->where('is_active = ?', 1)
-                ->where('start_date <= ?', $windowEnd)
-                ->where('start_date >= ?', $windowStart)
-        );
+        $recurringTypes = [MeetInterface::RECURRENCE_TYPE_QUINCENAL, MeetInterface::RECURRENCE_TYPE_SEMANAL];
+        $select = $connection->select()
+            ->from(
+                $this->resource->getTableName('zaca_events_meet'),
+                ['start_date', 'duration_minutes', 'recurrence_type', 'end_date']
+            )
+            ->where('location_id = ?', $locationId)
+            ->where('is_active = ?', 1)
+            ->where('start_date <= ?', $windowEnd->format('Y-m-d H:i:s'))
+            ->where(
+                $connection->quoteInto('recurrence_type IN (?)', $recurringTypes)
+                . ' OR start_date >= ' . $connection->quote($windowStart->format('Y-m-d H:i:s'))
+            );
 
         $segments = [];
-        foreach ($rows as $row) {
-            $start = new \DateTimeImmutable((string) $row['start_date']);
-            $end = $start->modify('+' . (int) $row['duration_minutes'] . ' minutes');
-            $segments[] = ['start' => $start, 'end' => $end];
+        foreach ($connection->fetchAll($select) as $row) {
+            $segments = array_merge($segments, $this->meetSegmentsFromRow($row, $windowStart, $windowEnd));
+        }
+        return $segments;
+    }
+
+    /**
+     * Expands a single zaca_events_meet row into one or more occupied segments.
+     *
+     * @param array{start_date:string, duration_minutes:string, recurrence_type:string, end_date:?string} $row
+     * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable}>
+     */
+    private function meetSegmentsFromRow(array $row, \DateTimeImmutable $windowStart, \DateTimeImmutable $windowEnd): array
+    {
+        $start = new \DateTimeImmutable((string) $row['start_date']);
+        $duration = (int) $row['duration_minutes'];
+        $recurrenceType = (string) $row['recurrence_type'];
+
+        if ($recurrenceType !== MeetInterface::RECURRENCE_TYPE_QUINCENAL
+            && $recurrenceType !== MeetInterface::RECURRENCE_TYPE_SEMANAL
+        ) {
+            return [['start' => $start, 'end' => $start->modify('+' . $duration . ' minutes')]];
+        }
+
+        $intervalDays = $recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL
+            ? self::QUINCENAL_DAYS
+            : self::SEMANAL_DAYS;
+        $recurrenceEnd = !empty($row['end_date']) ? new \DateTimeImmutable((string) $row['end_date']) : null;
+
+        $segments = [];
+        $occurrence = $start;
+        // Safety net against a pathological interval/window combo; weekly recurrence
+        // over a one-month window never needs more than a handful of iterations.
+        $maxIterations = 1000;
+        while ($occurrence <= $windowEnd && $maxIterations-- > 0) {
+            if ($recurrenceEnd !== null && $occurrence > $recurrenceEnd) {
+                break;
+            }
+            if ($occurrence >= $windowStart) {
+                $segments[] = ['start' => $occurrence, 'end' => $occurrence->modify('+' . $duration . ' minutes')];
+            }
+            $occurrence = $occurrence->modify('+' . $intervalDays . ' days');
         }
         return $segments;
     }
