@@ -452,7 +452,10 @@ class AvailabilityService
         $slotEnd = new \DateTimeImmutable($date->format('Y-m-d') . ' ' . $slotEndTime);
 
         foreach ($segments as $seg) {
-            if ($seg['start'] < $slotEnd && $seg['end'] > $slotStart) {
+            // Inclusive at the touching edge: a meet that ends exactly when the next
+            // slot starts (e.g. 15:00-19:00 vs. a 19:00-20:30 slot) still blocks it —
+            // tables aren't instantly free the second the event officially ends.
+            if ($seg['start'] <= $slotEnd && $seg['end'] >= $slotStart) {
                 return true;
             }
         }
