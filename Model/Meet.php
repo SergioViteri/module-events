@@ -284,6 +284,26 @@ class Meet extends AbstractModel implements MeetInterface
     /**
      * @inheritdoc
      */
+    public function getLudotecaBlockedTables()
+    {
+        $value = $this->getData(self::LUDOTECA_BLOCKED_TABLES);
+        return $value !== null && $value !== '' ? (int) $value : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLudotecaBlockedTables($ludotecaBlockedTables)
+    {
+        return $this->setData(
+            self::LUDOTECA_BLOCKED_TABLES,
+            $ludotecaBlockedTables !== null && $ludotecaBlockedTables !== '' ? (int) $ludotecaBlockedTables : null
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCreatedAt()
     {
         return $this->getData(self::CREATED_AT);

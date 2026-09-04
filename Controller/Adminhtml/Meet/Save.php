@@ -80,6 +80,11 @@ class Save extends Action
                 $data['theme_id'] = null;
             }
 
+            // Convert empty ludoteca_blocked_tables to NULL (means "block all tables")
+            if (isset($data['ludoteca_blocked_tables']) && $data['ludoteca_blocked_tables'] === '') {
+                $data['ludoteca_blocked_tables'] = null;
+            }
+
             // Convert dates from admin timezone (form input) to UTC for storage
             // The form displays dates in admin timezone, but we need to store in UTC
             if (isset($data['start_date']) && !empty($data['start_date'])) {
