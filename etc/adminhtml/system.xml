@@ -51,6 +51,11 @@
                     <comment>How many days ahead a Club member can book a table. Default: 30.</comment>
                     <validate>validate-zero-or-greater-number</validate>
                 </field>
+                <field id="max_slots_non_club" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Active Time Slots (non-Club customers)</label>
+                    <comment>How many time slots a logged-in customer who is NOT a Club member can have booked at once, across all their bookings. Default: 3.</comment>
+                    <validate>validate-zero-or-greater-number</validate>
+                </field>
                 <field id="club_signup_url" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Club Signup URL</label>
                     <comment>URL where non-Club customers are sent when they try to book a date that is only available for Club members. Leave blank to fall back to Zaca_Box defaults.</comment>

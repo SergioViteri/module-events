@@ -112,14 +112,21 @@ class ReservationCreator
 
         $isClub = $this->helper->isClubMember($request->customerId);
         if (!$isClub) {
-            if (count($request->slots) > 1) {
+            $maxSlots = $this->helper->getMaxSlotsNonClub();
+            $requestedCount = count($request->slots);
+            if ($requestedCount > $maxSlots) {
                 throw new LocalizedException(
-                    __('Sólo los socios del Club pueden reservar más de un turno a la vez.')
+                    __('Los no socios del Club pueden reservar como máximo %1 turnos a la vez.', $maxSlots)
                 );
             }
-            if ($this->countActiveSlotsForCustomer($request->customerId) > 0) {
+            $activeCount = $this->countActiveSlotsForCustomer($request->customerId);
+            if ($activeCount + $requestedCount > $maxSlots) {
                 throw new LocalizedException(
-                    __('Ya tienes una reserva activa. Cancélala o únete al Club Zacatrus para reservar más de un turno.')
+                    __(
+                        'Ya tienes %1 turno(s) reservado(s) de un máximo de %2. Cancela alguno o únete al Club Zacatrus para reservar más.',
+                        $activeCount,
+                        $maxSlots
+                    )
                 );
             }
         }

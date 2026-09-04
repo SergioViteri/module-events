@@ -164,6 +164,20 @@ class Data extends AbstractHelper
         );
     }
 
+    /**
+     * Max number of ludoteca time slots a non-Club customer can have booked
+     * at once, counted across all their bookings (any date, any location).
+     * Club members have no cap.
+     */
+    public function getMaxSlotsNonClub(?int $storeId = null): int
+    {
+        return $this->readPositiveIntConfig(
+            'zaca_events/ludoteca/max_slots_non_club',
+            3,
+            $storeId
+        );
+    }
+
     private function readPositiveIntConfig(string $path, int $default, ?int $storeId): int
     {
         $raw = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
