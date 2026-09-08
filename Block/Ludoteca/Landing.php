@@ -14,8 +14,6 @@ use Zaca\Events\Model\ResourceModel\Location\CollectionFactory as LocationCollec
 
 class Landing extends Template
 {
-    public const CAPACITY_PER_TABLE = 6;
-
     private LocationCollectionFactory $locationCollectionFactory;
     private EventsHelper $helper;
     private ResourceConnection $resource;
@@ -94,7 +92,7 @@ class Landing extends Template
 
     public function getCapacityPerTable(): int
     {
-        return self::CAPACITY_PER_TABLE;
+        return $this->helper->getCapacityPerTable();
     }
 
     /**

@@ -119,7 +119,7 @@ $remainingSlots = $block->getRemainingSlots();
                 <option value="2">2 <?= $escaper->escapeHtml(__('mesas')) ?></option>
             </select>
         </label>
-        <small><?= $escaper->escapeHtml(__('Hasta 6 personas por mesa.')) ?></small>
+        <small><?= $escaper->escapeHtml(__('Hasta %1 personas por mesa.', $block->getCapacityPerTable())) ?></small>
     </section>
 
     <section class="ludoteca-calendar-section">

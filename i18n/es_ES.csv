@@ -321,7 +321,7 @@
 "Format HH:MM (e.g. 17:00)","Formato HH:MM (ej. 17:00)"
 "Format HH:MM (e.g. 19:00)","Formato HH:MM (ej. 19:00)"
 "Friday","Viernes"
-"Hasta 6 personas por mesa.","Hasta 6 personas por mesa."
+"Hasta %1 personas por mesa.","Hasta %1 personas por mesa."
 "Hay varios eventos del cliente hoy en esta tienda. Elige cuál confirmar:","Hay varios eventos del cliente hoy en esta tienda. Elige cuál confirmar:"
 "Hazte del Club","Hazte del Club"
 "How many ludoteca tables this store has. Set to 0 to disable ludoteca bookings at this store.","Cuántas mesas de ludoteca tiene esta tienda. Pon 0 para desactivar las reservas de ludoteca en esta tienda."
