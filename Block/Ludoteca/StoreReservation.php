@@ -114,27 +114,45 @@ class StoreReservation extends Template
     }
 
     /**
-     * True when the logged-in customer already has a confirmed booking with a
-     * future (or today's) date. Used to inform non-Club users that they cannot
-     * create a second reservation until they cancel the existing one.
+     * Count of confirmed ludoteca time slots the logged-in customer already
+     * has booked with a future (or today's) date, across all locations.
+     * Mirrors ReservationCreator::countActiveSlotsForCustomer.
      */
-    public function hasActiveBooking(): bool
+    public function getActiveSlotCount(): int
     {
         if (!$this->isLoggedIn()) {
-            return false;
+            return 0;
         }
         $connection = $this->resource->getConnection();
-        $count = (int) $connection->fetchOne(
+        $bookingSlot = $this->resource->getTableName('zaca_events_table_booking_slot');
+        $booking = $this->resource->getTableName('zaca_events_table_booking');
+
+        return (int) $connection->fetchOne(
             $connection->select()
-                ->from(
-                    $this->resource->getTableName('zaca_events_table_booking'),
-                    ['count' => new \Zend_Db_Expr('COUNT(*)')]
-                )
-                ->where('customer_id = ?', (int) $this->customerSession->getCustomerId())
-                ->where('status = ?', 'confirmed')
-                ->where('booking_date >= ?', $this->timezone->date()->format('Y-m-d'))
+                ->from(['s' => $bookingSlot], ['count' => new \Zend_Db_Expr('COUNT(*)')])
+                ->joinInner(['b' => $booking], 'b.booking_id = s.booking_id', [])
+                ->where('b.customer_id = ?', (int) $this->customerSession->getCustomerId())
+                ->where('b.status = ?', 'confirmed')
+                ->where('s.booking_date >= ?', $this->timezone->date()->format('Y-m-d'))
         );
-        return $count > 0;
+    }
+
+    /**
+     * Max number of active time slots a non-Club customer may have at once.
+     */
+    public function getMaxSlotsNonClub(): int
+    {
+        return $this->helper->getMaxSlotsNonClub();
+    }
+
+    /**
+     * How many more time slots the logged-in non-Club customer can still
+     * book before hitting getMaxSlotsNonClub(). Club members have no cap,
+     * but this is only meant to be read when rendering for non-Club users.
+     */
+    public function getRemainingSlots(): int
+    {
+        return max(0, $this->getMaxSlotsNonClub() - $this->getActiveSlotCount());
     }
 
     public function getCancelMyBookingUrl(): string
