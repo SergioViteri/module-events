@@ -74,7 +74,8 @@
             "is_active": true,
             "reminder_days": true,
             "created_at": true,
-            "updated_at": true
+            "updated_at": true,
+            "ludoteca_blocked_tables": true
         },
         "index": {
             "ZACA_EVENTS_MEET_LOCATION_ID": true,

@@ -166,6 +166,8 @@
 "Event Details","Detalles del Evento"
 "Enter relative path (e.g., 'eventos/torneo-2024'). The full URL will be: http://zacatrus.es/[path]","introduce ruta relativa (ej., 'eventos/torneo-2024'). La URL completa será: http://zacatrus.es/[ruta]"
 "Reminder Days","Días de Recordatorio"
+"Ludoteca Tables to Block","Mesas de Ludoteca a Bloquear"
+"Optional. How many ludoteca tables to reserve for this event while it overlaps a booking slot. Leave empty to block all tables (previous, default behavior).","Opcional. Cuántas mesas de la ludoteca reservar para este evento mientras coincide con una franja horaria. Déjalo vacío para bloquear todas las mesas (comportamiento anterior, por defecto)."
 "Comma-separated days before event to send reminders (e.g., '7,3,1'). Leave empty to disable reminders.","Días separados por comas antes del evento para enviar recordatorios (ej., '7,3,1'). Dejar vacío para desactivar recordatorios."
 "Event Reminder","Recordatorio de Evento"
 "days until event","días hasta el evento"

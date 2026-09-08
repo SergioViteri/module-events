@@ -5,7 +5,8 @@
  * Cross-checks two sources of occupancy:
  *   - Confirmed bookings in zaca_events_table_booking_slot.
  *   - Any active meet at this location that overlaps the slot's time range —
- *     such a meet blocks all the ludoteca tables for that slot.
+ *     such a meet blocks `ludoteca_blocked_tables` tables for that slot, or
+ *     all of them when the meet doesn't specify a number (NULL, the default).
  *
  * The advance-days policy (non-Club vs Club) is applied here so the calendar
  * can display 'out_of_range' days without callers re-implementing it.
@@ -105,13 +106,14 @@ class AvailabilityService
             $perSlotStates = [];
             foreach ($slotsForDay as $slot) {
                 $bookedLud = (int) ($ludOccupancy[$dateKey][$slot['time_slot_id']] ?? 0);
-                $hasMeet = $this->hasMeetOverlapping(
+                $blockedByMeet = $this->blockedTablesFromMeets(
                     $meetSegments,
                     $day,
                     $slot['start_time'],
-                    $slot['end_time']
+                    $slot['end_time'],
+                    $totalTables
                 );
-                $free = $hasMeet ? 0 : ($totalTables - $bookedLud);
+                $free = max(0, $totalTables - $bookedLud - $blockedByMeet);
                 $perSlotStates[] = $this->slotState($free, $totalTables);
             }
             $result[$dateKey] = $this->collapseDayStates($perSlotStates);
@@ -168,13 +170,14 @@ class AvailabilityService
         $rows = [];
         foreach ($slotsForDay as $slot) {
             $bookedLud = (int) ($ludOccupancy[$dateKey][$slot['time_slot_id']] ?? 0);
-            $hasMeet = $this->hasMeetOverlapping(
+            $blockedByMeet = $this->blockedTablesFromMeets(
                 $meetSegments,
                 $date,
                 $slot['start_time'],
-                $slot['end_time']
+                $slot['end_time'],
+                $totalTables
             );
-            $free = $hasMeet ? 0 : max(0, $totalTables - $bookedLud);
+            $free = max(0, $totalTables - $bookedLud - $blockedByMeet);
             $mineTables = (int) ($myBookings[$dateKey][$slot['time_slot_id']] ?? 0);
             $rows[] = [
                 'time_slot_id' => (int) $slot['time_slot_id'],
@@ -211,11 +214,15 @@ class AvailabilityService
         }
 
         $dateKey = $date->format('Y-m-d');
-        if ($this->hasMeetOverlapping($meetSegments, $date, $slotInfo['start_time'], $slotInfo['end_time'])) {
-            return 0;
-        }
+        $blockedByMeet = $this->blockedTablesFromMeets(
+            $meetSegments,
+            $date,
+            $slotInfo['start_time'],
+            $slotInfo['end_time'],
+            $totalTables
+        );
         $bookedLud = (int) ($ludOccupancy[$dateKey][$timeSlotId] ?? 0);
-        return max(0, $totalTables - $bookedLud);
+        return max(0, $totalTables - $bookedLud - $blockedByMeet);
     }
 
     private function getTotalTables(int $locationId): int
@@ -364,7 +371,7 @@ class AvailabilityService
      * parent row's start_date/recurrence_type — the same on-the-fly approach
      * AttendanceValidator::isDateValidForMeet already uses for check-in.
      *
-     * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable}>
+     * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable, blocked_tables: int|null}>
      */
     private function fetchMeetSegments(
         int $locationId,
@@ -379,7 +386,7 @@ class AvailabilityService
         $select = $connection->select()
             ->from(
                 $this->resource->getTableName('zaca_events_meet'),
-                ['start_date', 'duration_minutes', 'recurrence_type', 'end_date']
+                ['start_date', 'duration_minutes', 'recurrence_type', 'end_date', 'ludoteca_blocked_tables']
             )
             ->where('location_id = ?', $locationId)
             ->where('is_active = ?', 1)
@@ -399,19 +406,26 @@ class AvailabilityService
     /**
      * Expands a single zaca_events_meet row into one or more occupied segments.
      *
-     * @param array{start_date:string, duration_minutes:string, recurrence_type:string, end_date:?string} $row
-     * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable}>
+     * @param array{start_date:string, duration_minutes:string, recurrence_type:string, end_date:?string, ludoteca_blocked_tables:?string} $row
+     * @return array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable, blocked_tables: int|null}>
      */
     private function meetSegmentsFromRow(array $row, \DateTimeImmutable $windowStart, \DateTimeImmutable $windowEnd): array
     {
         $start = new \DateTimeImmutable((string) $row['start_date']);
         $duration = (int) $row['duration_minutes'];
         $recurrenceType = (string) $row['recurrence_type'];
+        $blockedTables = isset($row['ludoteca_blocked_tables']) && $row['ludoteca_blocked_tables'] !== null
+            ? (int) $row['ludoteca_blocked_tables']
+            : null;
 
         if ($recurrenceType !== MeetInterface::RECURRENCE_TYPE_QUINCENAL
             && $recurrenceType !== MeetInterface::RECURRENCE_TYPE_SEMANAL
         ) {
-            return [['start' => $start, 'end' => $start->modify('+' . $duration . ' minutes')]];
+            return [[
+                'start' => $start,
+                'end' => $start->modify('+' . $duration . ' minutes'),
+                'blocked_tables' => $blockedTables,
+            ]];
         }
 
         $intervalDays = $recurrenceType === MeetInterface::RECURRENCE_TYPE_QUINCENAL
@@ -429,7 +443,11 @@ class AvailabilityService
                 break;
             }
             if ($occurrence >= $windowStart) {
-                $segments[] = ['start' => $occurrence, 'end' => $occurrence->modify('+' . $duration . ' minutes')];
+                $segments[] = [
+                    'start' => $occurrence,
+                    'end' => $occurrence->modify('+' . $duration . ' minutes'),
+                    'blocked_tables' => $blockedTables,
+                ];
             }
             $occurrence = $occurrence->modify('+' . $intervalDays . ' days');
         }
@@ -437,29 +455,39 @@ class AvailabilityService
     }
 
     /**
-     * @param array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable}> $segments
+     * How many ludoteca tables are occupied by meets overlapping this slot.
+     *
+     * A meet with `ludoteca_blocked_tables` set reserves only that many tables;
+     * one left NULL (the default) still blocks every table, matching the
+     * pre-existing behavior. When several meets overlap the same slot, the
+     * largest requirement wins.
+     *
+     * @param array<int, array{start: \DateTimeImmutable, end: \DateTimeImmutable, blocked_tables: int|null}> $segments
      */
-    private function hasMeetOverlapping(
+    private function blockedTablesFromMeets(
         array $segments,
         \DateTimeImmutable $date,
         string $slotStartTime,
-        string $slotEndTime
-    ): bool {
+        string $slotEndTime,
+        int $totalTables
+    ): int {
         if (empty($segments)) {
-            return false;
+            return 0;
         }
         $slotStart = new \DateTimeImmutable($date->format('Y-m-d') . ' ' . $slotStartTime);
         $slotEnd = new \DateTimeImmutable($date->format('Y-m-d') . ' ' . $slotEndTime);
 
+        $blocked = 0;
         foreach ($segments as $seg) {
             // Inclusive at the touching edge: a meet that ends exactly when the next
             // slot starts (e.g. 15:00-19:00 vs. a 19:00-20:30 slot) still blocks it —
             // tables aren't instantly free the second the event officially ends.
             if ($seg['start'] <= $slotEnd && $seg['end'] >= $slotStart) {
-                return true;
+                $segBlocked = $seg['blocked_tables'] ?? $totalTables;
+                $blocked = max($blocked, $segBlocked);
             }
         }
-        return false;
+        return min($blocked, $totalTables);
     }
 
     /**

@@ -314,6 +314,19 @@ class Main extends Generic implements TabInterface
         );
         
         $fieldset->addField(
+            'ludoteca_blocked_tables',
+            'text',
+            [
+                'name' => 'ludoteca_blocked_tables',
+                'label' => __('Ludoteca Tables to Block'),
+                'title' => __('Ludoteca Tables to Block'),
+                'required' => false,
+                'disabled' => $isElementDisabled,
+                'note' => __('Optional. How many ludoteca tables to reserve for this event while it overlaps a booking slot. Leave empty to block all tables (previous, default behavior).'),
+            ]
+        );
+
+        $fieldset->addField(
             'is_active',
             'select',
             [

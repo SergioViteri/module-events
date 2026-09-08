@@ -27,6 +27,7 @@ interface MeetInterface
     const END_DATE = 'end_date';
     const IS_ACTIVE = 'is_active';
     const REMINDER_DAYS = 'reminder_days';
+    const LUDOTECA_BLOCKED_TABLES = 'ludoteca_blocked_tables';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -277,6 +278,21 @@ interface MeetInterface
      * @return $this
      */
     public function setReminderDays($reminderDays);
+
+    /**
+     * Get ludoteca tables blocked while this meet is happening
+     *
+     * @return int|null
+     */
+    public function getLudotecaBlockedTables();
+
+    /**
+     * Set ludoteca tables blocked while this meet is happening (NULL = block all tables)
+     *
+     * @param int|null $ludotecaBlockedTables
+     * @return $this
+     */
+    public function setLudotecaBlockedTables($ludotecaBlockedTables);
 
     /**
      * Get created at

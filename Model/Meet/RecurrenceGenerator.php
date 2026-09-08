@@ -109,6 +109,7 @@ class RecurrenceGenerator
                 ->setMaxAttendeesPerRegistration($parentMeet->getMaxAttendeesPerRegistration())
                 ->setDescription($parentMeet->getDescription())
                 ->setRegistrationConditions($parentMeet->getRegistrationConditions())
+                ->setLudotecaBlockedTables($parentMeet->getLudotecaBlockedTables())
                 ->setRecurrenceType(MeetInterface::RECURRENCE_TYPE_NONE) // Child meets are not recurrent
                 ->setIsActive($parentMeet->getIsActive());
             
