@@ -146,6 +146,14 @@ class StoreReservation extends Template
     }
 
     /**
+     * How many people fit at a single table, shown as "hasta N personas por mesa".
+     */
+    public function getCapacityPerTable(): int
+    {
+        return $this->helper->getCapacityPerTable();
+    }
+
+    /**
      * How many more time slots the logged-in non-Club customer can still
      * book before hitting getMaxSlotsNonClub(). Club members have no cap,
      * but this is only meant to be read when rendering for non-Club users.

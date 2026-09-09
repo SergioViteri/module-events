@@ -178,6 +178,19 @@ class Data extends AbstractHelper
         );
     }
 
+    /**
+     * How many people fit at a single ludoteca table, shown in the booking UI
+     * as "hasta N personas por mesa" / "%1 mesas (hasta %2 personas)".
+     */
+    public function getCapacityPerTable(?int $storeId = null): int
+    {
+        return $this->readPositiveIntConfig(
+            'zaca_events/ludoteca/capacity_per_table',
+            4,
+            $storeId
+        );
+    }
+
     private function readPositiveIntConfig(string $path, int $default, ?int $storeId): int
     {
         $raw = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $storeId);
