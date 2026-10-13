@@ -27,8 +27,10 @@ if (isset($opts['store'])) {
     $path = (string) $opts['path'];
     $_SERVER['REQUEST_URI'] = $path;
     $_SERVER['REQUEST_METHOD'] = $opts['method'] ?? 'GET';
-    $_SERVER['HTTP_HOST'] = 'dummy.zacatrus.es';
-    $_SERVER['SERVER_NAME'] = 'dummy.zacatrus.es';
+    // La web fr tiene su propia URL base (zacatrus.fr): con otro host Magento redirige a ella antes de enrutar.
+    $host = $storeId === 2 ? 'zacatrus.fr' : 'dummy.zacatrus.es';
+    $_SERVER['HTTP_HOST'] = $host;
+    $_SERVER['SERVER_NAME'] = $host;
     $_SERVER['HTTPS'] = 'on';
     $_SERVER['SERVER_PORT'] = '443';
     $_SERVER['SCRIPT_NAME'] = '/index.php';
@@ -97,8 +99,11 @@ $child = function (int $storeId, string $path, string $method = 'GET'): array {
     echo "  (el hijo $storeId $path no devolvió RESULT):\n" . substr($raw, -1500) . "\n";
     return [];
 };
-$http = function (string $path, string $method = 'GET') {
-    $cmd = "curl -s -o /dev/null -w '%{http_code}' -X $method -H 'Host: dummy.zacatrus.es' -H 'X-Forwarded-Proto: https' "
+$http = function (string $path, string $method = 'GET', bool $ajax = false) {
+    // Un POST sin form_key lo corta antes el CSRF de Magento (302), antes de mirar a qué acción llega: se manda uno válido.
+    $post = $method === 'POST' ? " -H 'Cookie: form_key=abcdefghijklmnop' -d 'form_key=abcdefghijklmnop'" : '';
+    $post .= $ajax ? " -H 'X-Requested-With: XMLHttpRequest'" : '';
+    $cmd = "curl -s -o /dev/null -w '%{http_code}' -X $method$post -H 'Host: dummy.zacatrus.es' -H 'X-Forwarded-Proto: https' "
         . escapeshellarg('http://127.0.0.1:6081' . $path . (strpos($path, '?') === false ? '?' : '&') . 'zz=' . uniqid());
     return trim((string) shell_exec($cmd));
 };
@@ -191,6 +196,9 @@ try {
         $off[$u] = $http($u);
     }
     $off['POST /eventos/index/register'] = $http('/eventos/index/register', 'POST');
+    $off['POST ajax /eventos/index/register'] = $http('/eventos/index/register', 'POST', true);
+    $off['POST ajax /eventos/index/unregister'] = $http('/eventos/index/unregister', 'POST', true);
+    $off['POST ajax /ludoteca/ludoteca/reserve'] = $http('/ludoteca/ludoteca/reserve', 'POST', true);
     echo '  apagado: ' . json_encode($off) . "\n";
     foreach ($off as $u => $code) {
         $check("C apagado: $u da 404", $code === '404', $code);
