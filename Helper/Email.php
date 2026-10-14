@@ -810,12 +810,6 @@ class Email extends AbstractHelper
                 // Note: Caller must save the registration after this method returns
             }
 
-            // Build unsubscribe URL
-            $unsubscribeUrl = $this->urlBuilder->getUrl(
-                'events/index/unsubscribe',
-                ['code' => $unsubscribeCode]
-            );
-
             // Get location
             $location = $this->locationFactory->create()->load($meet->getLocationId());
             $locationName = $location->getName();
@@ -840,6 +834,13 @@ class Email extends AbstractHelper
             
             // Set store context (required for translations in cron jobs)
             $this->storeManager->setCurrentStore($store->getId());
+
+            // Build unsubscribe URL on the customer's store, not on whatever store the cron is in
+            // (an admin one would point the link at the admin host).
+            $unsubscribeUrl = $this->urlBuilder->getUrl(
+                'events/index/unsubscribe',
+                ['code' => $unsubscribeCode, '_scope' => (int) $store->getId()]
+            );
             
             // Resume translation before formatting dates (needed for recurring events with translations)
             $this->inlineTranslation->resume();

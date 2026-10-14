@@ -1,12 +1,17 @@
 <?php
 /**
  * PRUEBA EN DUMMY: URLs del correo de recordatorio (QR y enlaces) cuando se envía desde cron.
- *   sudo -u www-data php vendor/zaca/events/Test/dummy/recordatorio_ludoteca_qr.php [--contexto=admin|normal] [--conservar] [--limpiar]
+ *   sudo -u www-data php vendor/zaca/events/Test/dummy/recordatorio_ludoteca_qr.php [--contexto=fr|admin|normal] [--conservar] [--limpiar]
  *
  * Qué hace:
- *   1. Se coloca en el área `crontab` y, con --contexto=admin (por defecto), deja como tienda actual la 0 (admin) y le
- *      da a esa tienda la URL base de un host de admin, que es lo que ve el cron en producción según la ficha. En dummy
- *      la CLI cae por sí sola en la tienda 1, así que sin este paso no se reproduce el fallo.
+ *   1. Se coloca en el área `crontab` y deja como tienda actual una que NO es la del cliente, que es lo que le pasa al
+ *      cron en producción cuando otro trabajo deja la tienda en el admin: en dummy la CLI cae por sí sola en la tienda 1
+ *      y sin este paso no se reproduce nada.
+ *        --contexto=fr     tienda actual = 2 (web fr, zacatrus.fr). Reproduce limpio: los clientes de la web es
+ *                          recibirían URLs de zacatrus.fr. Es el valor por defecto.
+ *        --contexto=admin  tienda actual = 0 (admin) con un host de admin de mentira como URL base. En dummy la tienda 0
+ *                          no tiene tema y la plantilla puede fallar con «theme_dir» antes de llegar a las URLs.
+ *        --contexto=normal tienda actual = 1, sin tocar nada.
  *   2. Crea tres reservas confirmadas para mañana (un cliente de la web es, uno de la web es con store_id 0 y uno de la
  *      web fr), todas marcadas con el prefijo `zpruebaqr` en unsubscribe_code para poder borrarlas.
  *   3. Ejecuta el cron REAL de recordatorios (`Cron\SendLudotecaReminders::execute`), con la única diferencia de que
@@ -21,7 +26,10 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Bootstrap;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
-require __DIR__ . '/../../../../../app/bootstrap.php';
+// Dentro de vendor/zaca/events/Test/dummy/ (validate-on-dummy) o copiado suelto a /tmp en dummy.
+require is_file(__DIR__ . '/../../../../../app/bootstrap.php')
+    ? __DIR__ . '/../../../../../app/bootstrap.php'
+    : '/var/www/zacatrus/current/app/bootstrap.php';
 
 const PREFIJO = 'zpruebaqr';
 const HOST_ADMIN = 'https://admin.zacatrus.test/';
@@ -77,7 +85,11 @@ class ZacaPruebaConfigAdmin implements ScopeConfigInterface
 
     public function getValue($path = null, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeCode = null)
     {
-        if ($path === 'web/unsecure/base_url' && $scope === 'store' && $scopeCode === 'admin') {
+        $rutasBase = [
+            'web/unsecure/base_url', 'web/secure/base_url',
+            'web/unsecure/base_link_url', 'web/secure/base_link_url',
+        ];
+        if (in_array($path, $rutasBase, true) && $scope === 'store' && $scopeCode === 'admin') {
             return HOST_ADMIN;
         }
         return $this->inner->getValue($path, $scope, $scopeCode);
@@ -115,7 +127,7 @@ function hostDe(string $url): string
 }
 
 $opts = getopt('', ['contexto::', 'conservar', 'limpiar']);
-$contexto = $opts['contexto'] ?? 'admin';
+$contexto = $opts['contexto'] ?? 'fr';
 
 $bootstrap = Bootstrap::create(BP, $_SERVER);
 $om = $bootstrap->getObjectManager();
@@ -134,14 +146,17 @@ if (isset($opts['limpiar'])) {
 $om->get(\Magento\Framework\App\State::class)->setAreaCode(Area::AREA_CRONTAB);
 $om->configure($om->get(\Magento\Framework\ObjectManager\ConfigLoaderInterface::class)->load(Area::AREA_CRONTAB));
 $sm = $om->get(\Magento\Store\Model\StoreManagerInterface::class);
-if ($contexto === 'admin') {
+if ($contexto === 'fr') {
+    $sm->setCurrentStore(2);
+} elseif ($contexto === 'admin') {
     $admin = $sm->getStore(0);
     propiedad($admin, '_config', \Magento\Store\Model\Store::class)
         ->setValue($admin, new ZacaPruebaConfigAdmin($om->get(ScopeConfigInterface::class)));
     $sm->setCurrentStore(0);
 }
+$baseContexto = $sm->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_LINK, true);
 echo "contexto={$contexto} tienda_actual=" . $sm->getStore()->getId() . ' (' . $sm->getStore()->getCode() . ')'
-    . ' base_del_contexto=' . $sm->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_LINK, true) . "\n";
+    . ' base_del_contexto=' . $baseContexto . "\n";
 
 /* ── Datos ── */
 $limpiar();
@@ -169,7 +184,7 @@ foreach ($casos as $etiqueta => [$filtro, $hostEsperado]) {
         'booking_date' => $manana,
         'status' => 'confirmed',
         'phone_number' => '600000000',
-        'unsubscribe_code' => PREFIJO . (++$n) . bin2hex(random_bytes(6)),
+        'unsubscribe_code' => PREFIJO . (++$n) . '-' . bin2hex(random_bytes(6)),
     ]);
     $id = (int) $conn->lastInsertId();
     if ($timeSlot) {
@@ -178,7 +193,7 @@ foreach ($casos as $etiqueta => [$filtro, $hostEsperado]) {
             'time_slot_id' => (int) $timeSlot, 'tables_count' => 1,
         ]);
     }
-    $reservas[$id] = ['etiqueta' => $etiqueta, 'email' => $cliente['email'], 'host' => $hostEsperado];
+    $reservas[$id] = ['etiqueta' => $etiqueta, 'email' => $cliente['email'], 'host' => $hostEsperado, 'codigo' => PREFIJO . $n];
 }
 
 /* ── Correo: no sale nada de dummy ── */
@@ -202,21 +217,22 @@ try {
     foreach (ZacaPruebaTransporte::$enviados as $message) {
         $html = cuerpoHtml($message);
         $para = $message->getTo()[0]->getEmail();
+        // Hay clientes de prueba con el mismo correo: se identifica la reserva por el código del enlace de cancelar.
+        preg_match('/href="([^"]*cancel[^"]*)"/', $html, $cancel);
         $id = null;
         foreach ($reservas as $rid => $r) {
-            if (strcasecmp($r['email'], $para) === 0) {
+            if (strpos($cancel[1] ?? '', $r['codigo'] . '-') !== false) {
                 $id = $rid;
                 break;
             }
         }
         if ($id === null) {
-            echo "correo a $para sin reserva de prueba asociada\n";
+            echo "correo a $para sin reserva de prueba asociada (enlace de cancelar: " . ($cancel[1] ?? 'ninguno') . ")\n";
             $fallos++;
             continue;
         }
         $r = $reservas[$id];
-        preg_match('/<img[^>]+src="([^"]+)"/', $html, $qr);
-        preg_match('/href="([^"]*cancel[^"]*)"/', $html, $cancel);
+        preg_match('/<img[^>]+src="([^"]*qrcode[^"]*)"/', $html, $qr);
         $qrUrl = html_entity_decode($qr[1] ?? '');
         $cancelUrl = html_entity_decode($cancel[1] ?? '');
         $okQr = hostDe($qrUrl) === $r['host'] && strpos($qrUrl, 'qrcode?id=' . $id) !== false;
@@ -226,7 +242,7 @@ try {
             $r['etiqueta'], $id, $para,
             $qrUrl, $okQr ? 'OK' : 'FALLO (esperado host ' . $r['host'] . ' y qrcode?id=' . $id . ')',
             $cancelUrl, $okCancel ? 'OK' : 'FALLO (esperado host ' . $r['host'] . ')',
-            json_encode($message->getFrom()[0] ?? null, JSON_UNESCAPED_UNICODE)
+            ($message->getFrom()[0] ?? null) ? $message->getFrom()[0]->getName() . ' <' . $message->getFrom()[0]->getEmail() . '>' : 'sin remitente'
         );
         $fallos += ($okQr ? 0 : 1) + ($okCancel ? 0 : 1);
     }
@@ -259,6 +275,12 @@ try {
             $fallos += $okBaja ? 0 : 1;
         }
     }
+
+    /* ── El constructor de URLs compartido no debe quedarse con la tienda del último correo ── */
+    $baseTras = $om->get(\Magento\Framework\UrlInterface::class)->getBaseUrl(['_secure' => true]);
+    $okTras = hostDe($baseTras) === hostDe($baseContexto);
+    echo "urlBuilder tras los envíos: $baseTras  " . ($okTras ? 'OK (sigue en la tienda del contexto)' : 'FALLO (se quedó con otra tienda)') . "\n";
+    $fallos += $okTras ? 0 : 1;
 } finally {
     if (isset($opts['conservar'])) {
         echo 'CONSERVADAS: ' . implode(',', array_keys($reservas)) . "\n";
