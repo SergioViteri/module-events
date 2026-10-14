@@ -112,6 +112,21 @@ class Data extends AbstractHelper
         return $mode;
     }
 
+    /**
+     * Whether the public events pages are enabled for the given store.
+     *
+     * Read at store scope so it can be switched off per website (e.g. the
+     * French site, where in-store events do not exist).
+     */
+    public function isEventsEnabled(?int $storeId = null): bool
+    {
+        return (bool) $this->scopeConfig->getValue(
+            'zaca_events/general/enabled',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
     public function isLudotecaEnabled(?int $storeId = null): bool
     {
         return (bool) $this->scopeConfig->getValue(

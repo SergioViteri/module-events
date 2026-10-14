@@ -40,6 +40,25 @@ class Base
     }
 
     /**
+     * Whether the path belongs to the events pages, under either the literal
+     * 'events' front name or the configured route path.
+     *
+     * @param string $pathInfo Request path without leading/trailing slashes
+     * @param string $configuredPath
+     * @return bool
+     */
+    private function isEventsPath(string $pathInfo, string $configuredPath): bool
+    {
+        foreach (array_unique(['events', $configuredPath]) as $prefix) {
+            if ($pathInfo === $prefix || strpos($pathInfo, $prefix . '/') === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Intercept router match to handle configured route path
      *
      * @param BaseRouter $subject
@@ -57,7 +76,24 @@ class Base
         
         // Get the path info from request
         $pathInfo = trim($request->getPathInfo(), '/');
-        
+
+        // Feature disabled for this store (e.g. the French website) → every
+        // events URL answers 404. Rendered through the CMS noroute action
+        // directly because Amasty xsearch hijacks the regular noroute handler
+        // and redirects to /catalogsearch/result/. AJAX endpoints (register,
+        // unregister, phone) are blocked too: they don't check the switch
+        // themselves. Skipped when a controller is already set, which means
+        // the request was forwarded to noroute and would loop otherwise.
+        if ($request->getControllerName() === null
+            && $this->isEventsPath($pathInfo, $configuredPath)
+            && !$this->eventsHelper->isEventsEnabled()
+        ) {
+            $request->setModuleName('cms')
+                ->setControllerName('noroute')
+                ->setActionName('index');
+            return $proceed($request);
+        }
+
         // If configured path is "events", let normal routing proceed
         if ($configuredPath === 'events') {
             return $proceed($request);
