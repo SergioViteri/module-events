@@ -247,6 +247,13 @@ try {
         $fallos += ($okQr ? 0 : 1) + ($okCancel ? 0 : 1);
     }
 
+    /* ── El constructor de URLs compartido no debe quedarse con la tienda del último correo ──
+     * (antes del recordatorio de eventos, que cambia la tienda actual a propósito) */
+    $baseTras = $om->get(\Magento\Framework\UrlInterface::class)->getBaseUrl(['_secure' => true]);
+    $okTras = hostDe($baseTras) === hostDe($baseContexto);
+    echo "urlBuilder tras los envíos: $baseTras  " . ($okTras ? 'OK (sigue en la tienda del contexto)' : 'FALLO (se quedó con otra tienda)') . "\n";
+    $fallos += $okTras ? 0 : 1;
+
     /* ── Recordatorio de EVENTOS: enlace de baja ── */
     ZacaPruebaTransporte::$enviados = [];
     $emailEventos = $om->get(\Zaca\Events\Helper\Email::class);
@@ -275,12 +282,6 @@ try {
             $fallos += $okBaja ? 0 : 1;
         }
     }
-
-    /* ── El constructor de URLs compartido no debe quedarse con la tienda del último correo ── */
-    $baseTras = $om->get(\Magento\Framework\UrlInterface::class)->getBaseUrl(['_secure' => true]);
-    $okTras = hostDe($baseTras) === hostDe($baseContexto);
-    echo "urlBuilder tras los envíos: $baseTras  " . ($okTras ? 'OK (sigue en la tienda del contexto)' : 'FALLO (se quedó con otra tienda)') . "\n";
-    $fallos += $okTras ? 0 : 1;
 } finally {
     if (isset($opts['conservar'])) {
         echo 'CONSERVADAS: ' . implode(',', array_keys($reservas)) . "\n";
