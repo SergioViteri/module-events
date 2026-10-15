@@ -10,14 +10,17 @@
 namespace Zaca\Events\Helper;
 
 use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\State;
 use Magento\Framework\Escaper;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Framework\Translate\Inline\StateInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Zaca\Events\Api\TableBookingRepositoryInterface;
@@ -79,16 +82,12 @@ class LudotecaEmail extends AbstractHelper
             $customer = $this->customerRepository->getById($booking->getCustomerId());
             $location = $this->locationFactory->create()->load($booking->getLocationId());
 
-            $store = $this->storeManager->getStore();
+            $store = $this->resolveStore($customer);
             $this->ensureFrontendArea();
 
             $this->inlineTranslation->suspend();
 
-            $cancelUrl = $this->urlBuilder->getUrl(
-                'zaca_ludoteca/cancel',
-                ['code' => (string) $booking->getUnsubscribeCode()],
-                ['_secure' => true]
-            );
+            $cancelUrl = $this->buildCancelUrl((string) $booking->getUnsubscribeCode(), $store);
 
             $vars = [
                 'booking_id' => $booking->getBookingId(),
@@ -97,7 +96,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $this->buildQrImageUrl($bookingId),
+                'qr_code_url' => $this->buildQrImageUrl($bookingId, $store),
                 'cancel_url' => $cancelUrl,
             ];
 
@@ -134,16 +133,12 @@ class LudotecaEmail extends AbstractHelper
             $customer = $this->customerRepository->getById($booking->getCustomerId());
             $location = $this->locationFactory->create()->load($booking->getLocationId());
 
-            $store = $this->storeManager->getStore();
+            $store = $this->resolveStore($customer);
             $this->ensureFrontendArea();
 
             $this->inlineTranslation->suspend();
 
-            $cancelUrl = $this->urlBuilder->getUrl(
-                'zaca_ludoteca/cancel',
-                ['code' => (string) $booking->getUnsubscribeCode()],
-                ['_secure' => true]
-            );
+            $cancelUrl = $this->buildCancelUrl((string) $booking->getUnsubscribeCode(), $store);
 
             $vars = [
                 'booking_id' => $booking->getBookingId(),
@@ -152,7 +147,7 @@ class LudotecaEmail extends AbstractHelper
                 'location_address' => trim((string) $location->getAddress() . ', ' . (string) $location->getCity(), ', '),
                 'booking_date' => $this->formatDateHuman($booking->getBookingDate()),
                 'slots_text' => $this->renderSlotsHtml($bookingId),
-                'qr_code_url' => $this->buildQrImageUrl($bookingId),
+                'qr_code_url' => $this->buildQrImageUrl($bookingId, $store),
                 'cancel_url' => $cancelUrl,
                 'days_before' => $daysBefore,
             ];
@@ -189,7 +184,7 @@ class LudotecaEmail extends AbstractHelper
             $booking = $this->bookings->getById($bookingId);
             $customer = $this->customerRepository->getById($booking->getCustomerId());
             $location = $this->locationFactory->create()->load($booking->getLocationId());
-            $store = $this->storeManager->getStore();
+            $store = $this->resolveStore($customer);
             $this->ensureFrontendArea();
 
             $this->inlineTranslation->suspend();
@@ -228,17 +223,69 @@ class LudotecaEmail extends AbstractHelper
     }
 
     /**
-     * Build the public URL of the attendance QR image for the booking.
+     * Store whose base URL, sender and template the booking emails use.
+     *
+     * Never the current store: the reminder runs from cron, where the current store
+     * is whatever an earlier job left behind (the admin store included, whose base
+     * URL is the admin host), and the QR image and the cancel link came out pointing
+     * there. A booking has no store of its own, so it is the customer's: their store
+     * view if it is an active one, else the default view of their website, else the
+     * default view of the default website.
+     */
+    private function resolveStore(CustomerInterface $customer): StoreInterface
+    {
+        $storeId = (int) $customer->getStoreId();
+        if ($storeId > 0) {
+            try {
+                $store = $this->storeManager->getStore($storeId);
+                if ($store->isActive()) {
+                    return $store;
+                }
+            } catch (NoSuchEntityException $e) {
+                // Store view deleted since the customer signed up: fall through.
+            }
+        }
+
+        $websiteId = (int) $customer->getWebsiteId();
+        if ($websiteId > 0) {
+            try {
+                $store = $this->storeManager->getWebsite($websiteId)->getDefaultStore();
+                if ($store) {
+                    return $store;
+                }
+            } catch (NoSuchEntityException $e) {
+                // Website deleted since the customer signed up: fall through.
+            }
+        }
+
+        return $this->storeManager->getDefaultStoreView() ?: $this->storeManager->getStore();
+    }
+
+    /**
+     * Cancellation link, on the base URL of the given store (not the current one).
+     */
+    private function buildCancelUrl(string $code, StoreInterface $store): string
+    {
+        return $this->urlBuilder->getUrl(
+            'zaca_ludoteca/cancel',
+            ['code' => $code, '_scope' => (int) $store->getId(), '_secure' => true]
+        );
+    }
+
+    /**
+     * Build the public URL of the attendance QR image for the booking, on the base
+     * URL of the given store (not the current one, see resolveStore()).
      *
      * Served from the `qrcode` controller (Controller/Ludoteca/Qrcode.php) rather
      * than inlined as a base64 data URI: Gmail (and other major webmail clients)
      * strip <img src="data:..."> in emails, so the recipient only saw the alt text.
      * A hosted HTTPS URL renders everywhere. Mirrors the events flow in Helper\Email.
      */
-    private function buildQrImageUrl(int $bookingId): string
+    private function buildQrImageUrl(int $bookingId, StoreInterface $store): string
     {
-        $base = rtrim($this->urlBuilder->getBaseUrl(['_secure' => true]), '/');
-        return $base . $this->helper->getLudotecaPublicUrl('qrcode', ['id' => $bookingId]);
+        $storeId = (int) $store->getId();
+        $base = rtrim($this->urlBuilder->getBaseUrl(['_scope' => $storeId, '_secure' => true]), '/');
+        return $base . $this->helper->getLudotecaPublicUrl('qrcode', ['id' => $bookingId], $storeId);
     }
 
     private function renderSlotsHtml(int $bookingId): string
