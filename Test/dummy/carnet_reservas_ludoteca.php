@@ -288,7 +288,8 @@ try {
 
     /* ── 5. Ludoteca desactivada ── */
     echo "\n== 5. Ludoteca desactivada: no se buscan reservas ==\n";
-    $writer->save(INTERRUPTOR, '0', 'default', 0);
+    // Dummy fija el valor por defecto en app/etc/config.php (la BD se ignora en ese ámbito): se apaga a nivel de web.
+    $writer->save(INTERRUPTOR, '0', 'websites', (int) $om->get(\Magento\Store\Model\StoreManagerInterface::class)->getStore(1)->getWebsiteId());
     foreach (['config', 'full_page', 'layout', 'block_html'] as $t) {
         $typeList->cleanType($t);
     }
