@@ -3,12 +3,14 @@
  * Carnet → asistencia: cuando el empleado escanea el QR del carnet de socio
  * (no el QR específico de un evento), este controller localiza al cliente por
  * el barcode CLT<HEX> y, dada la tienda donde está el empleado (location_id en
- * sesión), busca los registros del cliente para hoy en esa tienda.
+ * sesión), busca para hoy en esa tienda los registros del cliente a eventos y,
+ * si la ludoteca está activa, sus reservas de ludoteca confirmadas.
  *
- *   - 1 coincidencia → redirige a /events/index/attendance?registrationId=…
- *     y deja al flujo estándar registrar la asistencia.
- *   - 0 coincidencias → mensaje "no hay eventos hoy".
- *   - >1 coincidencias → picker para que el empleado elija.
+ *   - 1 coincidencia → redirige al flujo estándar de asistencia: para un evento
+ *     /events/index/attendance?registrationId=…, para una reserva de ludoteca
+ *     /ludoteca/attendance?id=…&code=… (el mismo enlace que su QR).
+ *   - 0 coincidencias → mensaje "no hay eventos ni reservas hoy".
+ *   - >1 coincidencias (eventos y/o reservas) → picker para que el empleado elija.
  *
  * Si no hay location_id en sesión, primero pide el código de tienda (se
  * valida contra cualquier location existente, no contra un meet concreto, ya
@@ -119,11 +121,32 @@ class CarnetAttend extends Action implements CsrfAwareActionInterface
             return $page;
         }
 
+        $today = new \DateTime();
         $matches = $this->attendanceValidator->findRegistrationsForCustomerTodayAtLocation(
             $customerId,
             $locationId,
-            new \DateTime()
+            $today
         );
+
+        if ($this->eventsHelper->isLudotecaEnabled()) {
+            $bookings = $this->attendanceValidator->findLudotecaBookingsForCustomerTodayAtLocation(
+                $customerId,
+                $locationId,
+                $today
+            );
+            // The ludoteca check-in compares the code strictly against the location's, so
+            // forward the stored one; the session copy is only a fallback.
+            $locationCode = $this->attendanceValidator->findLocationCodeById($locationId)
+                ?? (string) $this->session->getData('zaca_events_location_code');
+            foreach ($bookings as $row) {
+                $row['attendance_url'] = rtrim($this->_url->getBaseUrl(), '/')
+                    . $this->eventsHelper->getLudotecaPublicUrl('attendance', [
+                        'id' => (int) $row['booking']->getBookingId(),
+                        'code' => $locationCode,
+                    ]);
+                $matches[] = $row;
+            }
+        }
 
         if (count($matches) === 0) {
             $this->registry->register('carnet_barcode', $barcode);
@@ -136,6 +159,9 @@ class CarnetAttend extends Action implements CsrfAwareActionInterface
 
         if (count($matches) === 1) {
             // Single hit: hand off to the canonical attendance flow.
+            if (isset($matches[0]['booking'])) {
+                return $this->resultRedirectFactory->create()->setUrl($matches[0]['attendance_url']);
+            }
             $registration = $matches[0]['registration'];
             return $this->resultRedirectFactory->create()->setPath(
                 $this->eventsHelper->getRoutePath() . '/index/attendance',
