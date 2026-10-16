@@ -53,19 +53,31 @@ $colorDisplay = '#' . substr((string) $barcode, 3);
             <button type="submit"><?= $escaper->escapeHtml(__('Validar')) ?></button>
         </form>
     <?php elseif ($state === 'no_match'): ?>
-        <div class="empty"><?= $escaper->escapeHtml(__('No hay ningún evento de este cliente hoy en esta tienda.')) ?></div>
+        <div class="empty"><?= $escaper->escapeHtml(__('No hay ningún evento ni reserva de ludoteca de este cliente hoy en esta tienda.')) ?></div>
     <?php elseif ($state === 'pick' && !empty($matches)): ?>
-        <p><?= $escaper->escapeHtml(__('Hay varios eventos del cliente hoy en esta tienda. Elige cuál confirmar:')) ?></p>
+        <p><?= $escaper->escapeHtml(__('Hay varios eventos o reservas de ludoteca del cliente hoy en esta tienda. Elige cuál confirmar:')) ?></p>
         <div class="picker">
-            <?php foreach ($matches as $row): /** @var \Zaca\Events\Api\Data\RegistrationInterface $reg */
-                $reg  = $row['registration'];
-                $meet = $row['meet'];
-                $when = $meet->getStartDate() ? date('H:i', strtotime($meet->getStartDate())) : '';
-                $url  = $attendBase . '?registrationId=' . (int) $reg->getRegistrationId();
+            <?php foreach ($matches as $row):
+                if (isset($row['booking'])) {
+                    $title = (string) __('Ludoteca');
+                    $slotLabels = [];
+                    foreach ($row['slots'] as $slot) {
+                        $slotLabels[] = substr($slot['start_time'], 0, 5) . '–' . substr($slot['end_time'], 0, 5);
+                    }
+                    $when = implode(' · ', $slotLabels);
+                    $url  = $row['attendance_url'];
+                } else {
+                    /** @var \Zaca\Events\Api\Data\RegistrationInterface $reg */
+                    $reg  = $row['registration'];
+                    $meet = $row['meet'];
+                    $title = (string) $meet->getName();
+                    $when = $meet->getStartDate() ? (string) __('Hoy a las %1', date('H:i', strtotime($meet->getStartDate()))) : '';
+                    $url  = $attendBase . '?registrationId=' . (int) $reg->getRegistrationId();
+                }
             ?>
                 <a class="pick" href="<?= $escaper->escapeUrl($url) ?>">
-                    <div class="meet"><?= $escaper->escapeHtml((string) $meet->getName()) ?></div>
-                    <?php if ($when): ?><div class="when"><?= $escaper->escapeHtml(__('Hoy a las %1', $when)) ?></div><?php endif; ?>
+                    <div class="meet"><?= $escaper->escapeHtml($title) ?></div>
+                    <?php if ($when): ?><div class="when"><?= $escaper->escapeHtml($when) ?></div><?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </div>
