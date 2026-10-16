@@ -143,17 +143,19 @@ if ($codigoA === '') {
     exit(2);
 }
 
-// Un cliente con carnet cuyo color no comparta ningún otro cliente (el controlador coge el primero que coincide).
+// Un cliente INTERNO con carnet (nunca uno real: se le crean reservas e inscripciones) cuyo color no comparta ningún
+// otro cliente (el controlador coge el primero que coincide).
 $cliente = $conn->fetchRow(
     "SELECT v.entity_id, UPPER(v.value) AS color FROM customer_entity_varchar v
      JOIN eav_attribute a ON a.attribute_id = v.attribute_id AND a.attribute_code = 'member_color_hex'
      JOIN eav_entity_type t ON t.entity_type_id = a.entity_type_id AND t.entity_type_code = 'customer'
+     JOIN customer_entity e ON e.entity_id = v.entity_id AND (e.email LIKE '%@zacatrus.es' OR e.email LIKE '%@infovit.net')
      WHERE v.value REGEXP '^#[0-9A-Fa-f]{6}$'
        AND (SELECT COUNT(*) FROM customer_entity_varchar v2 WHERE v2.attribute_id = v.attribute_id AND UPPER(v2.value) = UPPER(v.value)) = 1
      ORDER BY v.entity_id DESC LIMIT 1"
 );
 if (!$cliente) {
-    echo "Dummy no tiene ningún cliente con carnet (member_color_hex): no se puede probar.\n";
+    echo "Dummy no tiene ningún cliente interno con carnet (member_color_hex): no se puede probar.\n";
     exit(2);
 }
 $clienteId = (int) $cliente['entity_id'];
