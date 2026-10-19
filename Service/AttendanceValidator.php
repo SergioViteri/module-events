@@ -10,6 +10,8 @@
 namespace Zaca\Events\Service;
 
 use Zaca\Events\Api\Data\MeetInterface;
+use Zaca\Events\Api\Data\TableBookingInterface;
+use Zaca\Events\Api\TableBookingRepositoryInterface;
 use Zaca\Events\Model\LocationFactory;
 use Zaca\Events\Model\RegistrationFactory;
 use Zaca\Events\Model\AttendanceFactory;
@@ -78,6 +80,11 @@ class AttendanceValidator
      */
     protected $resource;
 
+    /**
+     * @var TableBookingRepositoryInterface
+     */
+    protected $tableBookingRepository;
+
     public function __construct(
         LocationFactory $locationFactory,
         RegistrationFactory $registrationFactory,
@@ -88,7 +95,8 @@ class AttendanceValidator
         LocationCollectionFactory $locationCollectionFactory,
         RegistrationCollectionFactory $registrationCollectionFactory,
         MeetCollectionFactory $meetCollectionFactory,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        TableBookingRepositoryInterface $tableBookingRepository
     ) {
         $this->locationFactory = $locationFactory;
         $this->registrationFactory = $registrationFactory;
@@ -100,6 +108,7 @@ class AttendanceValidator
         $this->registrationCollectionFactory = $registrationCollectionFactory;
         $this->meetCollectionFactory = $meetCollectionFactory;
         $this->resource = $resource;
+        $this->tableBookingRepository = $tableBookingRepository;
     }
 
     /**
@@ -157,6 +166,49 @@ class AttendanceValidator
                 }
                 $matches[] = ['registration' => $reg, 'meet' => $meet];
             }
+        }
+        return $matches;
+    }
+
+    /**
+     * Code of the given location, read from the table. Null if it has none.
+     *
+     * The session keeps the code as typed by the employee, but the location
+     * lookup by code is not guaranteed to be case-sensitive, while the ludoteca
+     * check-in compares it strictly: callers that forward the code must use this.
+     */
+    public function findLocationCodeById(int $locationId): ?string
+    {
+        $location = $this->locationFactory->create()->load($locationId);
+        $code = $location->getId() ? (string) $location->getCode() : '';
+        return $code !== '' ? $code : null;
+    }
+
+    /**
+     * Find the customer's confirmed ludoteca bookings for the given day at the
+     * given location, each with its time slots (start_time, end_time,
+     * tables_count). Empty when nothing matches.
+     *
+     * @return array<int, array{booking: TableBookingInterface, slots: array<int, array{start_time: string, end_time: string, tables_count: int}>}>
+     */
+    public function findLudotecaBookingsForCustomerTodayAtLocation(int $customerId, int $locationId, \DateTime $today): array
+    {
+        $collection = $this->tableBookingRepository->getByCustomer($customerId);
+        $collection->addFieldToFilter('location_id', $locationId)
+            ->addFieldToFilter('booking_date', $today->format('Y-m-d'))
+            ->addFieldToFilter('status', TableBookingInterface::STATUS_CONFIRMED);
+
+        $matches = [];
+        foreach ($collection as $booking) {
+            $slots = [];
+            foreach ($this->tableBookingRepository->getSlots((int) $booking->getBookingId()) as $slot) {
+                $slots[] = [
+                    'start_time' => (string) $slot->getData('start_time'),
+                    'end_time' => (string) $slot->getData('end_time'),
+                    'tables_count' => (int) $slot->getTablesCount(),
+                ];
+            }
+            $matches[] = ['booking' => $booking, 'slots' => $slots];
         }
         return $matches;
     }
