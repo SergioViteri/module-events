@@ -101,7 +101,7 @@ Defined in `etc/email_templates.xml`, HTML lives under `view/frontend/email/`:
 
 ## Conventions worth knowing
 
-- PHP 8.0–8.3 (`composer.json`).
+- PHP 8.0 or newer (`composer.json` uses `>=8.0`, so 8.4 and 8.5 are allowed). Checked against PHP 8.5 with `php -l` on every file: no deprecations. Keep new code free of implicit nullable params (`Type $x = null`), of `fputcsv`/`fgetcsv`/`str_getcsv` without an explicit `$escape`, and of `setAccessible()` outside a `PHP_VERSION_ID < 80100` guard.
 - Translations: only `i18n/es_ES.csv` ships — there's no `en_US.csv` (this is a Spanish-language module).
 - All preferences are declared in `etc/di.xml` (`MeetRepository`, `RegistrationRepository`, `EventTypeRepository`, `ThemeRepository`, plus their `Data\*Interface` → model class bindings).
 - Reference modules for similar patterns: `bot` (canonical CRUD), `box`, `card` — they live as siblings under `/home/sergio/dev/magento/`.
