@@ -165,7 +165,8 @@ class ExportCsv extends Action
     protected function arrayToCsv(array $data)
     {
         $output = fopen('php://temp', 'r+');
-        fputcsv($output, $data);
+        // $escape explicito: PHP 8.4 avisa si se depende de su valor por defecto. "\\" es el de siempre.
+        fputcsv($output, $data, ',', '"', '\\');
         rewind($output);
         $csv = stream_get_contents($output);
         fclose($output);

@@ -117,7 +117,9 @@ function cuerpoHtml($message): string
 function propiedad(object $objeto, string $nombre, ?string $clase = null): \ReflectionProperty
 {
     $p = new \ReflectionProperty($clase ?? get_class($objeto), $nombre);
-    $p->setAccessible(true);
+    if (PHP_VERSION_ID < 80100) {
+        $p->setAccessible(true); // no-op desde 8.1 y obsoleto desde 8.5
+    }
     return $p;
 }
 
