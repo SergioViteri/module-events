@@ -99,7 +99,8 @@ try {
     $check('el selector trae «Lunes a sábado» con valor 9', ($opciones['9'] ?? null) === 'Lunes a sábado', $opciones['9'] ?? 'no está');
     $check('el HTML del <select> tiene la <option value="9">',
         (bool) preg_match('~<option value="9"[^>]*>\s*Lunes a sábado\s*</option>~u', $html));
-    $claves = array_keys($opciones);
+    // Las claves numéricas de un array PHP pasan a int: se comparan como texto.
+    $claves = array_map('strval', array_keys($opciones));
     $check('orden: Todos los días, L-V, Lunes a sábado, Lunes…Domingo',
         $claves === ['', '8', '9', '1', '2', '3', '4', '5', '6', '7'], implode(',', $claves));
     $check('«Días laborables (L-V)» sigue ahí con valor 8', ($opciones['8'] ?? null) === 'Días laborables (L-V)');
