@@ -78,6 +78,8 @@ try {
     $translate = $om->get(\Magento\Framework\TranslateInterface::class);
     $translate->setLocale('es_ES');
     $translate->loadData(Area::AREA_ADMINHTML, true);
+    // En CLI nadie fija el traductor de __(): sin esto todo sale en inglés.
+    \Magento\Framework\Phrase::setRenderer($om->get(\Magento\Framework\Phrase\RendererInterface::class));
 
     $registry = $om->get(\Magento\Framework\Registry::class);
     $registry->register(
@@ -157,7 +159,7 @@ try {
         $vistos = implode('', array_map(static fn ($id) => $letras[$id] ?? '?', $ids));
         $esperado = ($n <= 6 ? 'A' : '') . ($n <= 5 ? 'B' : '') . 'C' . ($n === 7 ? 'D' : '');
         // Orden por sort_order: A(10) B(20) C(30) D(40)
-        $check(sprintf('%s %s ofrece «%s»', $nombres[$n], $dia->format('Y-m-d'), $esperado), $vistos === $esperado, "vistos «$vistos»");
+        $check(sprintf('%s %s ofrece «%s»', $nombres[$n], $dia->format('Y-m-d'), $esperado), $vistos === $esperado, "vistos «{$vistos}»");
         $check(sprintf('%s %s: el turno desactivado E no sale', $nombres[$n], $dia->format('Y-m-d')), !in_array($E, $ids, true));
         $vistoDomingo = $vistoDomingo || $n === 7;
         $vistoSabado = $vistoSabado || $n === 6;
