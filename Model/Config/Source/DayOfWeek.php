@@ -7,17 +7,20 @@ use Magento\Framework\Data\OptionSourceInterface;
 class DayOfWeek implements OptionSourceInterface
 {
     /**
-     * Special non-ISO bucket: 8 = weekdays (Mon–Fri).
-     * Stored as smallint in zaca_events_time_slot.day_of_week alongside ISO 1..7
-     * and NULL (= all days). Resolved at runtime by AvailabilityService.
+     * Special non-ISO buckets, stored as smallint in zaca_events_time_slot.day_of_week
+     * alongside ISO 1..7 and NULL (= all days). Resolved at runtime by AvailabilityService.
+     *   8 = weekdays (Mon–Fri)
+     *   9 = Monday to Saturday (stores that do not open on Sunday)
      */
     public const WEEKDAY = 8;
+    public const MON_TO_SAT = 9;
 
     public function toOptionArray(): array
     {
         return [
             ['value' => '', 'label' => __('All days')],
             ['value' => self::WEEKDAY, 'label' => __('Weekdays (Mon–Fri)')],
+            ['value' => self::MON_TO_SAT, 'label' => __('Monday to Saturday')],
             ['value' => 1, 'label' => __('Monday')],
             ['value' => 2, 'label' => __('Tuesday')],
             ['value' => 3, 'label' => __('Wednesday')],

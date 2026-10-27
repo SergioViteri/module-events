@@ -239,7 +239,8 @@ class AvailabilityService
 
     /**
      * @return array<int|string, array<int, array{time_slot_id:int, start_time:string, end_time:string, sort_order:int}>>
-     *   Keys: 'all' (day_of_week NULL), 'weekday' (day_of_week=8), and 1..7 (specific ISO day).
+     *   Keys: 'all' (day_of_week NULL), 'weekday' (day_of_week=8), 'mon_sat' (day_of_week=9),
+     *   and 1..7 (specific ISO day).
      */
     private function loadActiveTimeSlots(int $locationId): array
     {
@@ -255,12 +256,14 @@ class AvailabilityService
                 ->order(['sort_order ASC', 'start_time ASC'])
         );
 
-        $grouped = ['all' => [], 'weekday' => []];
+        $grouped = ['all' => [], 'weekday' => [], 'mon_sat' => []];
         foreach ($rows as $row) {
             if ($row['day_of_week'] === null) {
                 $key = 'all';
             } elseif ((int) $row['day_of_week'] === \Zaca\Events\Model\Config\Source\DayOfWeek::WEEKDAY) {
                 $key = 'weekday';
+            } elseif ((int) $row['day_of_week'] === \Zaca\Events\Model\Config\Source\DayOfWeek::MON_TO_SAT) {
+                $key = 'mon_sat';
             } else {
                 $key = (int) $row['day_of_week'];
             }
@@ -283,6 +286,9 @@ class AvailabilityService
         $merged = $byDow['all'] ?? [];
         if ($isoDayOfWeek >= 1 && $isoDayOfWeek <= 5) {
             $merged = array_merge($merged, $byDow['weekday'] ?? []);
+        }
+        if ($isoDayOfWeek >= 1 && $isoDayOfWeek <= 6) {
+            $merged = array_merge($merged, $byDow['mon_sat'] ?? []);
         }
         $merged = array_merge($merged, $byDow[$isoDayOfWeek] ?? []);
         usort($merged, function ($a, $b) {
