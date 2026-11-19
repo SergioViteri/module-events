@@ -10,6 +10,11 @@
  *
  * The advance-days policy (non-Club vs Club) is applied here so the calendar
  * can display 'out_of_range' days without callers re-implementing it.
+ *
+ * Closure periods (zaca_events_ludoteca_closure, both dates inclusive, a NULL
+ * location meaning every ludoteca) take no bookings at all: the calendar shows
+ * them as 'closure' — ahead of the advance-days checks, so a closed day never
+ * invites a non-Club user to join the Club — and no slot is offered for them.
  */
 
 namespace Zaca\Events\Service\Ludoteca;
@@ -24,6 +29,7 @@ class AvailabilityService
     public const STATE_OUT_OF_RANGE = 'out_of_range';   // bookable by Club, not by this user
     public const STATE_NOT_YET = 'not_yet';             // beyond Club horizon — nobody can book yet
     public const STATE_CLOSED = 'closed';
+    public const STATE_CLOSURE = 'closure';             // inside a closure period set by the admin
     public const STATE_FREE = 'free';
     public const STATE_PARTIAL = 'partial';
     public const STATE_BUSY = 'busy';
@@ -66,6 +72,7 @@ class AvailabilityService
         $slotsByDow = $this->loadActiveTimeSlots($locationId);
         $ludOccupancy = $this->fetchLudotecaOccupancy($locationId, $monthStart, $monthEnd);
         $meetSegments = $this->fetchMeetSegments($locationId, $monthStart, $monthEnd);
+        $closures = $this->fetchClosures($locationId, $monthStart, $monthEnd);
 
         $result = [];
         $period = new \DatePeriod(
@@ -80,6 +87,10 @@ class AvailabilityService
 
             if ($day < $today) {
                 $result[$dateKey] = self::STATE_PAST;
+                continue;
+            }
+            if ($this->closureOn($closures, $dateKey) !== null) {
+                $result[$dateKey] = self::STATE_CLOSURE;
                 continue;
             }
             // Past the Club horizon → nobody can book yet.
@@ -141,6 +152,9 @@ class AvailabilityService
         if ($date < $today) {
             return [];
         }
+        if ($this->closureForDate($locationId, $date) !== null) {
+            return [];
+        }
         $maxAdvance = $this->helper->getMaxAdvanceDays($customerId);
         $maxBookableDate = $today->modify('+' . max(0, $maxAdvance - 1) . ' days');
         if ($date > $maxBookableDate) {
@@ -199,7 +213,7 @@ class AvailabilityService
     public function freeTablesFor(int $locationId, \DateTimeImmutable $date, int $timeSlotId): int
     {
         $totalTables = $this->getTotalTables($locationId);
-        if ($totalTables <= 0) {
+        if ($totalTables <= 0 || $this->closureForDate($locationId, $date) !== null) {
             return 0;
         }
 
@@ -223,6 +237,59 @@ class AvailabilityService
         );
         $bookedLud = (int) ($ludOccupancy[$dateKey][$timeSlotId] ?? 0);
         return max(0, $totalTables - $bookedLud - $blockedByMeet);
+    }
+
+    /**
+     * The active closure period covering this date at this location, if any.
+     *
+     * @return array{start_date:string, end_date:string}|null
+     */
+    public function closureForDate(int $locationId, \DateTimeImmutable $date): ?array
+    {
+        return $this->closureOn(
+            $this->fetchClosures($locationId, $date, $date),
+            $date->format('Y-m-d')
+        );
+    }
+
+    /**
+     * Active closure periods for this location (or for every location) that
+     * overlap the date range.
+     *
+     * @return array<int, array{start_date:string, end_date:string}>
+     */
+    private function fetchClosures(int $locationId, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $connection = $this->resource->getConnection();
+        $rows = $connection->fetchAll(
+            $connection->select()
+                ->from(
+                    $this->resource->getTableName('zaca_events_ludoteca_closure'),
+                    ['start_date', 'end_date']
+                )
+                ->where('is_active = ?', 1)
+                ->where('location_id = ? OR location_id IS NULL', $locationId)
+                ->where('start_date <= ?', $to->format('Y-m-d'))
+                ->where('end_date >= ?', $from->format('Y-m-d'))
+                ->order('start_date ASC')
+        );
+        return array_map(static function (array $row): array {
+            return ['start_date' => (string) $row['start_date'], 'end_date' => (string) $row['end_date']];
+        }, $rows);
+    }
+
+    /**
+     * @param array<int, array{start_date:string, end_date:string}> $closures
+     * @return array{start_date:string, end_date:string}|null
+     */
+    private function closureOn(array $closures, string $dateKey): ?array
+    {
+        foreach ($closures as $closure) {
+            if ($closure['start_date'] <= $dateKey && $dateKey <= $closure['end_date']) {
+                return $closure;
+            }
+        }
+        return null;
     }
 
     private function getTotalTables(int $locationId): int

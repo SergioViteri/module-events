@@ -10,6 +10,7 @@
  *
  * Validations performed:
  *   - Customer is logged in (caller passes a non-null customerId).
+ *   - Booking date is not inside a closure period of the location.
  *   - Booking date is within the advance-days window for this customer.
  *   - Every time slot belongs to the location, is active, and is valid for
  *     the date's day of the week.
@@ -100,6 +101,17 @@ class ReservationCreator
         $today = new \DateTimeImmutable('today');
         if ($request->bookingDate < $today) {
             throw new LocalizedException(__('No puedes reservar en una fecha pasada.'));
+        }
+
+        $closure = $this->availability->closureForDate($request->locationId, $request->bookingDate);
+        if ($closure !== null) {
+            throw new LocalizedException(
+                __(
+                    'La ludoteca permanece cerrada del %1 al %2. Elige otra fecha.',
+                    (new \DateTimeImmutable($closure['start_date']))->format('d/m/Y'),
+                    (new \DateTimeImmutable($closure['end_date']))->format('d/m/Y')
+                )
+            );
         }
 
         $maxAdvance = $this->helper->getMaxAdvanceDays($request->customerId);

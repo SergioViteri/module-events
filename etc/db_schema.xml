@@ -293,6 +293,28 @@
         </index>
     </table>
 
+    <table name="zaca_events_ludoteca_closure" resource="default" engine="innodb" comment="Zacatrus Events Ludoteca Closure Periods (no bookings allowed)">
+        <column xsi:type="int" name="closure_id" unsigned="true" nullable="false" identity="true" comment="Closure ID"/>
+        <column xsi:type="int" name="location_id" unsigned="true" nullable="true" comment="Location ID (NULL = every ludoteca)"/>
+        <column xsi:type="date" name="start_date" nullable="false" comment="First closed day (inclusive)"/>
+        <column xsi:type="date" name="end_date" nullable="false" comment="Last closed day (inclusive)"/>
+        <column xsi:type="varchar" name="reason" length="255" nullable="true" comment="Internal note (not shown to customers)"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Is Active"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="closure_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FK_ZACA_EVENTS_LUDOTECA_CLOSURE_LOCATION_ID" table="zaca_events_ludoteca_closure" column="location_id" referenceTable="zaca_events_location" referenceColumn="location_id" onDelete="CASCADE"/>
+        <index referenceId="IDX_ZACA_EVENTS_LUDOTECA_CLOSURE_LOCATION_ID" indexType="btree">
+            <column name="location_id"/>
+        </index>
+        <index referenceId="IDX_ZACA_EVENTS_LUDOTECA_CLOSURE_DATES" indexType="btree">
+            <column name="start_date"/>
+            <column name="end_date"/>
+        </index>
+    </table>
+
     <table name="zaca_events_table_booking" resource="default" engine="innodb" comment="Zacatrus Events Ludoteca Bookings">
         <column xsi:type="int" name="booking_id" unsigned="true" nullable="false" identity="true" comment="Booking ID"/>
         <column xsi:type="int" name="location_id" unsigned="true" nullable="false" comment="Location ID"/>

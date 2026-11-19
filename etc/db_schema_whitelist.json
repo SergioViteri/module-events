@@ -240,6 +240,26 @@
             "FK_40444D74F9C180BC91E25A948B9D4352": true
         }
     },
+    "zaca_events_ludoteca_closure": {
+        "column": {
+            "closure_id": true,
+            "location_id": true,
+            "start_date": true,
+            "end_date": true,
+            "reason": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "ZACA_EVENTS_LUDOTECA_CLOSURE_LOCATION_ID": true,
+            "ZACA_EVENTS_LUDOTECA_CLOSURE_DATES": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_760E8ACCCE5ADE67906F60FBA6400E89": true
+        }
+    },
     "zaca_events_table_booking": {
         "column": {
             "booking_id": true,

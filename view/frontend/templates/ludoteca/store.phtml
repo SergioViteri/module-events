@@ -140,6 +140,7 @@ $remainingSlots = $block->getRemainingSlots();
                 <span class="lg-out_of_range">■ <?= $escaper->escapeHtml(__('Sólo para el Club')) ?></span>
             <?php endif; ?>
             <span class="lg-not_yet">■ <?= $escaper->escapeHtml(__('No disponible todavía')) ?></span>
+            <span class="lg-closure" id="ludoteca-lg-closure" hidden>■ <?= $escaper->escapeHtml(__('Ludoteca cerrada')) ?></span>
         </div>
     </section>
 
@@ -205,6 +206,7 @@ $remainingSlots = $block->getRemainingSlots();
 .ludoteca-cal-days .partial { background: #fff2d9; color: #9a6200; }
 .ludoteca-cal-days .busy { background: #fde7e7; color: #a23434; cursor: not-allowed; }
 .ludoteca-cal-days .closed { background: #f0f0f0; color: #999; cursor: not-allowed; }
+.ludoteca-cal-days .closure { background: #e4e4e4; color: #6b6b6b; text-decoration: line-through; cursor: not-allowed; }
 .ludoteca-cal-days .selected { outline: 3px solid #0074bd; outline-offset: 1px; }
 .ludoteca-cal-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; margin-top: 10px; color: #555; }
 .ludoteca-cal-legend .lg-free { color: #24702b; }
@@ -212,6 +214,7 @@ $remainingSlots = $block->getRemainingSlots();
 .ludoteca-cal-legend .lg-busy { color: #a23434; }
 .ludoteca-cal-legend .lg-out_of_range { color: #5b3aa2; }
 .ludoteca-cal-legend .lg-not_yet { color: #8a8a9a; }
+.ludoteca-cal-legend .lg-closure { color: #6b6b6b; }
 .ludoteca-cal-legend .lg-past { color: #888; }
 .ludoteca-slots-section, .ludoteca-form-section { margin-top: 18px; padding: 14px; border: 1px solid #e3e3e3; border-radius: 16px; }
 .ludoteca-slots-section h3 { margin: 0 0 14px; }
@@ -285,6 +288,7 @@ $remainingSlots = $block->getRemainingSlots();
 
     var elTitle = root.querySelector('.ludoteca-cal-title');
     var elDays = root.querySelector('#ludoteca-cal-days');
+    var elLgClosure = root.querySelector('#ludoteca-lg-closure');
     var elPrev = root.querySelector('.ludoteca-cal-prev');
     var elNext = root.querySelector('.ludoteca-cal-next');
     var elSlotsSection = root.querySelector('#ludoteca-slots-section');
@@ -329,17 +333,20 @@ $remainingSlots = $block->getRemainingSlots();
         var leading = dow === 0 ? 6 : dow - 1;
         var lastDay = new Date(ctx.viewYear, ctx.viewMonth, 0).getDate();
         var html = '';
+        var hasClosure = false;
         for (var i = 0; i < leading; i++) {
             html += '<button class="empty" type="button" disabled aria-hidden="true"></button>';
         }
         for (var d = 1; d <= lastDay; d++) {
             var key = ctx.viewYear + '-' + pad(ctx.viewMonth) + '-' + pad(d);
             var state = days[key] || 'closed';
-            var disabled = (state === 'past' || state === 'busy' || state === 'closed' || state === 'not_yet') ? 'disabled' : '';
+            var disabled = (state === 'past' || state === 'busy' || state === 'closed' || state === 'closure' || state === 'not_yet') ? 'disabled' : '';
+            if (state === 'closure') { hasClosure = true; }
             var sel = (ctx.selectedDate === key) ? ' selected' : '';
             html += '<button type="button" class="' + state + sel + '" data-date="' + key + '" data-state="' + state + '" ' + disabled + '>' + d + '</button>';
         }
         elDays.innerHTML = html;
+        if (elLgClosure) { elLgClosure.hidden = !hasClosure; }
         elDays.querySelectorAll('button[data-date]').forEach(function (btn) {
             btn.addEventListener('click', function () { onDayClick(btn); });
         });
@@ -360,7 +367,7 @@ $remainingSlots = $block->getRemainingSlots();
             }
             return;
         }
-        if (state === 'past' || state === 'busy' || state === 'closed' || state === 'not_yet') { return; }
+        if (state === 'past' || state === 'busy' || state === 'closed' || state === 'closure' || state === 'not_yet') { return; }
         ctx.selectedDate = key;
         ctx.selectedSlots = [];
         elDays.querySelectorAll('button[data-date]').forEach(function (b) { b.classList.toggle('selected', b.dataset.date === key); });
